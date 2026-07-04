@@ -926,6 +926,7 @@ function buildExam(){
     <div class="prompt-box" data-id="${q.id}" style="margin-bottom:14px">
       <div class="q-title">שאלה ${examMC.length+1+k}</div>
       <div style="margin-bottom:10px">${esc(q.prompt)}</div>
+      ${tablePreview(tablesInQuery(q.solution))}
       <textarea class="ex-sql" data-id="${q.id}" style="width:100%;min-height:100px;background:var(--code-bg);color:#cfe3ff;border:1px solid var(--line);border-radius:10px;padding:12px;font-family:Consolas,monospace;direction:ltr;text-align:left" placeholder="כתוב כאן את השאילתה..."></textarea>
       <div class="explain" id="exam-sqlexp-${q.id}"></div>
     </div>`).join('');

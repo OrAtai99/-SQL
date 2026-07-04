@@ -1,23 +1,36 @@
+/* ---------- ערכת נושא בהירה (ברירת מחדל) ---------- */
 :root{
-  --bg:#0f1729; --bg2:#16213e; --card:#1c2742; --card2:#243150;
-  --ink:#e8eefc; --muted:#9fb0d0; --line:#2c3a5e;
-  --accent:#4f8cff; --accent2:#7c5cff; --good:#23c98b; --bad:#ff5d6c; --warn:#ffb454;
-  --code-bg:#0b1322; --shadow:0 10px 30px rgba(0,0,0,.35);
+  --page-bg:linear-gradient(160deg,#eef2fa,#f7f9fd 40%,#eef2f9);
+  --bg:#f4f6fb; --bg2:#e9edf6; --card:#ffffff; --card2:#eef2f9;
+  --ink:#1b2436; --ink2:#3d4a63; --muted:#64748f; --line:#dbe3f0;
+  --accent:#3b76e8; --accent2:#7c5cff; --good:#0d9e6f; --bad:#e5484d; --warn:#c77414;
+  --code-bg:#0f1729; --glass:rgba(255,255,255,.88);
+  --shadow:0 6px 22px rgba(40,60,110,.10);
   --radius:16px;
+}
+/* ---------- ערכת נושא כהה ---------- */
+html[data-theme="dark"]{
+  --page-bg:linear-gradient(160deg,#0c1326,#0f1729 40%,#121a33);
+  --bg:#0f1729; --bg2:#16213e; --card:#1c2742; --card2:#243150;
+  --ink:#e8eefc; --ink2:#d6e0f5; --muted:#9fb0d0; --line:#2c3a5e;
+  --accent:#4f8cff; --accent2:#7c5cff; --good:#23c98b; --bad:#ff5d6c; --warn:#ffb454;
+  --code-bg:#0b1322; --glass:rgba(15,23,41,.88);
+  --shadow:0 10px 30px rgba(0,0,0,.35);
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{
   font-family:"Segoe UI","Assistant","Rubik",system-ui,Arial,sans-serif;
-  background:linear-gradient(160deg,#0c1326,#0f1729 40%,#121a33);
-  color:var(--ink); direction:rtl; min-height:100vh; line-height:1.7;
+  background:var(--page-bg);
+  color:var(--ink); direction:rtl; min-height:100vh; line-height:1.75;
+  transition:background .25s,color .25s;
 }
 a{color:var(--accent);text-decoration:none}
 
 /* ---------- Header ---------- */
 header.top{
   position:sticky;top:0;z-index:50;
-  background:rgba(15,23,41,.85);backdrop-filter:blur(10px);
+  background:var(--glass);backdrop-filter:blur(10px);
   border-bottom:1px solid var(--line);
 }
 .top-inner{max-width:1100px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
@@ -71,7 +84,7 @@ h2.view-title{font-size:26px;margin:0 0 6px}
 .topic-body section{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
   padding:22px 24px;margin-bottom:16px;box-shadow:var(--shadow)}
 .topic-body h3{margin:0 0 12px;font-size:20px;color:var(--ink);border-inline-start:4px solid var(--accent);padding-inline-start:12px}
-.topic-body p,.topic-body li{color:#d6e0f5}
+.topic-body p,.topic-body li{color:var(--ink2)}
 .topic-body ul,.topic-body ol{margin:8px 0;padding-inline-start:22px}
 .topic-body code{background:var(--code-bg);padding:2px 7px;border-radius:6px;font-family:Consolas,monospace;font-size:14px;color:#7fd1ff;direction:ltr;display:inline-block}
 .topic-body pre{background:var(--code-bg);border:1px solid var(--line);border-radius:12px;padding:14px 16px;
@@ -114,11 +127,16 @@ table.mini th{background:var(--card2);color:var(--ink)}
 .opt.selected{border-color:var(--accent);background:rgba(79,140,255,.15)}
 .opt.correct{border-color:var(--good);background:rgba(35,201,139,.18)}
 .opt.wrong{border-color:var(--bad);background:rgba(255,93,108,.16)}
-.opt .mark{float:left;font-weight:800}
+.opt .mark{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;
+  background:var(--card);border:1.5px solid var(--line);font-size:13px;font-weight:800;
+  margin-inline-end:10px;vertical-align:middle;color:var(--muted);transition:.12s}
+.opt:hover .mark{border-color:var(--accent);color:var(--accent)}
+.opt.correct .mark{background:var(--good);border-color:var(--good);color:#fff}
+.opt.wrong .mark{background:var(--bad);border-color:var(--bad);color:#fff}
 .explain{margin-top:12px;padding:12px 14px;border-radius:10px;background:rgba(124,92,255,.12);
   border-inline-start:4px solid var(--accent2);font-size:14px;display:none}
 .explain.show{display:block}
-.scorebar{position:sticky;bottom:0;background:rgba(15,23,41,.92);backdrop-filter:blur(8px);
+.scorebar{position:sticky;bottom:0;background:var(--glass);backdrop-filter:blur(8px);
   border-top:1px solid var(--line);padding:14px 20px;display:flex;align-items:center;gap:16px;justify-content:center;flex-wrap:wrap;margin:0 -20px -80px;border-radius:16px 16px 0 0}
 .result-banner{text-align:center;padding:26px;border-radius:18px;margin-bottom:20px;font-size:20px;font-weight:700}
 .result-banner.pass{background:rgba(35,201,139,.16);border:1px solid var(--good)}
@@ -153,6 +171,7 @@ textarea#sqlInput{width:100%;min-height:150px;background:var(--code-bg);color:#c
 .result-table{width:100%;border-collapse:collapse;direction:ltr;font-family:Consolas,monospace;font-size:13px;overflow:auto;display:block}
 .result-table th,.result-table td{border:1px solid var(--line);padding:6px 10px;text-align:left;white-space:nowrap}
 .result-table th{background:var(--card2);position:sticky;top:0}
+.result-table tbody tr:nth-child(even){background:var(--card2)}
 .result-wrap{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;max-height:360px;overflow:auto}
 .result-wrap h4{margin:0 0 10px}
 .sol-box{background:var(--code-bg);border:1px solid var(--line);border-radius:10px;padding:12px;direction:ltr;text-align:left;
@@ -167,3 +186,153 @@ textarea#sqlInput{width:100%;min-height:150px;background:var(--code-bg);color:#c
 
 footer{text-align:center;color:var(--muted);font-size:13px;padding:30px 20px;border-top:1px solid var(--line)}
 .hidden{display:none!important}
+
+/* ---------- לוח מחוונים ---------- */
+.ready-wrap{display:flex;align-items:center;gap:18px;margin-top:18px;flex-wrap:wrap}
+.ready-num{display:flex;flex-direction:column;align-items:center;min-width:110px}
+.ready-num span{font-size:34px;font-weight:900;color:var(--accent);line-height:1}
+.ready-num small{color:var(--muted);font-size:12px}
+.ready-bar{flex:1;min-width:180px;height:14px;background:var(--card2);border-radius:99px;overflow:hidden}
+.ready-bar > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--good));transition:width .6s}
+.home-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:20px}
+@media(max-width:820px){.home-grid{grid-template-columns:1fr}}
+.sec-h{font-size:18px;margin:0 0 12px}
+.path-list{display:flex;flex-direction:column;gap:8px}
+.path-item{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);
+  border-radius:12px;padding:12px 14px;cursor:pointer;transition:.15s}
+.path-item:hover{border-color:var(--accent);transform:translateX(-3px)}
+.path-item.done{border-color:var(--good);background:rgba(35,201,139,.08)}
+.path-n{width:30px;height:30px;flex-shrink:0;border-radius:50%;background:var(--card2);display:grid;place-items:center;font-weight:800;font-size:14px}
+.path-item.done .path-n{background:var(--good);color:#062}
+.path-goal{color:var(--muted);font-size:13px;margin-top:2px}
+.tips{margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:7px}
+.tips li{font-size:14px;color:var(--ink2)}
+
+/* ---------- דוגמאות פתורות ---------- */
+.wex{margin-bottom:18px}
+.wex-steps{counter-reset:st;list-style:none;padding:0;margin:8px 0 0}
+.wex-steps li{position:relative;padding:0 44px 18px 0;border-inline-start:2px dashed var(--line);margin-inline-start:16px}
+.wex-steps li:last-child{border-inline-start:2px solid transparent}
+.wex-steps li::before{counter-increment:st;content:counter(st);position:absolute;right:-16px;top:0;
+  width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;display:grid;place-items:center;font-weight:800;font-size:14px}
+.wex-h{font-weight:700;font-size:16px;margin-bottom:6px;color:var(--ink)}
+.wex-c p,.wex-c li{color:var(--ink2)}
+.wex-c pre{background:var(--code-bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;
+  overflow-x:auto;direction:ltr;text-align:left;font-family:Consolas,monospace;font-size:14px;color:#cfe3ff;line-height:1.6}
+.wex-c u{text-decoration:underline;color:#7fd1ff}
+.wex-c .callout{background:rgba(79,140,255,.12);border-inline-start:4px solid var(--accent);padding:10px 12px;border-radius:10px;margin:10px 0}
+.wex-c .callout.warn{background:rgba(255,180,84,.12);border-inline-start-color:var(--warn)}
+
+/* ---------- תגית נושא בבוחן ---------- */
+.qtopic{float:left;font-size:11px;color:var(--muted);background:var(--card2);padding:2px 8px;border-radius:8px;font-weight:500}
+
+/* ---------- ניתוח חוזקות/חולשות ---------- */
+.weak-row{display:flex;align-items:center;gap:10px;padding:7px 4px;border-radius:9px;cursor:pointer;transition:.12s}
+.weak-row:hover{background:var(--card2)}
+.weak-name{flex-shrink:0;width:180px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.weak-bar{flex:1;height:9px;background:var(--card2);border-radius:99px;overflow:hidden}
+.weak-bar > i{display:block;height:100%;border-radius:99px;transition:width .4s;background:var(--line)}
+.weak-bar > i.good{background:var(--good)}
+.weak-bar > i.mid{background:var(--warn)}
+.weak-bar > i.low{background:var(--bad)}
+.weak-pct{width:42px;text-align:left;font-size:13px;font-weight:700;color:var(--muted)}
+.weak-tip{margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(255,180,84,.12);
+  border-inline-start:4px solid var(--warn);font-size:13px}
+.weak-tip.good-tip{background:rgba(35,201,139,.12);border-inline-start-color:var(--good)}
+
+/* ---------- כרטיסיות חכמות ---------- */
+.fc-actions{display:flex;gap:10px;justify-content:center;margin-top:16px}
+.fc-badge{display:none;background:rgba(35,201,139,.2);color:var(--good);font-size:11px;
+  padding:2px 8px;border-radius:8px;margin-inline-start:6px}
+.fc-known{color:var(--muted);font-weight:400;font-size:12px}
+#fcMode.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+
+/* ---------- מורה SQL חכם ---------- */
+.lint-item{background:rgba(255,180,84,.12);border-inline-start:4px solid var(--warn);
+  padding:9px 12px;border-radius:9px;margin:6px 0;font-size:14px}
+.lint-item.tip{background:rgba(79,140,255,.1);border-inline-start-color:var(--accent)}
+.expect-h{color:var(--warn);margin:16px 0 8px}
+.kbd-hint{color:var(--muted);font-size:12px;margin-top:-6px}
+
+/* ---------- נגישות ומיקוד ---------- */
+button:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+textarea#sqlInput:focus{border-color:var(--accent)}
+
+/* ---------- מתג ערכת נושא ---------- */
+.theme-btn{background:var(--card);border:1px solid var(--line);color:var(--ink);
+  padding:8px 14px;border-radius:10px;cursor:pointer;font-family:inherit;font-size:14px;transition:.15s}
+.theme-btn:hover{border-color:var(--accent)}
+
+/* ---------- תצוגת הטבלה הרלוונטית לשאלה (קומפקטית, כמו במבחן) ---------- */
+.tbl-preview{background:var(--card2);border:1px dashed var(--line);border-radius:12px;padding:10px 12px;margin:10px 0 6px}
+.tbl-preview-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.tbl-preview-lbl{font-size:13px;font-weight:700;color:var(--accent)}
+.tbl-data-btn{background:transparent;border:1px solid var(--line);color:var(--muted);font-size:12px;
+  padding:3px 10px;border-radius:8px;cursor:pointer;font-family:inherit;transition:.12s}
+.tbl-data-btn:hover{border-color:var(--accent);color:var(--accent)}
+.tbl-line{font-family:Consolas,monospace;direction:ltr;text-align:left;background:var(--code-bg);color:#cfe3ff;
+  padding:7px 12px;border-radius:8px;margin:4px 0;font-size:13.5px;overflow-x:auto;white-space:nowrap}
+.tbl-line b{color:#7fd1ff}
+.tbl-data{margin-top:8px}
+.tbl-one{margin-bottom:12px}
+.tbl-one:last-child{margin-bottom:0}
+.tbl-one-name{font-family:Consolas,monospace;font-weight:700;color:#7fd1ff;direction:ltr;text-align:left;
+  font-size:13px;margin-bottom:5px;background:var(--code-bg);display:inline-block;padding:2px 10px;border-radius:6px}
+.tbl-one .result-table{width:auto;font-size:12px}
+.tbl-more{font-size:11px;color:var(--muted);margin-top:4px;direction:ltr;text-align:left}
+
+/* ---------- מסלול SQL מדורג ---------- */
+.levels-topbar{display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+.levels-progbar{flex:1;min-width:160px;height:12px;background:var(--card2);border-radius:99px;overflow:hidden}
+.levels-progbar > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--good));transition:width .5s}
+.levels-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+.lvl-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;
+  box-shadow:var(--shadow);cursor:pointer;transition:.16s;display:flex;flex-direction:column;gap:6px}
+.lvl-card:not(.locked):hover{transform:translateY(-3px);border-color:var(--accent)}
+.lvl-card.locked{opacity:.6;cursor:not-allowed}
+.lvl-card.complete{border-color:var(--good)}
+.lvl-top{display:flex;justify-content:space-between;align-items:center}
+.lvl-num{font-size:12px;color:var(--muted);font-weight:700}
+.lvl-ic{font-size:20px}
+.lvl-title{margin:0;font-size:18px}
+.lvl-sub{font-size:13px;color:var(--muted);min-height:34px}
+.lvl-tags{display:flex;flex-wrap:wrap;gap:4px;margin:2px 0}
+.lvl-tags code{background:var(--code-bg);color:#7fd1ff;font-size:11px;padding:2px 7px;border-radius:6px;direction:ltr}
+.lvl-bar{height:7px;background:var(--card2);border-radius:99px;overflow:hidden;margin-top:4px}
+.lvl-bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--good));transition:width .4s}
+.lvl-count{font-size:12px;color:var(--muted);margin-top:6px}
+.lvl-locked-txt{font-size:12px;color:var(--muted);margin-top:8px;text-align:center}
+.lvl-btns{display:flex;gap:8px;margin-top:10px}
+.lvl-btns .btn{flex:1}
+.lvl-card.passed{border-color:#e0a92b;box-shadow:0 0 0 1px rgba(224,169,43,.35),var(--shadow)}
+
+/* ---------- פרטי רמה ---------- */
+.lvl-lesson h3{margin:0 0 10px;font-size:18px;border-inline-start:4px solid var(--accent);padding-inline-start:12px}
+.lvl-lesson p,.lvl-lesson li{color:var(--ink2)}
+.lvl-lesson pre{background:var(--code-bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;
+  overflow-x:auto;direction:ltr;text-align:left;font-family:Consolas,monospace;font-size:14px;color:#cfe3ff;line-height:1.6}
+.lvl-lesson code{background:var(--code-bg);color:#7fd1ff;padding:2px 7px;border-radius:6px;direction:ltr;display:inline-block;font-family:Consolas,monospace;font-size:13px}
+.lvl-lesson .callout{background:rgba(79,140,255,.12);border-inline-start:4px solid var(--accent);padding:10px 12px;border-radius:10px;margin:10px 0}
+.lvl-lesson .callout.warn{background:rgba(255,180,84,.12);border-inline-start-color:var(--warn)}
+.lvl-ex-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.hide-hints{font-size:13px;color:var(--muted);cursor:pointer;user-select:none;display:flex;align-items:center;gap:6px}
+.lvl-ex{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.lvl-ex.solved{border-color:var(--good)}
+.lvl-ex-title{display:flex;gap:10px;align-items:flex-start;font-weight:600;margin-bottom:10px}
+.lvl-ex-num{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--card2);display:grid;place-items:center;font-size:13px;font-weight:800}
+.lvl-ex.solved .lvl-ex-num{background:var(--good);color:#fff}
+.lvl-input,.lvl-exam-input{width:100%;min-height:80px;background:var(--code-bg);color:#cfe3ff;border:1px solid var(--line);
+  border-radius:10px;padding:11px;font-family:Consolas,monospace;font-size:14px;direction:ltr;text-align:left;resize:vertical;line-height:1.6;display:block;box-sizing:border-box}
+.lvl-input:focus,.lvl-exam-input:focus{border-color:var(--accent);outline:none}
+.lvl-ex-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.lvl-hint-txt{color:var(--warn);font-size:13px;margin-top:6px}
+.lvl-result{margin-top:8px;overflow:auto}
+.lvl-result .result-table{width:auto}
+
+/* ---------- בחירת סימולציה ---------- */
+.exam-pick{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:760px;margin:0 auto}
+@media(max-width:680px){.exam-pick{grid-template-columns:1fr}}
+.exam-pick .card{text-align:center}
+.exam-pick .card h3{margin-top:0}
+.exam-pick .card p{color:var(--muted);font-size:14px;min-height:60px}

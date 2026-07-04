@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>פורטל מבחן · ניהול ועיצוב בסיסי נתונים</title>
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/styles.css?v=11">
 </head>
 <body>
 
@@ -20,11 +20,14 @@
     <nav class="tabs">
       <button data-view="home" class="active">🏠 בית</button>
       <button data-view="topics">📚 סיכומים</button>
+      <button data-view="examples">✍️ דוגמאות פתורות</button>
       <button data-view="flashcards">🎴 כרטיסיות</button>
       <button data-view="quiz">❓ בוחן</button>
+      <button data-view="sqllevels">🎮 מסלול SQL</button>
       <button data-view="sql">💻 תרגול SQL</button>
-      <button data-view="exam">📝 סימולציית מבחן</button>
+      <button data-view="exam">📝 סימולציה</button>
     </nav>
+    <button class="theme-btn" id="themeBtn" title="החלף ערכת נושא">🌙</button>
   </div>
 </header>
 
@@ -33,46 +36,56 @@
   <!-- ============ בית ============ -->
   <section id="view-home" class="view active">
     <div class="hero">
-      <h2>ברוכים הבאים לפורטל ההכנה 🎯</h2>
-      <p>כל מה שצריך כדי להצליח במבחן: סיכומים ממוקדים לכל נושא, כרטיסיות זיכרון, בוחן אמריקאי עם הסברים, מגרש תרגול SQL חי עם בדיקה אוטומטית, וסימולציית מבחן מלאה בתנאי אמת.</p>
+      <h2>מרכז הבקרה שלך למבחן 🎯</h2>
+      <p>עקוב אחרי ההתקדמות, למד לפי המסלול המומלץ, ותרגל עד שאתה מוכן ל-100.</p>
+      <div class="ready-wrap">
+        <div class="ready-num"><span id="readyPct">0%</span><small>מוכנות למבחן</small></div>
+        <div class="ready-bar"><i id="readyBar"></i></div>
+      </div>
       <div class="stat-row">
-        <div class="stat"><div class="num" id="statTopics">0</div><div class="lbl">נושאים</div></div>
-        <div class="stat"><div class="num" id="statQuiz">0</div><div class="lbl">שאלות אמריקאיות</div></div>
-        <div class="stat"><div class="num" id="statSql">0</div><div class="lbl">תרגילי SQL</div></div>
-        <div class="stat"><div class="num" id="statCards">0</div><div class="lbl">כרטיסיות</div></div>
+        <div class="stat"><div class="num" id="statTopics">0</div><div class="lbl">נושאים שנקראו</div></div>
+        <div class="stat"><div class="num" id="statQuiz">0</div><div class="lbl">שאלות נכונות</div></div>
+        <div class="stat"><div class="num" id="statSql">0</div><div class="lbl">תרגילי SQL שנפתרו</div></div>
+        <div class="stat"><div class="num" id="statLevels">0</div><div class="lbl">רמות SQL שהושלמו</div></div>
+        <div class="stat"><div class="num" id="statExam">0</div><div class="lbl">ציון סימולציה הטוב</div></div>
       </div>
     </div>
 
-    <div class="grid cards" style="grid-template-columns:1fr 1fr;margin-bottom:24px">
-      <div class="card">
-        <h3>📋 מבנה המבחן</h3>
-        <ul class="exam-struct">
-          <li><b>חלק א׳</b> — 15 שאלות אמריקאיות (5 נק' כל אחת = 75 נק')</li>
-          <li><b>חלק ב׳</b> — 5 שאלות פתוחות בכתיבת SQL (25 נק')</li>
-          <li>מרצה: גב' יעל לוי-מימון · פקולטה למנהל עסקים</li>
-        </ul>
+    <div class="home-grid">
+      <div>
+        <h3 class="sec-h">🧭 מסלול הלמידה</h3>
+        <div id="pathList" class="path-list"></div>
       </div>
-      <div class="card">
-        <h3>🧭 איך ללמוד עם הפורטל?</h3>
-        <ul class="exam-struct">
-          <li>1. עברו על <b>הסיכומים</b> נושא-נושא.</li>
-          <li>2. חזרו עם <b>הכרטיסיות</b> על מושגי מפתח.</li>
-          <li>3. תרגלו <b>בוחן</b> ו-<b>SQL חי</b>.</li>
-          <li>4. סיימו ב-<b>סימולציית מבחן</b> מלאה.</li>
-        </ul>
+      <div>
+        <h3 class="sec-h">📉 ניתוח חוזקות וחולשות</h3>
+        <div class="card" id="weakTopics"></div>
+        <h3 class="sec-h" style="margin-top:16px">🔥 דגשים חמים למבחן</h3>
+        <div class="card"><ul id="tipsList" class="tips"></ul></div>
+        <div class="card" style="margin-top:14px">
+          <h3 style="margin:0 0 8px">📋 מבנה המבחן</h3>
+          <ul class="exam-struct">
+            <li><b>חלק א׳</b> — 15 שאלות אמריקאיות (75 נק')</li>
+            <li><b>חלק ב׳</b> — 5 שאלות SQL (25 נק')</li>
+          </ul>
+          <button class="btn ghost small" id="resetProg" style="margin-top:8px">🗑 אפס התקדמות</button>
+        </div>
       </div>
     </div>
-
-    <h3 style="margin:0 0 12px">📚 הנושאים בקורס</h3>
-    <div class="grid cards" id="homeCards"></div>
   </section>
 
   <!-- ============ סיכומים ============ -->
   <section id="view-topics" class="view">
     <h2 class="view-title">📚 סיכומי נושאים</h2>
-    <p class="subtitle">בחרו נושא לקריאה ממוקדת.</p>
+    <p class="subtitle">בחרו נושא לקריאה ממוקדת. שימו לב לתיבות "🎯 דגשים למבחן".</p>
     <div class="topic-nav" id="topicNav"></div>
     <div class="topic-body" id="topicBody"></div>
+  </section>
+
+  <!-- ============ דוגמאות פתורות ============ -->
+  <section id="view-examples" class="view">
+    <h2 class="view-title">✍️ דוגמאות פתורות — שלב אחר שלב</h2>
+    <p class="subtitle">פתרונות מלאים לנושאים הקשים: המרת ERD ל-DSD, נרמול, ובניית שאילתת SQL.</p>
+    <div id="examplesBody"></div>
   </section>
 
   <!-- ============ כרטיסיות ============ -->
@@ -84,26 +97,25 @@
       <span id="fcCounter" style="font-weight:700"></span>
       <button class="btn ghost small" id="fcNext">הבא ←</button>
       <button class="btn small" id="fcShuffle">🔀 ערבב</button>
+      <button class="btn ghost small" id="fcMode">🔁 רק מה שעוד לא ידוע</button>
     </div>
     <div class="flashcard">
       <div class="fc-inner" id="fcInner">
-        <div class="fc-face fc-front">
-          <div class="tag">מושג</div>
-          <div class="txt" id="fcFrontTxt"></div>
-          <div class="fc-hint">לחצו להצגת ההסבר</div>
-        </div>
-        <div class="fc-face fc-back">
-          <div class="tag">הסבר</div>
-          <div class="txt" id="fcBackTxt"></div>
-        </div>
+        <div class="fc-face fc-front"><div class="tag">מושג <span id="fcKnownBadge" class="fc-badge">✓ ידוע</span></div><div class="txt" id="fcFrontTxt"></div><div class="fc-hint">לחצו להצגת ההסבר</div></div>
+        <div class="fc-face fc-back"><div class="tag">הסבר</div><div class="txt" id="fcBackTxt"></div></div>
       </div>
+    </div>
+    <div class="fc-actions">
+      <button class="btn small" id="fcKnow" style="background:linear-gradient(135deg,var(--good),#1ba273)">✓ ידעתי</button>
+      <button class="btn ghost small" id="fcDontKnow">✗ עוד לא — הצג שוב בקרוב</button>
     </div>
   </section>
 
   <!-- ============ בוחן ============ -->
   <section id="view-quiz" class="view">
     <h2 class="view-title">❓ בוחן אמריקאי</h2>
-    <p class="subtitle">15 השאלות מהמבחן לדוגמה. בחרו תשובה — ותקבלו מיד משוב והסבר.</p>
+    <p class="subtitle">מאגר של עשרות שאלות. סננו לפי נושא, בחרו תשובה וקבלו הסבר מיידי.</p>
+    <div class="topic-nav" id="quizFilters"></div>
     <div id="quizResult"></div>
     <div id="quizBody"></div>
     <div class="scorebar">
@@ -112,10 +124,23 @@
     </div>
   </section>
 
+  <!-- ============ מסלול SQL מדורג ============ -->
+  <section id="view-sqllevels" class="view">
+    <h2 class="view-title">🎮 מסלול SQL מדורג</h2>
+    <p class="subtitle">14 רמות ננעלות — כל רמה עם שיעור קצר והרבה תרגול. פותרים הכל, פותחים את הבאה. כך החומר ישב לך לעומק.</p>
+    <div class="levels-topbar">
+      <span id="levelsProgress"></span>
+      <div class="levels-progbar"><i id="levelsProgBar"></i></div>
+    </div>
+    <div id="levelsGrid" class="levels-grid"></div>
+    <div id="levelDetail" class="hidden"></div>
+  </section>
+
   <!-- ============ תרגול SQL ============ -->
   <section id="view-sql" class="view">
     <h2 class="view-title">💻 מגרש תרגול SQL</h2>
-    <p class="subtitle">כתבו שאילתה, הריצו אותה על בסיס נתונים אמיתי, ובדקו אוטומטית מול הפתרון.</p>
+    <p class="subtitle">כתבו שאילתה, הריצו על בסיס נתונים אמיתי, ובדקו אוטומטית מול הפתרון.</p>
+    <div class="topic-nav" id="sqlFilters" style="margin-bottom:14px"></div>
     <div class="sql-layout">
       <aside class="sql-side">
         <h4>בחר שאלה</h4>
@@ -127,18 +152,20 @@
         <div class="prompt-box">
           <div class="q-title" id="sqlPromptTitle"></div>
           <div id="sqlPromptText"></div>
+          <div id="sqlTablePreview"></div>
         </div>
-        <div class="editor-wrap">
-          <textarea id="sqlInput" placeholder="-- כתבו כאן את השאילתה שלכם&#10;SELECT * FROM Students;" spellcheck="false"></textarea>
-        </div>
+        <textarea id="sqlInput" placeholder="-- כתבו כאן את השאילתה שלכם&#10;SELECT * FROM Students;" spellcheck="false"></textarea>
         <div class="sql-actions">
-          <button class="btn" id="sqlRun">▶ הרץ</button>
+          <button class="btn" id="sqlRun" title="Ctrl+Enter">▶ הרץ</button>
           <button class="btn" id="sqlCheck" style="background:linear-gradient(135deg,var(--good),#1ba273)">✓ בדוק תשובה</button>
+          <button class="btn ghost small" id="sqlExpectBtn">🎯 תוצאה רצויה</button>
           <button class="btn ghost small" id="sqlHintBtn">💡 רמז</button>
           <button class="btn ghost small" id="sqlSolBtn">👁 הצג פתרון</button>
           <button class="btn ghost small" id="sqlReset">🗑 נקה</button>
         </div>
+        <div class="kbd-hint">⌨ Ctrl+Enter — הרצה מהירה</div>
         <div id="sqlHint" style="color:var(--warn);font-size:14px"></div>
+        <div id="sqlLint"></div>
         <div class="feedback" id="sqlFeedback"></div>
         <pre class="sol-box" id="sqlSolution"></pre>
         <div class="result-wrap" id="sqlResult"></div>
@@ -147,14 +174,32 @@
     </div>
   </section>
 
-  <!-- ============ סימולציית מבחן ============ -->
+  <!-- ============ סימולציה ============ -->
   <section id="view-exam" class="view">
     <h2 class="view-title">📝 סימולציית מבחן מלאה</h2>
     <div id="examIntro">
-      <div class="card" style="max-width:640px;margin:0 auto;text-align:center">
-        <h3>מבחן בתנאי אמת ⏱</h3>
-        <p style="color:var(--muted)">15 שאלות אמריקאיות (75 נק') + 5 שאלות SQL (25 נק'). אין משוב תוך כדי — הציון יוצג רק בסיום, בדיוק כמו במבחן האמיתי.</p>
-        <button class="btn" id="examStartBtn" style="margin-top:10px">🚀 התחל מבחן</button>
+      <p class="subtitle" style="text-align:center">ארבעה מבחנים מלאים בתנאי אמת — אין משוב תוך כדי, הציון וההסברים מוצגים בסיום.</p>
+      <div class="exam-pick">
+        <div class="card">
+          <h3>📄 מבחן לדוגמה 1</h3>
+          <p>המבחן הרשמי לדוגמה מהקורס.<br>15 שאלות אמריקאיות (75 נק') + 5 שאלות SQL (25 נק').</p>
+          <button class="btn" id="examStart1">🚀 התחל מבחן 1</button>
+        </div>
+        <div class="card">
+          <h3>📄 מבחן תרגול 2</h3>
+          <p>מבחן התרגול הנוסף שקיבלתם.<br>17 שאלות אמריקאיות + 5 שאלות SQL (ציון מנורמל ל-100).</p>
+          <button class="btn" id="examStart2">🚀 התחל מבחן 2</button>
+        </div>
+        <div class="card">
+          <h3>📄 מבחן תרגול 3</h3>
+          <p>מבחן נוסף במתכונת המבחן האמיתי — תרחישים חדשים.<br>15 שאלות אמריקאיות (75 נק') + 5 שאלות SQL (25 נק').</p>
+          <button class="btn" id="examStart3">🚀 התחל מבחן 3</button>
+        </div>
+        <div class="card">
+          <h3>📄 מבחן תרגול 4</h3>
+          <p>מבחן רביעי במתכונת המבחן האמיתי — תרחישים חדשים.<br>15 שאלות אמריקאיות (75 נק') + 5 שאלות SQL (25 נק').</p>
+          <button class="btn" id="examStart4">🚀 התחל מבחן 4</button>
+        </div>
       </div>
     </div>
     <div id="examRun" class="hidden">
@@ -170,11 +215,12 @@
 
 </main>
 
-<footer>
-  נבנה ככלי עזר ללמידה · ניהול ועיצוב בסיסי נתונים (3963) · התוכן מבוסס על חומרי הקורס
-</footer>
+<footer>נבנה ככלי עזר ללמידה · ניהול ועיצוב בסיסי נתונים (3963) · התוכן מבוסס על חומרי הקורס</footer>
 
-<script src="js/content.js"></script>
-<script src="js/app.js"></script>
+<script src="js/content.js?v=11"></script>
+<script src="js/questions.js?v=11"></script>
+<script src="js/sqldata.js?v=11"></script>
+<script src="js/sqllevels.js?v=11"></script>
+<script src="js/app.js?v=11"></script>
 </body>
 </html>

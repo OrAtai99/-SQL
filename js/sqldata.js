@@ -1,0 +1,290 @@
+/* ============================================================
+   סכימת בסיס הנתונים לתרגול + מאגר תרגילי SQL
+   כולל טבלאות משני מבחני התרגול.
+   ============================================================ */
+window.COURSE.sqlSchema = `
+CREATE TABLE Shipments (ShipmentID INTEGER PRIMARY KEY, Region TEXT, Cost INTEGER);
+INSERT INTO Shipments VALUES (1,'North',1000),(2,'North',2000),(3,'South',500),(4,'South',800),(5,'East',3000),(6,'West',2600),(7,'West',100);
+
+CREATE TABLE Clinics (ClinicID INTEGER PRIMARY KEY, ClinicName TEXT);
+INSERT INTO Clinics VALUES (1,'מרפאת הצפון'),(2,'מרפאת המרכז'),(3,'מרפאת הדרום');
+
+CREATE TABLE Doctors (DoctorID INTEGER PRIMARY KEY, DoctorName TEXT, ClinicID INTEGER);
+INSERT INTO Doctors VALUES (10,'דוקטור לוי',1),(11,'דוקטור כהן',1),(12,'דוקטור שרה',2);
+
+CREATE TABLE Products (ProductID INTEGER PRIMARY KEY, Category TEXT, UnitPrice INTEGER, StockQuantity INTEGER);
+INSERT INTO Products VALUES (1,'Electronics',1000,15),(2,'Electronics',500,8),(3,'Food',20,100),(4,'Toys',50,0),(5,'Discontinued',80,25),(6,'Discontinued',120,7);
+
+CREATE TABLE Students (StudentID INTEGER PRIMARY KEY, StudentName TEXT, GPA INTEGER, StartYear INTEGER, Faculty TEXT, Email TEXT);
+INSERT INTO Students VALUES
+ (1,'אבי',90,2019,'Engineering','avi@university.com'),
+ (2,'נועה',88,2020,'Business','noa@gmail.com'),
+ (3,'דן',95,2021,'Engineering','dan@gmail.com'),
+ (4,'מאיה',80,2019,'Business','maya@university.com'),
+ (5,'תום',85,2022,'Engineering','tom@walla.co.il'),
+ (6,'ליה',96,2021,'Arts','lia@university.com');
+
+CREATE TABLE UserLogs (LogID INTEGER PRIMARY KEY, Status TEXT, LogDate TEXT);
+INSERT INTO UserLogs VALUES (1,'Active','2024-01-01'),(2,'Expired','2024-02-01'),(3,'Active',NULL),(4,'Expired',NULL),(5,'Pending','2024-03-01');
+
+CREATE TABLE Departments (DeptID INTEGER PRIMARY KEY, DeptName TEXT);
+INSERT INTO Departments VALUES (1,'Sales'),(2,'IT'),(3,'HR'),(4,'Finance');
+
+CREATE TABLE Employees (EmpID INTEGER PRIMARY KEY, EmpName TEXT, DeptID INTEGER, Salary INTEGER, Bonus INTEGER);
+INSERT INTO Employees VALUES (1,'דנה',1,8000,500),(2,'יוסי',1,12000,NULL),(3,'רון',2,15000,1000),(4,'גל',2,9000,NULL),(5,'מור',3,7000,NULL);
+
+CREATE TABLE Cars (CarID INTEGER PRIMARY KEY, Color TEXT, Price INTEGER, Year INTEGER);
+INSERT INTO Cars VALUES (1,'Red',150000,2020),(2,'Red',80000,2023),(3,'Blue',200000,2024),(4,'Red',50000,2019),(5,'Red',90000,2021);
+
+CREATE TABLE Orders (OrderID INTEGER PRIMARY KEY, CustomerID INTEGER, City TEXT, TotalPrice INTEGER, OrderDate TEXT);
+INSERT INTO Orders VALUES
+ (101,1,'תל אביב',3000,'2022-03-14'),(102,1,'תל אביב',2500,'2023-01-10'),
+ (103,2,'חיפה',800,'2022-11-05'),(104,3,'תל אביב',6000,'2023-05-20'),
+ (105,4,'ירושלים',300,'2022-07-01'),(106,5,'חיפה',2000,'2023-02-15'),
+ (107,2,'חיפה',400,'2023-06-01');
+
+CREATE TABLE Logins (LogID INTEGER PRIMARY KEY, UserID INTEGER, LoginDate TEXT);
+INSERT INTO Logins VALUES (1,101,'2024-05-11'),(2,102,'2025-03-02'),(3,103,'2023-12-31'),(4,101,'2025-01-01'),(5,104,'2024-11-20');
+
+CREATE TABLE Courses (CourseID TEXT PRIMARY KEY, CourseName TEXT, Credits INTEGER);
+INSERT INTO Courses VALUES ('CS101','מבוא למחשבים',3),('DB201','בסיסי נתונים',4),('MA300','אלגברה',5);
+
+CREATE TABLE Enrollments (StudentID INTEGER, CourseID TEXT, Grade INTEGER);
+INSERT INTO Enrollments VALUES (1,'CS101',90),(1,'DB201',85),(2,'CS101',70),(3,'DB201',95),(5,'MA300',88);
+`;
+
+window.COURSE.sqlTables = [
+  { name:"Shipments", cols:"ShipmentID, Region, Cost" },
+  { name:"Clinics", cols:"ClinicID, ClinicName" },
+  { name:"Doctors", cols:"DoctorID, DoctorName, ClinicID" },
+  { name:"Products", cols:"ProductID, Category, UnitPrice, StockQuantity" },
+  { name:"Students", cols:"StudentID, StudentName, GPA, StartYear, Faculty, Email" },
+  { name:"UserLogs", cols:"LogID, Status, LogDate" },
+  { name:"Departments", cols:"DeptID, DeptName" },
+  { name:"Employees", cols:"EmpID, EmpName, DeptID, Salary, Bonus" },
+  { name:"Cars", cols:"CarID, Color, Price, Year" },
+  { name:"Orders", cols:"OrderID, CustomerID, City, TotalPrice, OrderDate" },
+  { name:"Logins", cols:"LogID, UserID, LoginDate" },
+  { name:"Courses", cols:"CourseID, CourseName, Credits" },
+  { name:"Enrollments", cols:"StudentID, CourseID, Grade" }
+];
+
+window.COURSE.sqlQuestions = [
+  /* ===== מבחן לדוגמה 1 (הרשמי) ===== */
+  { id:16, exam:true, topic:"sql-agg", level:"בינוני",
+    prompt:"טבלת Shipments(ShipmentID, Region, Cost). הצג את סכום העלויות הכולל לכל אזור, עבור אזורים שבהם הסכום גבוה מ-2,500.",
+    solution:"SELECT Region, SUM(Cost) AS TotalCost\nFROM Shipments\nGROUP BY Region\nHAVING SUM(Cost) > 2500;",
+    check:"select", hint:"מקבצים לפי Region, סוכמים Cost, ומסננים קבוצות עם HAVING (לא WHERE!)." },
+  { id:17, exam:true, topic:"sql-agg", level:"בינוני",
+    prompt:"טבלאות Clinics(ClinicID, ClinicName) ו-Doctors(DoctorID, DoctorName, ClinicID). הצג את שם המרפאה ומספר הרופאים בכל מרפאה.",
+    solution:"SELECT c.ClinicName, COUNT(d.DoctorID) AS NumDoctors\nFROM Clinics c\nINNER JOIN Doctors d ON d.ClinicID = c.ClinicID\nGROUP BY c.ClinicName;",
+    check:"select", hint:"JOIN לפי ClinicID, COUNT על הרופאים, GROUP BY לפי שם המרפאה." },
+  { id:18, exam:true, topic:"sql-basics", level:"קל",
+    prompt:"טבלת Products(ProductID, Category, UnitPrice, StockQuantity). עדכן את המחיר של כל המוצרים בקטגוריית 'Electronics' כך שיקטן ב-5%.",
+    solution:"UPDATE Products\nSET UnitPrice = UnitPrice * 0.95\nWHERE Category = 'Electronics';",
+    check:"mutate", mutateTable:"Products",
+    hint:"UPDATE ... SET UnitPrice = UnitPrice * 0.95 ... WHERE Category='Electronics'. אל תשכח WHERE!" },
+  { id:19, exam:true, topic:"sql-basics", level:"קל",
+    prompt:"טבלת Students. הצג את כל פרטי הסטודנטים שה-GPA שלהם בין 85 ל-95, ושנת התחלתם אינה 2020.",
+    solution:"SELECT *\nFROM Students\nWHERE GPA BETWEEN 85 AND 95\n  AND StartYear <> 2020;",
+    check:"select", hint:"BETWEEN 85 AND 95 (כולל קצוות) יחד עם StartYear <> 2020." },
+  { id:20, exam:true, topic:"sql-basics", level:"קל",
+    prompt:"טבלת UserLogs(LogID, Status, LogDate). מחק את כל הרשומות שבהן הסטטוס 'Expired' או שהתאריך ריק (NULL).",
+    solution:"DELETE FROM UserLogs\nWHERE Status = 'Expired'\n   OR LogDate IS NULL;",
+    check:"mutate", mutateTable:"UserLogs",
+    hint:"DELETE FROM ... WHERE Status='Expired' OR LogDate IS NULL. לא משווים = NULL!" },
+
+  /* ===== מבחן תרגול 2 ===== */
+  { id:43, exam2:true, topic:"sql-agg", level:"בינוני",
+    prompt:"טבלת Orders(OrderID, CustomerID, City, TotalPrice, OrderDate). הצג את סכום ההזמנות (TotalPrice) עבור כל לקוח, אך ורק עבור לקוחות שסכום הזמנותיהם גבוה מ-5,000 ₪.",
+    solution:"SELECT CustomerID, SUM(TotalPrice) AS Total\nFROM Orders\nGROUP BY CustomerID\nHAVING SUM(TotalPrice) > 5000;",
+    check:"select", hint:"GROUP BY CustomerID, ותנאי על הסכום עם HAVING SUM(TotalPrice) > 5000." },
+  { id:44, exam2:true, topic:"sql-agg", level:"בינוני",
+    prompt:"טבלאות Departments(DeptID, DeptName) ו-Employees(EmpID, EmpName, DeptID). הצג את שם המחלקה ומספר העובדים בכל מחלקה.",
+    solution:"SELECT d.DeptName, COUNT(e.EmpID) AS NumEmployees\nFROM Departments d\nINNER JOIN Employees e ON e.DeptID = d.DeptID\nGROUP BY d.DeptName;",
+    check:"select", hint:"JOIN לפי DeptID, COUNT על העובדים, GROUP BY לפי שם המחלקה — בדיוק כמו שאלת המרפאות!" },
+  { id:45, exam2:true, topic:"sql-basics", level:"קל",
+    prompt:"טבלת Logins(LogID, UserID, LoginDate). מחק את כל הרשומות שבהן התאריך (LoginDate) הוא לפני 01/01/2025.",
+    solution:"DELETE FROM Logins\nWHERE LoginDate < '2025-01-01';",
+    check:"mutate", mutateTable:"Logins",
+    hint:"DELETE ... WHERE LoginDate < '2025-01-01'. בתאריכים משתמשים בפורמט 'YYYY-MM-DD'." },
+  { id:46, exam2:true, topic:"sql-basics", level:"בינוני",
+    prompt:"טבלת Students(StudentID, StudentName, GPA, StartYear, Faculty, Email). הצג את כל פרטי הסטודנטים מהפקולטה 'Engineering' שהאימייל שלהם אינו מסתיים ב-'@university.com'.",
+    solution:"SELECT *\nFROM Students\nWHERE Faculty = 'Engineering'\n  AND Email NOT LIKE '%@university.com';",
+    check:"select", hint:"שני תנאים ב-AND: שוויון על Faculty, ו-NOT LIKE '%@university.com' על האימייל." },
+  { id:47, exam2:true, topic:"sql-basics", level:"קל",
+    prompt:"טבלת Products(ProductID, Category, UnitPrice, StockQuantity). עדכן את כמות המלאי (StockQuantity) ל-0 עבור כל המוצרים מקטגוריה 'Discontinued'.",
+    solution:"UPDATE Products\nSET StockQuantity = 0\nWHERE Category = 'Discontinued';",
+    check:"mutate", mutateTable:"Products",
+    hint:"UPDATE Products SET StockQuantity = 0 WHERE Category='Discontinued'." },
+
+  /* ===== תרגול נוסף — שליפה וסינון ===== */
+  { id:25, exam:false, topic:"sql-basics", level:"קל",
+    prompt:"הצג את כל הרשומות והעמודות בטבלת Students.",
+    solution:"SELECT * FROM Students;", check:"select",
+    hint:"SELECT * FROM Students; — הכוכבית מציגה את כל העמודות." },
+  { id:26, exam:false, topic:"sql-basics", level:"קל",
+    prompt:"טבלת Employees(EmpID, EmpName, DeptID, Salary, Bonus). הצג את שם ושכר העובדים במחלקה מספר 2.",
+    solution:"SELECT EmpName, Salary FROM Employees WHERE DeptID = 2;", check:"select",
+    hint:"SELECT EmpName, Salary ... WHERE DeptID = 2." },
+  { id:27, exam:false, topic:"sql-basics", level:"קל",
+    prompt:"טבלת Cars. הצג את כל הרכבים האדומים (Color = 'Red').",
+    solution:"SELECT * FROM Cars WHERE Color = 'Red';", check:"select",
+    hint:"WHERE Color = 'Red' (שים לב לגרשים סביב הטקסט)." },
+  { id:28, exam:false, topic:"sql-basics", level:"קל",
+    prompt:"טבלת Students. הצג סטודנטים מהפקולטות 'Engineering' או 'Business' (השתמש ב-IN).",
+    solution:"SELECT * FROM Students WHERE Faculty IN ('Engineering','Business');", check:"select",
+    hint:"WHERE Faculty IN ('Engineering','Business')." },
+  { id:29, exam:false, topic:"sql-basics", level:"קל",
+    prompt:"טבלת Products. הצג מוצרים שמחירם (UnitPrice) בין 40 ל-600.",
+    solution:"SELECT * FROM Products WHERE UnitPrice BETWEEN 40 AND 600;", check:"select",
+    hint:"WHERE UnitPrice BETWEEN 40 AND 600 (כולל את הקצוות)." },
+  { id:30, exam:false, topic:"sql-basics", level:"קל",
+    prompt:"טבלת Orders. הצג את רשימת הערים הייחודיות (ללא כפילויות).",
+    solution:"SELECT DISTINCT City FROM Orders;", check:"select",
+    hint:"SELECT DISTINCT City ..." },
+  { id:31, exam:false, topic:"sql-basics", level:"קל",
+    prompt:"טבלת Students. הצג את כל הסטודנטים ממוינים לפי GPA מהגבוה לנמוך.",
+    solution:"SELECT * FROM Students ORDER BY GPA DESC;", check:"select",
+    hint:"ORDER BY GPA DESC בסוף השאילתה." },
+  { id:32, exam:false, topic:"sql-basics", level:"קל",
+    prompt:"טבלת Employees. הצג את שמות העובדים שאין להם בונוס (Bonus ריק).",
+    solution:"SELECT EmpName FROM Employees WHERE Bonus IS NULL;", check:"select",
+    hint:"WHERE Bonus IS NULL — לא = NULL!" },
+  { id:33, exam:false, topic:"sql-basics", level:"בינוני",
+    prompt:"טבלת Cars. הצג רכבים אדומים שמחירם מעל 100,000 או ששנתם אחרי 2022.",
+    solution:"SELECT * FROM Cars WHERE Color = 'Red' AND (Price > 100000 OR Year > 2022);", check:"select",
+    hint:"שים לב לסוגריים סביב ה-OR — אחרת הלוגיקה משתנה." },
+
+  /* ===== תרגול נוסף — אגרגציה, GROUP BY, JOIN ===== */
+  { id:34, exam:false, topic:"sql-agg", level:"קל",
+    prompt:"טבלת Employees. כמה עובדים מקבלים בונוס בפועל (ערך לא-ריק)?",
+    solution:"SELECT COUNT(Bonus) AS WithBonus FROM Employees;", check:"select",
+    hint:"COUNT(Bonus) מתעלם מ-NULL." },
+  { id:35, exam:false, topic:"sql-agg", level:"קל",
+    prompt:"טבלת Employees. מצא את השכר הגבוה ביותר.",
+    solution:"SELECT MAX(Salary) AS MaxSalary FROM Employees;", check:"select",
+    hint:"MAX(Salary)." },
+  { id:36, exam:false, topic:"sql-agg", level:"בינוני",
+    prompt:"טבלאות Departments ו-Employees. הצג לכל מחלקה (בשמה) את השכר הממוצע של עובדיה.",
+    solution:"SELECT d.DeptName, AVG(e.Salary) AS AvgSalary\nFROM Departments d\nINNER JOIN Employees e ON e.DeptID = d.DeptID\nGROUP BY d.DeptName;", check:"select",
+    hint:"JOIN לפי DeptID ואז GROUP BY d.DeptName עם AVG(Salary)." },
+  { id:37, exam:false, topic:"sql-agg", level:"בינוני",
+    prompt:"טבלת Orders. הצג לכל עיר את סך סכומי ההזמנות (TotalPrice).",
+    solution:"SELECT City, SUM(TotalPrice) AS Total FROM Orders GROUP BY City;", check:"select",
+    hint:"GROUP BY City עם SUM(TotalPrice)." },
+  { id:38, exam:false, topic:"sql-agg", level:"מתקדם",
+    prompt:"טבלת Orders. הצג לקוחות (CustomerID) שביצעו יותר מהזמנה אחת, ואת מספר ההזמנות שלהם.",
+    solution:"SELECT CustomerID, COUNT(*) AS Orders FROM Orders GROUP BY CustomerID HAVING COUNT(*) > 1;", check:"select",
+    hint:"GROUP BY CustomerID עם HAVING COUNT(*) > 1." },
+  { id:39, exam:false, topic:"sql-agg", level:"מתקדם",
+    prompt:"טבלאות Departments ו-Employees. הצג מחלקות (בשמן) שבהן השכר הממוצע מעל 9,000, מהגבוה לנמוך.",
+    solution:"SELECT d.DeptName, AVG(e.Salary) AS AvgSalary\nFROM Departments d\nINNER JOIN Employees e ON e.DeptID = d.DeptID\nGROUP BY d.DeptName\nHAVING AVG(e.Salary) > 9000\nORDER BY AvgSalary DESC;", check:"select",
+    hint:"JOIN + GROUP BY + HAVING על הממוצע + ORDER BY ... DESC." },
+  { id:40, exam:false, topic:"sql-agg", level:"בינוני",
+    prompt:"טבלאות Clinics ו-Doctors. הצג את כל המרפאות ומספר הרופאים בכל אחת — כולל מרפאות ללא רופאים (יציגו 0).",
+    solution:"SELECT c.ClinicName, COUNT(d.DoctorID) AS NumDoctors\nFROM Clinics c\nLEFT JOIN Doctors d ON d.ClinicID = c.ClinicID\nGROUP BY c.ClinicName;", check:"select",
+    hint:"כאן צריך LEFT JOIN כדי לשמר מרפאות בלי רופאים. COUNT(d.DoctorID)=0 עבורן." },
+  { id:41, exam:false, topic:"sql-agg", level:"מתקדם",
+    prompt:"טבלאות Students, Enrollments(StudentID, CourseID, Grade), Courses. הצג את שם הסטודנט ושם הקורס לכל רישום.",
+    solution:"SELECT s.StudentName, c.CourseName\nFROM Enrollments e\nJOIN Students s ON s.StudentID = e.StudentID\nJOIN Courses c ON c.CourseID = e.CourseID;", check:"select",
+    hint:"JOIN כפול: Enrollments עם Students לפי StudentID, ועם Courses לפי CourseID." },
+  { id:42, exam:false, topic:"sql-agg", level:"מתקדם",
+    prompt:"טבלאות Students ו-Enrollments. הצג לכל סטודנט את מספר הקורסים שנרשם אליהם — כולל סטודנטים ללא קורסים (0).",
+    solution:"SELECT s.StudentName, COUNT(e.CourseID) AS NumCourses\nFROM Students s\nLEFT JOIN Enrollments e ON e.StudentID = s.StudentID\nGROUP BY s.StudentName;", check:"select",
+    hint:"LEFT JOIN מ-Students, COUNT(e.CourseID), GROUP BY שם הסטודנט." },
+
+  /* ===== תרגול מורחב — סבב שלישי ===== */
+  { id:48, exam:false, topic:"sql-basics", level:"קל",
+    prompt:"טבלת Students. הצג שם ו-GPA של סטודנטים עם GPA מעל 88, ממוינים לפי GPA בסדר עולה.",
+    solution:"SELECT StudentName, GPA\nFROM Students\nWHERE GPA > 88\nORDER BY GPA ASC;", check:"select",
+    hint:"WHERE GPA > 88 ואז ORDER BY GPA ASC (או בלי ASC — זו ברירת המחדל)." },
+  { id:49, exam:false, topic:"sql-basics", level:"קל",
+    prompt:"טבלת Orders. הצג את כל ההזמנות מהעיר 'חיפה'.",
+    solution:"SELECT * FROM Orders WHERE City = 'חיפה';", check:"select",
+    hint:"WHERE City = 'חיפה' — טקסט עטוף בגרשיים בודדים." },
+  { id:50, exam:false, topic:"sql-basics", level:"בינוני",
+    prompt:"טבלת Students. הצג את הסטודנטים שכתובת האימייל שלהם מכילה 'gmail'.",
+    solution:"SELECT * FROM Students WHERE Email LIKE '%gmail%';", check:"select",
+    hint:"LIKE '%gmail%' — אחוזים משני הצדדים = מכיל." },
+  { id:51, exam:false, topic:"sql-basics", level:"בינוני",
+    prompt:"טבלת Cars. הצג את כל הרכבים שאינם אדומים.",
+    solution:"SELECT * FROM Cars WHERE Color <> 'Red';", check:"select",
+    hint:"אפשר Color <> 'Red' או NOT Color = 'Red' — שתי הדרכים נכונות." },
+  { id:52, exam:false, topic:"sql-agg", level:"קל",
+    prompt:"טבלת Students. הצג כמה סטודנטים יש בכל פקולטה.",
+    solution:"SELECT Faculty, COUNT(*) AS NumStudents\nFROM Students\nGROUP BY Faculty;", check:"select",
+    hint:"GROUP BY Faculty עם COUNT(*)." },
+  { id:53, exam:false, topic:"sql-agg", level:"בינוני",
+    prompt:"טבלת Students. הצג את ממוצע ה-GPA לכל פקולטה, רק עבור פקולטות שהממוצע בהן מעל 85.",
+    solution:"SELECT Faculty, AVG(GPA) AS AvgGPA\nFROM Students\nGROUP BY Faculty\nHAVING AVG(GPA) > 85;", check:"select",
+    hint:"GROUP BY Faculty ואז HAVING AVG(GPA) > 85 — תנאי על ממוצע = HAVING." },
+  { id:54, exam:false, topic:"sql-agg", level:"בינוני",
+    prompt:"טבלת Orders. הצג לכל לקוח (CustomerID) את סכום ההזמנה הגבוה ביותר שלו.",
+    solution:"SELECT CustomerID, MAX(TotalPrice) AS MaxOrder\nFROM Orders\nGROUP BY CustomerID;", check:"select",
+    hint:"MAX(TotalPrice) עם GROUP BY CustomerID." },
+  { id:55, exam:false, topic:"sql-agg", level:"מתקדם",
+    prompt:"טבלת Logins(LogID, UserID, LoginDate). כמה משתמשים ייחודיים ביצעו התחברות? (משתמש שהתחבר פעמיים נספר פעם אחת)",
+    solution:"SELECT COUNT(DISTINCT UserID) AS UniqueUsers FROM Logins;", check:"select",
+    hint:"COUNT(DISTINCT UserID) — בדיוק כמו בדוגמת ה-Mobile מהמצגת." },
+  { id:56, exam:false, topic:"sql-agg", level:"מתקדם",
+    prompt:"טבלאות Courses ו-Enrollments. הצג לכל קורס (בשמו) את ממוצע הציונים בו.",
+    solution:"SELECT c.CourseName, AVG(e.Grade) AS AvgGrade\nFROM Courses c\nINNER JOIN Enrollments e ON e.CourseID = c.CourseID\nGROUP BY c.CourseName;", check:"select",
+    hint:"JOIN לפי CourseID ואז GROUP BY שם הקורס עם AVG(Grade)." },
+  { id:57, exam:false, topic:"sql-basics", level:"בינוני",
+    prompt:"טבלת Employees. העלה את השכר של כל עובדי מחלקה מספר 3 ב-10%.",
+    solution:"UPDATE Employees\nSET Salary = Salary * 1.1\nWHERE DeptID = 3;", check:"mutate", mutateTable:"Employees",
+    hint:"UPDATE ... SET Salary = Salary * 1.1 WHERE DeptID = 3. העלאה ב-10% = הכפלה ב-1.1." },
+  { id:58, exam:false, topic:"sql-basics", level:"קל",
+    prompt:"טבלת Orders. מחק את כל ההזמנות שסכומן (TotalPrice) נמוך מ-400.",
+    solution:"DELETE FROM Orders WHERE TotalPrice < 400;", check:"mutate", mutateTable:"Orders",
+    hint:"DELETE FROM Orders WHERE TotalPrice < 400. זכור: בלי WHERE — הכל נמחק!" },
+
+  /* ===== מבחן תרגול 3 — חלק ב' ===== */
+  { id:59, exam3:true, topic:"sql-basics", level:"קל",
+    prompt:"טבלת Cars(CarID, Color, Price, Year). הצג את כל פרטי הרכבים שמחירם בין 60,000 ל-160,000, ושנת הייצור שלהם אינה 2019.",
+    solution:"SELECT *\nFROM Cars\nWHERE Price BETWEEN 60000 AND 160000\n  AND Year <> 2019;",
+    check:"select", hint:"BETWEEN לטווח (כולל קצוות) + Year <> 2019. בדיוק כמו שאלת הסטודנטים מהמבחן הרשמי." },
+  { id:60, exam3:true, topic:"sql-agg", level:"בינוני",
+    prompt:"טבלת Orders(OrderID, CustomerID, City, TotalPrice, OrderDate). הצג לכל עיר את מספר ההזמנות שבוצעו בה, רק עבור ערים עם 2 הזמנות או יותר.",
+    solution:"SELECT City, COUNT(*) AS NumOrders\nFROM Orders\nGROUP BY City\nHAVING COUNT(*) >= 2;",
+    check:"select", hint:"GROUP BY City, ספירה עם COUNT(*), וסינון הקבוצות עם HAVING COUNT(*) >= 2." },
+  { id:61, exam3:true, topic:"sql-agg", level:"בינוני",
+    prompt:"טבלאות Students ו-Enrollments(StudentID, CourseID, Grade). הצג את שם הסטודנט ומספר הקורסים שהוא רשום אליהם (רק סטודנטים שרשומים לקורס כלשהו).",
+    solution:"SELECT s.StudentName, COUNT(e.CourseID) AS NumCourses\nFROM Students s\nINNER JOIN Enrollments e ON e.StudentID = s.StudentID\nGROUP BY s.StudentName;",
+    check:"select", hint:"INNER JOIN לפי StudentID + GROUP BY שם הסטודנט + COUNT." },
+  { id:62, exam3:true, topic:"sql-basics", level:"בינוני",
+    prompt:"טבלת Employees(EmpID, EmpName, DeptID, Salary, Bonus). עדכן את הבונוס ל-0 עבור כל העובדים שאין להם בונוס (ערך ריק).",
+    solution:"UPDATE Employees\nSET Bonus = 0\nWHERE Bonus IS NULL;",
+    check:"mutate", mutateTable:"Employees",
+    hint:"UPDATE ... SET Bonus = 0 WHERE Bonus IS NULL — זהירות: לא כותבים = NULL!" },
+  { id:63, exam3:true, topic:"sql-basics", level:"קל",
+    prompt:"טבלת Cars. מחק את כל הרכבים שיוצרו לפני שנת 2020 או שמחירם נמוך מ-60,000.",
+    solution:"DELETE FROM Cars\nWHERE Year < 2020\n   OR Price < 60000;",
+    check:"mutate", mutateTable:"Cars",
+    hint:"DELETE עם שני תנאים ב-OR: Year < 2020 או Price < 60000." },
+
+  /* ===== מבחן תרגול 4 — חלק ב' ===== */
+  { id:64, exam4:true, topic:"sql-basics", level:"קל",
+    prompt:"טבלת Students. הצג את כל פרטי הסטודנטים שכתובת האימייל שלהם מסתיימת ב-'.com'.",
+    solution:"SELECT *\nFROM Students\nWHERE Email LIKE '%.com';",
+    check:"select", hint:"LIKE '%.com' — האחוז לפני = כל דבר לפני, כלומר מסתיים ב-." },
+  { id:65, exam4:true, topic:"sql-agg", level:"בינוני",
+    prompt:"טבלת Orders. הצג לכל עיר את סך סכומי ההזמנות (TotalPrice), רק עבור ערים שהסכום בהן עולה על 2,000, ממוין מהגבוה לנמוך.",
+    solution:"SELECT City, SUM(TotalPrice) AS Total\nFROM Orders\nGROUP BY City\nHAVING SUM(TotalPrice) > 2000\nORDER BY Total DESC;",
+    check:"select", hint:"GROUP BY + HAVING על הסכום + ORDER BY ... DESC בסוף." },
+  { id:66, exam4:true, topic:"sql-agg", level:"מתקדם",
+    prompt:"טבלאות Departments(DeptID, DeptName) ו-Employees. הצג את כל המחלקות ומספר העובדים בכל אחת — כולל מחלקות ללא עובדים (יציגו 0).",
+    solution:"SELECT d.DeptName, COUNT(e.EmpID) AS NumEmployees\nFROM Departments d\nLEFT JOIN Employees e ON e.DeptID = d.DeptID\nGROUP BY d.DeptName;",
+    check:"select", hint:"כדי לכלול מחלקות ריקות — LEFT JOIN (לא INNER). COUNT(e.EmpID) ייתן 0 עבורן." },
+  { id:67, exam4:true, topic:"sql-basics", level:"קל",
+    prompt:"טבלת Products. עדכן את המחיר (UnitPrice) של כל מוצרי קטגוריית 'Food' כך שיעלה ב-10%.",
+    solution:"UPDATE Products\nSET UnitPrice = UnitPrice * 1.1\nWHERE Category = 'Food';",
+    check:"mutate", mutateTable:"Products",
+    hint:"העלאה ב-10% = הכפלה ב-1.1. אל תשכח את ה-WHERE!" },
+  { id:68, exam4:true, topic:"sql-basics", level:"בינוני",
+    prompt:"טבלת UserLogs(LogID, Status, LogDate). מחק את הרשומות שבהן הסטטוס 'Active' וגם התאריך ריק (NULL).",
+    solution:"DELETE FROM UserLogs\nWHERE Status = 'Active'\n  AND LogDate IS NULL;",
+    check:"mutate", mutateTable:"UserLogs",
+    hint:"שים לב: כאן AND (שני התנאים יחד), ו-IS NULL לבדיקת הריק." }
+];

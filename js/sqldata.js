@@ -380,5 +380,32 @@ window.COURSE.sqlQuestions = [
   { id:88, exam8:true, topic:"sql-agg", level:"בינוני",
     prompt:"טבלת Employees(EmpID, EmpName, DeptID, Salary, Bonus). הצג את שם העובד והבונוס שלו, רק לעובדים שיש להם בונוס (לא ריק), ממוינים מהגבוה לנמוך.",
     solution:"SELECT EmpName, Bonus\nFROM Employees\nWHERE Bonus IS NOT NULL\nORDER BY Bonus DESC;",
-    check:"select", hint:"WHERE Bonus IS NOT NULL ואז ORDER BY Bonus DESC." }
+    check:"select", hint:"WHERE Bonus IS NOT NULL ואז ORDER BY Bonus DESC." },
+
+  /* ===== תרגול INSERT (טבלאות ותרחישים שונים) ===== */
+  { id:89, exam:false, topic:"sql-basics", level:"קל",
+    prompt:"טבלת Courses(CourseID, CourseName, Credits). הוסף קורס חדש: CourseID='CS102', CourseName='מבנה נתונים', Credits=4.",
+    solution:"INSERT INTO Courses VALUES ('CS102', 'מבנה נתונים', 4);",
+    check:"mutate", mutateTable:"Courses",
+    hint:"INSERT INTO Courses VALUES ('CS102', 'מבנה נתונים', 4). שים לב: CourseID הוא טקסט — בגרשיים." },
+  { id:90, exam:false, topic:"sql-basics", level:"קל",
+    prompt:"טבלת Clinics(ClinicID, ClinicName). הוסף מרפאה חדשה: ClinicID=4, ClinicName='מרפאת המזרח'.",
+    solution:"INSERT INTO Clinics VALUES (4, 'מרפאת המזרח');",
+    check:"mutate", mutateTable:"Clinics",
+    hint:"INSERT INTO Clinics VALUES (4, 'מרפאת המזרח'). סדר הערכים לפי סדר העמודות." },
+  { id:91, exam:false, topic:"sql-basics", level:"קל",
+    prompt:"טבלת Doctors(DoctorID, DoctorName, ClinicID). הוסף רופא חדש: DoctorID=13, DoctorName='דוקטור גל', ClinicID=3.",
+    solution:"INSERT INTO Doctors VALUES (13, 'דוקטור גל', 3);",
+    check:"mutate", mutateTable:"Doctors",
+    hint:"INSERT INTO Doctors VALUES (13, 'דוקטור גל', 3)." },
+  { id:92, exam:false, topic:"sql-basics", level:"בינוני",
+    prompt:"טבלת Employees(EmpID, EmpName, DeptID, Salary, Bonus). הוסף עובד חדש בלי לציין בונוס (יישאר ריק): EmpID=6, EmpName='איתי', DeptID=4, Salary=8500.",
+    solution:"INSERT INTO Employees (EmpID, EmpName, DeptID, Salary) VALUES (6, 'איתי', 4, 8500);",
+    check:"mutate", mutateTable:"Employees",
+    hint:"כשמדלגים על עמודה (Bonus), חובה לציין רשימת עמודות מפורשת בסוגריים: INSERT INTO Employees (EmpID, EmpName, DeptID, Salary) VALUES (...)." },
+  { id:93, exam:false, topic:"sql-basics", level:"קל",
+    prompt:"טבלת Logins(LogID, UserID, LoginDate). הוסף רשומת התחברות חדשה: LogID=6, UserID=105, LoginDate='2025-04-01'.",
+    solution:"INSERT INTO Logins VALUES (6, 105, '2025-04-01');",
+    check:"mutate", mutateTable:"Logins",
+    hint:"INSERT INTO Logins VALUES (6, 105, '2025-04-01'). תאריך הוא טקסט — בגרשיים, בפורמט YYYY-MM-DD." }
 ];

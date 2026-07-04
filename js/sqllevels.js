@@ -191,9 +191,15 @@ JOIN Doctors d ON d.ClinicID = c.ClinicID;</pre>
     <pre>INSERT INTO Departments VALUES (5, 'Marketing');
 UPDATE Products SET UnitPrice = UnitPrice * 0.95 WHERE Category = 'Electronics';
 DELETE FROM Orders WHERE TotalPrice < 400;</pre>
+    <p>אם לא רוצים למלא את כל העמודות (למשל להשאיר שדה כ-NULL), חובה לציין <b>רשימת עמודות מפורשת</b> אחרי שם הטבלה:</p>
+    <pre>INSERT INTO Employees (EmpID, EmpName, DeptID, Salary)
+VALUES (6, 'נועה', 2, 9500);</pre>
+    <div class="callout warn">כאן Bonus לא צוין — לכן ייכנס כ-<code>NULL</code> אוטומטית. מספר הערכים ב-VALUES חייב להתאים למספר העמודות שצוינו.</div>
     <div class="callout warn">🚨 <b>UPDATE / DELETE ללא WHERE ישפיעו על כל הרשומות בטבלה!</b> תמיד בדוק את ה-WHERE.</div>`,
   exercises:[
     { prompt:"הוסף מחלקה חדשה: DeptID=5, DeptName='Marketing'.", solution:"INSERT INTO Departments VALUES (5, 'Marketing');", check:"mutate", mutateTable:"Departments", hint:"INSERT INTO Departments VALUES (5, 'Marketing');" },
+    { prompt:"הוסף מוצר חדש: ProductID=7, Category='Books', UnitPrice=45, StockQuantity=20.", solution:"INSERT INTO Products VALUES (7, 'Books', 45, 20);", check:"mutate", mutateTable:"Products", hint:"סדר הערכים חייב להתאים לסדר העמודות: ProductID, Category, UnitPrice, StockQuantity." },
+    { prompt:"הוסף עובד חדש למחלקה 2, בלי לציין בונוס (יישאר ריק): EmpID=6, EmpName='נועה', DeptID=2, Salary=9500.", solution:"INSERT INTO Employees (EmpID, EmpName, DeptID, Salary) VALUES (6, 'נועה', 2, 9500);", check:"mutate", mutateTable:"Employees", hint:"כשלא ממלאים את כל העמודות, חובה רשימת עמודות מפורשת בסוגריים אחרי שם הטבלה." },
     { prompt:"עדכן את מחיר כל מוצרי 'Electronics' כך שיקטן ב-5%.", solution:"UPDATE Products SET UnitPrice = UnitPrice * 0.95 WHERE Category = 'Electronics';", check:"mutate", mutateTable:"Products", hint:"UPDATE ... SET UnitPrice = UnitPrice * 0.95 WHERE Category='Electronics'." },
     { prompt:"העלה את השכר של עובדי מחלקה 3 ב-10%.", solution:"UPDATE Employees SET Salary = Salary * 1.1 WHERE DeptID = 3;", check:"mutate", mutateTable:"Employees", hint:"העלאה ב-10% = הכפלה ב-1.1, עם WHERE DeptID=3." },
     { prompt:"מחק את כל ההזמנות שסכומן (TotalPrice) נמוך מ-400.", solution:"DELETE FROM Orders WHERE TotalPrice < 400;", check:"mutate", mutateTable:"Orders", hint:"DELETE FROM Orders WHERE TotalPrice < 400." },

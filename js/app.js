@@ -428,6 +428,8 @@ function renderQuizFilters(){
     `<button data-f="exam4">⭐ מבחן 4</button>`,
     `<button data-f="exam5">⭐ מבחן 5</button>`,
     `<button data-f="exam6">⭐ מבחן 6</button>`,
+    `<button data-f="exam7">⭐ מבחן 7</button>`,
+    `<button data-f="exam8">⭐ מבחן 8</button>`,
     `<button data-f="mistakes">❌ הטעויות שלי</button>`]
     .concat(topicsUsed.map(tp => `<button data-f="${tp}">${topicName(tp)}</button>`));
   $('#quizFilters').innerHTML = btns.join('');
@@ -443,6 +445,8 @@ function currentQuizSet(){
     quizFilter==='exam4' ? o.q.exam4 :
     quizFilter==='exam5' ? o.q.exam5 :
     quizFilter==='exam6' ? o.q.exam6 :
+    quizFilter==='exam7' ? o.q.exam7 :
+    quizFilter==='exam8' ? o.q.exam8 :
     quizFilter==='mistakes' ? PROG.quiz[o.gi]===0 :
     o.q.topic===quizFilter);
 }
@@ -457,7 +461,7 @@ function renderQuiz(){
     const q=o.q, gi=o.gi;
     const perm = shuffle([...q.options.keys()]); quizPerm[gi] = perm;  // סדר תשובות אקראי
     return `<div class="quiz-q" data-gi="${gi}">
-      <div class="qnum">שאלה ${i+1} ${q.official?'· ⭐ מבחן 1':q.practice?'· ⭐ מבחן 2':q.exam3?'· ⭐ מבחן 3':q.exam4?'· ⭐ מבחן 4':q.exam5?'· ⭐ מבחן 5':q.exam6?'· ⭐ מבחן 6':''} <span class="qtopic">${topicName(q.topic)}</span></div>
+      <div class="qnum">שאלה ${i+1} ${q.official?'· ⭐ מבחן 1':q.practice?'· ⭐ מבחן 2':q.exam3?'· ⭐ מבחן 3':q.exam4?'· ⭐ מבחן 4':q.exam5?'· ⭐ מבחן 5':q.exam6?'· ⭐ מבחן 6':q.exam7?'· ⭐ מבחן 7':q.exam8?'· ⭐ מבחן 8':''} <span class="qtopic">${topicName(q.topic)}</span></div>
       <div class="qtext">${esc(q.q)}</div>
       ${perm.map((orig,disp)=>`<button class="opt" data-gi="${gi}" data-j="${orig}"><span class="mark">${AL[disp]}</span> ${esc(q.options[orig])}</button>`).join('')}
       <div class="explain" id="exp-${gi}"></div>
@@ -791,6 +795,8 @@ function sqlSet(){ return C.sqlQuestions.filter(q =>
   sqlFilter==='exam4' ? q.exam4 :
   sqlFilter==='exam5' ? q.exam5 :
   sqlFilter==='exam6' ? q.exam6 :
+  sqlFilter==='exam7' ? q.exam7 :
+  sqlFilter==='exam8' ? q.exam8 :
   q.topic===sqlFilter); }
 function renderSqlSide(){
   const filters = [`<button data-f="all" class="active">הכל</button>`,
@@ -800,6 +806,8 @@ function renderSqlSide(){
     `<button data-f="exam4">⭐ מבחן 4</button>`,
     `<button data-f="exam5">⭐ מבחן 5</button>`,
     `<button data-f="exam6">⭐ מבחן 6</button>`,
+    `<button data-f="exam7">⭐ מבחן 7</button>`,
+    `<button data-f="exam8">⭐ מבחן 8</button>`,
     `<button data-f="sql-basics">שליפה/סינון</button>`,
     `<button data-f="sql-agg">אגרגציה/JOIN</button>`];
   $('#sqlFilters').innerHTML = filters.join('');
@@ -813,7 +821,7 @@ function renderSqlList(){
   if(!set.length) return;
   $('#sqlQList').innerHTML = set.map(q =>
     `<button class="q-pick ${PROG.sql[q.id]?'done':''}" data-id="${q.id}">
-       שאלה ${q.id} <span class="badge">${q.exam?'⭐ מבחן 1':q.exam2?'⭐ מבחן 2':q.exam3?'⭐ מבחן 3':q.exam4?'⭐ מבחן 4':q.exam5?'⭐ מבחן 5':q.exam6?'⭐ מבחן 6':q.level||''}</span>
+       שאלה ${q.id} <span class="badge">${q.exam?'⭐ מבחן 1':q.exam2?'⭐ מבחן 2':q.exam3?'⭐ מבחן 3':q.exam4?'⭐ מבחן 4':q.exam5?'⭐ מבחן 5':q.exam6?'⭐ מבחן 6':q.exam7?'⭐ מבחן 7':q.exam8?'⭐ מבחן 8':q.level||''}</span>
      </button>`).join('');
   $$('#sqlQList .q-pick').forEach(b => b.onclick = () => selectSqlQ(+b.dataset.id));
   if(!currentSqlQ || !set.find(q=>q.id===currentSqlQ.id)) selectSqlQ(set[0].id);
@@ -822,7 +830,7 @@ function renderSqlList(){
 function selectSqlQ(id){
   currentSqlQ = C.sqlQuestions.find(q => q.id === id);
   $$('#sqlQList .q-pick').forEach(b => b.classList.toggle('active', +b.dataset.id === id));
-  $('#sqlPromptTitle').textContent = `שאלה ${currentSqlQ.id}${currentSqlQ.exam?' (מבחן לדוגמה 1)':currentSqlQ.exam2?' (מבחן תרגול 2)':currentSqlQ.exam3?' (מבחן תרגול 3)':currentSqlQ.exam4?' (מבחן תרגול 4)':currentSqlQ.exam5?' (מבחן תרגול 5)':currentSqlQ.exam6?' (מבחן תרגול 6)':''} · ${currentSqlQ.level||''}`;
+  $('#sqlPromptTitle').textContent = `שאלה ${currentSqlQ.id}${currentSqlQ.exam?' (מבחן לדוגמה 1)':currentSqlQ.exam2?' (מבחן תרגול 2)':currentSqlQ.exam3?' (מבחן תרגול 3)':currentSqlQ.exam4?' (מבחן תרגול 4)':currentSqlQ.exam5?' (מבחן תרגול 5)':currentSqlQ.exam6?' (מבחן תרגול 6)':currentSqlQ.exam7?' (מבחן תרגול 7)':currentSqlQ.exam8?' (מבחן תרגול 8)':''} · ${currentSqlQ.level||''}`;
   $('#sqlPromptText').textContent = currentSqlQ.prompt;
   $('#sqlTablePreview').innerHTML = tablePreview(tablesInQuery(currentSqlQ.solution));
   $('#sqlInput').value = '';
@@ -885,7 +893,9 @@ const EXAMS = {
   3: { mcFlag:'exam3',    sqlFlag:'exam3', title:'מבחן תרגול 3',  pts5:true },
   4: { mcFlag:'exam4',    sqlFlag:'exam4', title:'מבחן תרגול 4',  pts5:true },
   5: { mcFlag:'exam5',    sqlFlag:'exam5', title:'מבחן תרגול 5',  pts5:true },
-  6: { mcFlag:'exam6',    sqlFlag:'exam6', title:'מבחן תרגול 6',  pts5:true }
+  6: { mcFlag:'exam6',    sqlFlag:'exam6', title:'מבחן תרגול 6',  pts5:true },
+  7: { mcFlag:'exam7',    sqlFlag:'exam7', title:'מבחן תרגול 7',  pts5:true },
+  8: { mcFlag:'exam8',    sqlFlag:'exam8', title:'מבחן תרגול 8',  pts5:true }
 };
 let examTimer=null, examSeconds=0, examActive=false, examSelections={}, examMC=[], examSqlQs=[], examKind=1, examPerm=[];
 function startExam(kind){
@@ -983,7 +993,7 @@ function finishExam(){
 }
 function setupExam(){
   const start = k => { ensureSql(); startExam(k); $('#examFinishBtn').classList.remove('hidden'); $('#examRestartBtn').classList.add('hidden'); };
-  [1,2,3,4,5,6].forEach(k => { const b = $('#examStart'+k); if(b) b.onclick = () => start(k); });
+  [1,2,3,4,5,6,7,8].forEach(k => { const b = $('#examStart'+k); if(b) b.onclick = () => start(k); });
   $('#examFinishBtn').onclick = finishExam;
   $('#examRestartBtn').onclick = () => { $('#examRun').classList.add('hidden'); $('#examIntro').classList.remove('hidden'); };
 }

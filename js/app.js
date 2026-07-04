@@ -417,7 +417,7 @@ function setupFlashcards(){
 }
 
 /* ---------------- בוחן (סינון נושא + טעויות) ---------------- */
-let quizFilter = 'all', answeredNow = {};
+let quizFilter = 'all', answeredNow = {}, quizPerm = {};
 function topicName(id){ const t=C.topics.find(x=>x.id===id); return t?t.title:id; }
 function renderQuizFilters(){
   const topicsUsed = [...new Set(C.quiz.map(q=>q.topic))];
@@ -455,10 +455,11 @@ function renderQuiz(){
   }
   $('#quizBody').innerHTML = set.map((o,i) => {
     const q=o.q, gi=o.gi;
+    const perm = shuffle([...q.options.keys()]); quizPerm[gi] = perm;  // סדר תשובות אקראי
     return `<div class="quiz-q" data-gi="${gi}">
       <div class="qnum">שאלה ${i+1} ${q.official?'· ⭐ מבחן 1':q.practice?'· ⭐ מבחן 2':q.exam3?'· ⭐ מבחן 3':q.exam4?'· ⭐ מבחן 4':q.exam5?'· ⭐ מבחן 5':q.exam6?'· ⭐ מבחן 6':''} <span class="qtopic">${topicName(q.topic)}</span></div>
       <div class="qtext">${esc(q.q)}</div>
-      ${q.options.map((op,j)=>`<button class="opt" data-gi="${gi}" data-j="${j}"><span class="mark">${AL[j]}</span> ${esc(op)}</button>`).join('')}
+      ${perm.map((orig,disp)=>`<button class="opt" data-gi="${gi}" data-j="${orig}"><span class="mark">${AL[disp]}</span> ${esc(q.options[orig])}</button>`).join('')}
       <div class="explain" id="exp-${gi}"></div>
     </div>`;
   }).join('');
@@ -468,16 +469,18 @@ function renderQuiz(){
   $('#quizResult').innerHTML = '';
   updateQuizScore();
 }
-function paintAnswer(gi, j){
+function paintAnswer(gi, chosenOrig){
   const q = C.quiz[gi];
-  $$(`.opt[data-gi="${gi}"]`).forEach((o,k) => {
-    if(k === q.correct) o.classList.add('correct');
-    else if(k === j) o.classList.add('wrong');
+  $$(`.opt[data-gi="${gi}"]`).forEach(o => {
+    const orig = +o.dataset.j;
+    if(orig === q.correct) o.classList.add('correct');
+    else if(orig === chosenOrig) o.classList.add('wrong');
     o.style.cursor = 'default';
   });
-  const ok = j === q.correct;
+  const ok = chosenOrig === q.correct;
+  const correctDisp = (quizPerm[gi] || [...q.options.keys()]).indexOf(q.correct);
   const exp = $('#exp-'+gi);
-  if(exp){ exp.innerHTML = `<b>${ok ? '✓ נכון!' : '✗ לא נכון.'}</b> התשובה הנכונה: ${AL[q.correct]}. ${esc(q.explain)}`;
+  if(exp){ exp.innerHTML = `<b>${ok ? '✓ נכון!' : '✗ לא נכון.'}</b> התשובה הנכונה: ${AL[correctDisp]}. ${esc(q.explain)}`;
     exp.classList.add('show'); }
 }
 function pickQuiz(gi,j){
@@ -884,7 +887,7 @@ const EXAMS = {
   5: { mcFlag:'exam5',    sqlFlag:'exam5', title:'מבחן תרגול 5',  pts5:true },
   6: { mcFlag:'exam6',    sqlFlag:'exam6', title:'מבחן תרגול 6',  pts5:true }
 };
-let examTimer=null, examSeconds=0, examActive=false, examSelections={}, examMC=[], examSqlQs=[], examKind=1;
+let examTimer=null, examSeconds=0, examActive=false, examSelections={}, examMC=[], examSqlQs=[], examKind=1, examPerm=[];
 function startExam(kind){
   examKind = kind || 1;
   examActive=true; examSeconds=0; examSelections={};
@@ -899,13 +902,16 @@ function buildExam(){
   examMC = C.quiz.filter(q => q[cfg.mcFlag]);
   const sqlQs = C.sqlQuestions.filter(q => q[cfg.sqlFlag]);
   examSqlQs = sqlQs;
-  const mc = examMC.map((q,i)=>`
+  examPerm = [];
+  const mc = examMC.map((q,i)=>{
+    const perm = shuffle([...q.options.keys()]); examPerm[i] = perm;  // סדר תשובות אקראי
+    return `
     <div class="quiz-q" data-i="${i}">
       <div class="qnum">שאלה ${i+1}${EXAMS[examKind].pts5?" · 5 נק'":''}</div>
       <div class="qtext">${esc(q.q)}</div>
-      ${q.options.map((o,j)=>`<button class="opt ex-opt" data-i="${i}" data-j="${j}"><span class="mark">${AL[j]}</span> ${esc(o)}</button>`).join('')}
+      ${perm.map((orig,disp)=>`<button class="opt ex-opt" data-i="${i}" data-j="${orig}"><span class="mark">${AL[disp]}</span> ${esc(q.options[orig])}</button>`).join('')}
       <div class="explain" id="exam-exp-${i}"></div>
-    </div>`).join('');
+    </div>`; }).join('');
   const sq = sqlQs.map((q,k)=>`
     <div class="prompt-box" data-id="${q.id}" style="margin-bottom:14px">
       <div class="q-title">שאלה ${examMC.length+1+k}</div>
@@ -938,10 +944,11 @@ function finishExam(){
   examMC.forEach((q,i)=>{
     const opts=$$(`#examBody .ex-opt[data-i="${i}"]`);
     const chosen=examSelections[i];
-    opts.forEach((o,k)=>{ if(k===q.correct)o.classList.add('correct'); else if(k===chosen)o.classList.add('wrong'); o.style.cursor='default'; o.onclick=null; });
+    opts.forEach(o=>{ const orig=+o.dataset.j; if(orig===q.correct)o.classList.add('correct'); else if(orig===chosen)o.classList.add('wrong'); o.style.cursor='default'; o.onclick=null; });
     if(chosen===q.correct) mcCorrect++;
+    const correctDisp = (examPerm[i] || [...q.options.keys()]).indexOf(q.correct);
     const exp = $('#exam-exp-'+i);
-    exp.innerHTML = `<b>${chosen===q.correct?'✓ נכון.':'✗ '+(chosen===undefined?'לא נענתה.':'לא נכון.')}</b> התשובה: ${AL[q.correct]}. ${esc(q.explain)}`;
+    exp.innerHTML = `<b>${chosen===q.correct?'✓ נכון.':'✗ '+(chosen===undefined?'לא נענתה.':'לא נכון.')}</b> התשובה: ${AL[correctDisp]}. ${esc(q.explain)}`;
     exp.classList.add('show');
   });
   const sqlQs=examSqlQs; let sqlCorrect=0, detail=[];

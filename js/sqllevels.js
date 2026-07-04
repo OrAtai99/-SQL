@@ -42,7 +42,8 @@ WHERE Salary > 9000;</pre>
     { prompt:"הצג את כל הסטודנטים מפקולטת 'Engineering'.", solution:"SELECT * FROM Students WHERE Faculty = 'Engineering';", check:"select", hint:"WHERE Faculty = 'Engineering' — טקסט בגרשיים." },
     { prompt:"הצג עובדים ששכרם (Salary) גבוה מ-9,000.", solution:"SELECT * FROM Employees WHERE Salary > 9000;", check:"select", hint:"WHERE Salary > 9000 (מספר בלי גרשיים)." },
     { prompt:"הצג מוצרים שמחירם (UnitPrice) נמוך מ-100.", solution:"SELECT * FROM Products WHERE UnitPrice < 100;", check:"select", hint:"WHERE UnitPrice < 100." },
-    { prompt:"הצג את כל הרכבים שאינם אדומים (Color שונה מ-'Red').", solution:"SELECT * FROM Cars WHERE Color <> 'Red';", check:"select", hint:"WHERE Color <> 'Red' — הסימן <> אומר 'שונה מ'." },
+    { prompt:"הצג את כל הרכבים שאינם אדומים (Color שונה מ-'Red').", solution:"SELECT * FROM Cars WHERE Color <> 'Red';", check:"select", hint:"WHERE Color <> 'Red' — הסימן <> אומר 'שונה מ'.",
+      alt:["SELECT * FROM Cars WHERE NOT Color = 'Red';"] },
     { prompt:"הצג סטודנטים עם GPA של 90 ומעלה.", solution:"SELECT * FROM Students WHERE GPA >= 90;", check:"select", hint:"WHERE GPA >= 90." }
   ]
 },
@@ -53,9 +54,11 @@ WHERE Salary > 9000;</pre>
     <div class="callout warn">כשמערבבים AND ו-OR — <b>חובה סוגריים</b> כדי לקבוע את הסדר:<br><code>WHERE Color='Red' AND (Price>100000 OR Year>2022)</code></div>`,
   exercises:[
     { prompt:"הצג סטודנטים מ-'Engineering' שה-GPA שלהם מעל 88.", solution:"SELECT * FROM Students WHERE Faculty = 'Engineering' AND GPA > 88;", check:"select", hint:"שני תנאים מחוברים ב-AND." },
-    { prompt:"הצג עובדים ששייכים למחלקה 1 או למחלקה 2 (DeptID).", solution:"SELECT * FROM Employees WHERE DeptID = 1 OR DeptID = 2;", check:"select", hint:"WHERE DeptID = 1 OR DeptID = 2." },
+    { prompt:"הצג עובדים ששייכים למחלקה 1 או למחלקה 2 (DeptID).", solution:"SELECT * FROM Employees WHERE DeptID = 1 OR DeptID = 2;", check:"select", hint:"WHERE DeptID = 1 OR DeptID = 2.",
+      alt:["SELECT * FROM Employees WHERE DeptID IN (1, 2);"] },
     { prompt:"הצג רכבים אדומים שמחירם מעל 100,000.", solution:"SELECT * FROM Cars WHERE Color = 'Red' AND Price > 100000;", check:"select", hint:"Color='Red' AND Price>100000." },
-    { prompt:"הצג את כל המוצרים שאינם בקטגוריית 'Food' (השתמש ב-NOT).", solution:"SELECT * FROM Products WHERE NOT Category = 'Food';", check:"select", hint:"WHERE NOT Category = 'Food' (או Category <> 'Food')." },
+    { prompt:"הצג את כל המוצרים שאינם בקטגוריית 'Food' (השתמש ב-NOT).", solution:"SELECT * FROM Products WHERE NOT Category = 'Food';", check:"select", hint:"WHERE NOT Category = 'Food' (או Category <> 'Food').",
+      alt:["SELECT * FROM Products WHERE Category <> 'Food';"] },
     { prompt:"הצג רכבים אדומים שמחירם מעל 100,000 או ששנתם אחרי 2022. שים לב לסוגריים!", solution:"SELECT * FROM Cars WHERE Color = 'Red' AND (Price > 100000 OR Year > 2022);", check:"select", hint:"Color='Red' AND (Price>100000 OR Year>2022) — הסוגריים קריטיים." }
   ]
 },
@@ -65,11 +68,16 @@ WHERE Salary > 9000;</pre>
     <pre>WHERE GPA BETWEEN 85 AND 95
 WHERE Faculty IN ('Engineering','Arts')</pre>`,
   exercises:[
-    { prompt:"הצג מוצרים שמחירם (UnitPrice) בין 40 ל-600.", solution:"SELECT * FROM Products WHERE UnitPrice BETWEEN 40 AND 600;", check:"select", hint:"WHERE UnitPrice BETWEEN 40 AND 600 — כולל את הקצוות." },
-    { prompt:"הצג סטודנטים עם GPA בין 85 ל-95.", solution:"SELECT * FROM Students WHERE GPA BETWEEN 85 AND 95;", check:"select", hint:"BETWEEN 85 AND 95." },
-    { prompt:"הצג עובדים ממחלקות 1 ו-3 (השתמש ב-IN).", solution:"SELECT * FROM Employees WHERE DeptID IN (1, 3);", check:"select", hint:"WHERE DeptID IN (1, 3)." },
-    { prompt:"הצג סטודנטים מהפקולטות 'Engineering' או 'Arts' (השתמש ב-IN).", solution:"SELECT * FROM Students WHERE Faculty IN ('Engineering','Arts');", check:"select", hint:"WHERE Faculty IN ('Engineering','Arts')." },
-    { prompt:"הצג רכבים משנות הייצור 2019, 2020 או 2021.", solution:"SELECT * FROM Cars WHERE Year IN (2019, 2020, 2021);", check:"select", hint:"WHERE Year IN (2019, 2020, 2021)." }
+    { prompt:"הצג מוצרים שמחירם (UnitPrice) בין 40 ל-600.", solution:"SELECT * FROM Products WHERE UnitPrice BETWEEN 40 AND 600;", check:"select", hint:"WHERE UnitPrice BETWEEN 40 AND 600 — כולל את הקצוות.",
+      alt:["SELECT * FROM Products WHERE UnitPrice >= 40 AND UnitPrice <= 600;"] },
+    { prompt:"הצג סטודנטים עם GPA בין 85 ל-95.", solution:"SELECT * FROM Students WHERE GPA BETWEEN 85 AND 95;", check:"select", hint:"BETWEEN 85 AND 95.",
+      alt:["SELECT * FROM Students WHERE GPA >= 85 AND GPA <= 95;"] },
+    { prompt:"הצג עובדים ממחלקות 1 ו-3 (השתמש ב-IN).", solution:"SELECT * FROM Employees WHERE DeptID IN (1, 3);", check:"select", hint:"WHERE DeptID IN (1, 3).",
+      alt:["SELECT * FROM Employees WHERE DeptID = 1 OR DeptID = 3;"] },
+    { prompt:"הצג סטודנטים מהפקולטות 'Engineering' או 'Arts' (השתמש ב-IN).", solution:"SELECT * FROM Students WHERE Faculty IN ('Engineering','Arts');", check:"select", hint:"WHERE Faculty IN ('Engineering','Arts').",
+      alt:["SELECT * FROM Students WHERE Faculty = 'Engineering' OR Faculty = 'Arts';"] },
+    { prompt:"הצג רכבים משנות הייצור 2019, 2020 או 2021.", solution:"SELECT * FROM Cars WHERE Year IN (2019, 2020, 2021);", check:"select", hint:"WHERE Year IN (2019, 2020, 2021).",
+      alt:["SELECT * FROM Cars WHERE Year BETWEEN 2019 AND 2021;","SELECT * FROM Cars WHERE Year = 2019 OR Year = 2020 OR Year = 2021;"] }
   ]
 },
 {
@@ -107,7 +115,8 @@ ORDER BY GPA DESC;</pre>
     <p>אפשר למיין לפי כמה עמודות: <code>ORDER BY Faculty ASC, GPA DESC</code></p>`,
   exercises:[
     { prompt:"הצג את כל הסטודנטים ממוינים לפי GPA מהגבוה לנמוך.", solution:"SELECT * FROM Students ORDER BY GPA DESC;", check:"select", hint:"ORDER BY GPA DESC." },
-    { prompt:"הצג את כל העובדים ממוינים לפי שכר מהנמוך לגבוה.", solution:"SELECT * FROM Employees ORDER BY Salary ASC;", check:"select", hint:"ORDER BY Salary ASC (או בלי ASC — זו ברירת המחדל)." },
+    { prompt:"הצג את כל העובדים ממוינים לפי שכר מהנמוך לגבוה.", solution:"SELECT * FROM Employees ORDER BY Salary ASC;", check:"select", hint:"ORDER BY Salary ASC (או בלי ASC — זו ברירת המחדל).",
+      alt:["SELECT * FROM Employees ORDER BY Salary;"] },
     { prompt:"הצג מוצרים ממוינים לפי מחיר מהגבוה לנמוך.", solution:"SELECT * FROM Products ORDER BY UnitPrice DESC;", check:"select", hint:"ORDER BY UnitPrice DESC." },
     { prompt:"הצג סטודנטים ממוינים לפי פקולטה (עולה) ובתוך כל פקולטה לפי GPA (יורד).", solution:"SELECT * FROM Students ORDER BY Faculty ASC, GPA DESC;", check:"select", hint:"ORDER BY Faculty ASC, GPA DESC — מיון מרובה." },
     { prompt:"הצג רכבים אדומים בלבד, ממוינים לפי מחיר מהגבוה לנמוך.", solution:"SELECT * FROM Cars WHERE Color = 'Red' ORDER BY Price DESC;", check:"select", hint:"קודם WHERE Color='Red', ואז ORDER BY Price DESC." }
@@ -167,7 +176,8 @@ HAVING SUM(TotalPrice) > 2000;</pre>
     { prompt:"הצג ערים שסך ההזמנות בהן מעל 2,000.", solution:"SELECT City, SUM(TotalPrice) AS Total FROM Orders GROUP BY City HAVING SUM(TotalPrice) > 2000;", check:"select", hint:"HAVING SUM(TotalPrice) > 2000." },
     { prompt:"הצג מחלקות (DeptID) שהשכר הממוצע בהן מעל 9,000.", solution:"SELECT DeptID, AVG(Salary) AS AvgSalary FROM Employees GROUP BY DeptID HAVING AVG(Salary) > 9000;", check:"select", hint:"HAVING AVG(Salary) > 9000." },
     { prompt:"הצג לקוחות (CustomerID) שביצעו יותר מהזמנה אחת.", solution:"SELECT CustomerID, COUNT(*) AS Num FROM Orders GROUP BY CustomerID HAVING COUNT(*) > 1;", check:"select", hint:"HAVING COUNT(*) > 1." },
-    { prompt:"הצג קטגוריות שיש בהן 2 מוצרים או יותר.", solution:"SELECT Category, COUNT(*) AS Num FROM Products GROUP BY Category HAVING COUNT(*) >= 2;", check:"select", hint:"HAVING COUNT(*) >= 2." }
+    { prompt:"הצג קטגוריות שיש בהן 2 מוצרים או יותר.", solution:"SELECT Category, COUNT(*) AS Num FROM Products GROUP BY Category HAVING COUNT(*) >= 2;", check:"select", hint:"HAVING COUNT(*) >= 2.",
+      alt:["SELECT Category, COUNT(*) AS Num FROM Products GROUP BY Category HAVING COUNT(*) > 1;"] }
   ]
 },
 {
@@ -178,11 +188,15 @@ FROM Clinics c
 JOIN Doctors d ON d.ClinicID = c.ClinicID;</pre>
     <p>נהוג לתת לטבלאות כינוי קצר (c, d) ולהשתמש בו לפני שמות העמודות.</p>`,
   exercises:[
-    { prompt:"הצג את שם המרפאה (ClinicName) ואת שם הרופא (DoctorName) לכל רופא.", solution:"SELECT c.ClinicName, d.DoctorName FROM Clinics c JOIN Doctors d ON d.ClinicID = c.ClinicID;", check:"select", hint:"JOIN Doctors ON d.ClinicID = c.ClinicID." },
-    { prompt:"הצג את שם העובד (EmpName) ואת שם המחלקה שלו (DeptName).", solution:"SELECT e.EmpName, d.DeptName FROM Employees e JOIN Departments d ON e.DeptID = d.DeptID;", check:"select", hint:"JOIN Departments ON e.DeptID = d.DeptID." },
-    { prompt:"הצג את שם המרפאה ואת מספר הרופאים בכל מרפאה (JOIN + GROUP BY).", solution:"SELECT c.ClinicName, COUNT(d.DoctorID) AS Num FROM Clinics c JOIN Doctors d ON d.ClinicID = c.ClinicID GROUP BY c.ClinicName;", check:"select", hint:"JOIN ואז GROUP BY c.ClinicName עם COUNT." },
+    { prompt:"הצג את שם המרפאה (ClinicName) ואת שם הרופא (DoctorName) לכל רופא.", solution:"SELECT c.ClinicName, d.DoctorName FROM Clinics c JOIN Doctors d ON d.ClinicID = c.ClinicID;", check:"select", hint:"JOIN Doctors ON d.ClinicID = c.ClinicID.",
+      alt:["SELECT c.ClinicName, d.DoctorName FROM Clinics c, Doctors d WHERE d.ClinicID = c.ClinicID;"] },
+    { prompt:"הצג את שם העובד (EmpName) ואת שם המחלקה שלו (DeptName).", solution:"SELECT e.EmpName, d.DeptName FROM Employees e JOIN Departments d ON e.DeptID = d.DeptID;", check:"select", hint:"JOIN Departments ON e.DeptID = d.DeptID.",
+      alt:["SELECT e.EmpName, d.DeptName FROM Employees e, Departments d WHERE e.DeptID = d.DeptID;"] },
+    { prompt:"הצג את שם המרפאה ואת מספר הרופאים בכל מרפאה (JOIN + GROUP BY).", solution:"SELECT c.ClinicName, COUNT(d.DoctorID) AS Num FROM Clinics c JOIN Doctors d ON d.ClinicID = c.ClinicID GROUP BY c.ClinicName;", check:"select", hint:"JOIN ואז GROUP BY c.ClinicName עם COUNT.",
+      alt:["SELECT c.ClinicName, COUNT(d.DoctorID) AS Num FROM Doctors d JOIN Clinics c ON d.ClinicID = c.ClinicID GROUP BY c.ClinicName;"] },
     { prompt:"הצג את כל המחלקות ומספר העובדים בכל אחת — כולל מחלקות ללא עובדים (LEFT JOIN).", solution:"SELECT d.DeptName, COUNT(e.EmpID) AS Num FROM Departments d LEFT JOIN Employees e ON e.DeptID = d.DeptID GROUP BY d.DeptName;", check:"select", hint:"LEFT JOIN כדי לכלול מחלקות ריקות (יציגו 0)." },
-    { prompt:"הצג את שם הסטודנט ואת שם הקורס לכל רישום (Enrollments).", solution:"SELECT s.StudentName, co.CourseName FROM Enrollments e JOIN Students s ON s.StudentID = e.StudentID JOIN Courses co ON co.CourseID = e.CourseID;", check:"select", hint:"JOIN כפול: קודם ל-Students ואז ל-Courses." }
+    { prompt:"הצג את שם הסטודנט ואת שם הקורס לכל רישום (Enrollments).", solution:"SELECT s.StudentName, co.CourseName FROM Enrollments e JOIN Students s ON s.StudentID = e.StudentID JOIN Courses co ON co.CourseID = e.CourseID;", check:"select", hint:"JOIN כפול: קודם ל-Students ואז ל-Courses.",
+      alt:["SELECT s.StudentName, co.CourseName FROM Enrollments e JOIN Courses co ON co.CourseID = e.CourseID JOIN Students s ON s.StudentID = e.StudentID;"] }
   ]
 },
 {
@@ -197,13 +211,18 @@ VALUES (6, 'נועה', 2, 9500);</pre>
     <div class="callout warn">כאן Bonus לא צוין — לכן ייכנס כ-<code>NULL</code> אוטומטית. מספר הערכים ב-VALUES חייב להתאים למספר העמודות שצוינו.</div>
     <div class="callout warn">🚨 <b>UPDATE / DELETE ללא WHERE ישפיעו על כל הרשומות בטבלה!</b> תמיד בדוק את ה-WHERE.</div>`,
   exercises:[
-    { prompt:"הוסף מחלקה חדשה: DeptID=5, DeptName='Marketing'.", solution:"INSERT INTO Departments VALUES (5, 'Marketing');", check:"mutate", mutateTable:"Departments", hint:"INSERT INTO Departments VALUES (5, 'Marketing');" },
-    { prompt:"הוסף מוצר חדש: ProductID=7, Category='Books', UnitPrice=45, StockQuantity=20.", solution:"INSERT INTO Products VALUES (7, 'Books', 45, 20);", check:"mutate", mutateTable:"Products", hint:"סדר הערכים חייב להתאים לסדר העמודות: ProductID, Category, UnitPrice, StockQuantity." },
-    { prompt:"הוסף עובד חדש למחלקה 2, בלי לציין בונוס (יישאר ריק): EmpID=6, EmpName='נועה', DeptID=2, Salary=9500.", solution:"INSERT INTO Employees (EmpID, EmpName, DeptID, Salary) VALUES (6, 'נועה', 2, 9500);", check:"mutate", mutateTable:"Employees", hint:"כשלא ממלאים את כל העמודות, חובה רשימת עמודות מפורשת בסוגריים אחרי שם הטבלה." },
+    { prompt:"הוסף מחלקה חדשה: DeptID=5, DeptName='Marketing'.", solution:"INSERT INTO Departments VALUES (5, 'Marketing');", check:"mutate", mutateTable:"Departments", hint:"INSERT INTO Departments VALUES (5, 'Marketing');",
+      alt:["INSERT INTO Departments (DeptID, DeptName) VALUES (5, 'Marketing');"] },
+    { prompt:"הוסף מוצר חדש: ProductID=7, Category='Books', UnitPrice=45, StockQuantity=20.", solution:"INSERT INTO Products VALUES (7, 'Books', 45, 20);", check:"mutate", mutateTable:"Products", hint:"סדר הערכים חייב להתאים לסדר העמודות: ProductID, Category, UnitPrice, StockQuantity.",
+      alt:["INSERT INTO Products (ProductID, Category, UnitPrice, StockQuantity) VALUES (7, 'Books', 45, 20);"] },
+    { prompt:"הוסף עובד חדש למחלקה 2, בלי לציין בונוס (יישאר ריק): EmpID=6, EmpName='נועה', DeptID=2, Salary=9500.", solution:"INSERT INTO Employees (EmpID, EmpName, DeptID, Salary) VALUES (6, 'נועה', 2, 9500);", check:"mutate", mutateTable:"Employees", hint:"כשלא ממלאים את כל העמודות, חובה רשימת עמודות מפורשת בסוגריים אחרי שם הטבלה.",
+      alt:["INSERT INTO Employees VALUES (6, 'נועה', 2, 9500, NULL);"] },
     { prompt:"עדכן את מחיר כל מוצרי 'Electronics' כך שיקטן ב-5%.", solution:"UPDATE Products SET UnitPrice = UnitPrice * 0.95 WHERE Category = 'Electronics';", check:"mutate", mutateTable:"Products", hint:"UPDATE ... SET UnitPrice = UnitPrice * 0.95 WHERE Category='Electronics'." },
     { prompt:"העלה את השכר של עובדי מחלקה 3 ב-10%.", solution:"UPDATE Employees SET Salary = Salary * 1.1 WHERE DeptID = 3;", check:"mutate", mutateTable:"Employees", hint:"העלאה ב-10% = הכפלה ב-1.1, עם WHERE DeptID=3." },
-    { prompt:"מחק את כל ההזמנות שסכומן (TotalPrice) נמוך מ-400.", solution:"DELETE FROM Orders WHERE TotalPrice < 400;", check:"mutate", mutateTable:"Orders", hint:"DELETE FROM Orders WHERE TotalPrice < 400." },
-    { prompt:"מחק מ-UserLogs את הרשומות שהסטטוס בהן 'Expired' או שהתאריך ריק.", solution:"DELETE FROM UserLogs WHERE Status = 'Expired' OR LogDate IS NULL;", check:"mutate", mutateTable:"UserLogs", hint:"DELETE ... WHERE Status='Expired' OR LogDate IS NULL." }
+    { prompt:"מחק את כל ההזמנות שסכומן (TotalPrice) נמוך מ-400.", solution:"DELETE FROM Orders WHERE TotalPrice < 400;", check:"mutate", mutateTable:"Orders", hint:"DELETE FROM Orders WHERE TotalPrice < 400.",
+      alt:["DELETE FROM Orders WHERE NOT TotalPrice >= 400;"] },
+    { prompt:"מחק מ-UserLogs את הרשומות שהסטטוס בהן 'Expired' או שהתאריך ריק.", solution:"DELETE FROM UserLogs WHERE Status = 'Expired' OR LogDate IS NULL;", check:"mutate", mutateTable:"UserLogs", hint:"DELETE ... WHERE Status='Expired' OR LogDate IS NULL.",
+      alt:["DELETE FROM UserLogs WHERE LogDate IS NULL OR Status = 'Expired';"] }
   ]
 }
 ];

@@ -184,7 +184,7 @@ function submitLevelExam(lv){
     } else {
       card.style.borderColor='var(--bad)';
       fb.className='feedback lvl-fb show err';
-      fb.innerHTML=`<b>✗ ${res.msg}</b><br>הפתרון הנכון: <pre style="direction:ltr;text-align:left;margin:6px 0 0;background:var(--code-bg);color:#cfe3ff;padding:8px;border-radius:6px">${esc(ex.solution)}</pre>`;
+      fb.innerHTML=`<b>✗ ${res.msg}</b><br>הפתרון הנכון: <pre style="direction:ltr;text-align:left;margin:6px 0 0;background:var(--code-bg);color:#cfe3ff;padding:8px;border-radius:6px">${esc(ex.solution)}</pre>${altSolutionsHtml(ex)}`;
     }
   });
   const total=lv.exercises.length, pct=Math.round(correct/total*100), pass=pct===100;
@@ -225,6 +225,7 @@ function renderLevelExercises(lv){
       <div class="lvl-lint" data-i="${i}"></div>
       <div class="feedback lvl-fb" data-i="${i}"></div>
       <pre class="sol-box lvl-solbox" data-i="${i}"></pre>
+      <div class="alt-sol lvl-altsol" data-i="${i}"></div>
       <div class="lvl-result" data-i="${i}"></div>
     </div>`).join('');
   const pick = (cls,i) => $(`#lvlExercises .${cls}[data-i="${i}"]`);
@@ -251,7 +252,9 @@ function renderLevelExercises(lv){
   });
   $$('#lvlExercises .lvl-hint').forEach(b => b.onclick = () => pick('lvl-hint-txt',+b.dataset.i).textContent = '💡 ' + lv.exercises[+b.dataset.i].hint);
   $$('#lvlExercises .lvl-sol').forEach(b => b.onclick = () => {
-    const box = pick('lvl-solbox',+b.dataset.i); box.textContent = lv.exercises[+b.dataset.i].solution; box.classList.toggle('show');
+    const ex = lv.exercises[+b.dataset.i];
+    const box = pick('lvl-solbox',+b.dataset.i); box.textContent = ex.solution; box.classList.toggle('show');
+    const altBox = pick('lvl-altsol',+b.dataset.i); altBox.innerHTML = altSolutionsHtml(ex); altBox.classList.toggle('show');
   });
   $$('#lvlExercises .lvl-input').forEach(t => t.addEventListener('keydown', e => {
     if(e.ctrlKey && e.key==='Enter'){ e.preventDefault(); pick('lvl-check',+t.dataset.i).click(); }
@@ -531,6 +534,13 @@ function closest(word, list){
 }
 const SQL_FUNCS = ['SUM','COUNT','AVG','MIN','MAX','UPPER','LOWER','LENGTH','ROUND','STRFTIME'];
 const SQL_KEYWORDS = ['SELECT','FROM','WHERE','GROUP BY','HAVING','ORDER BY','JOIN','INNER JOIN','LEFT JOIN','ON','AND','OR','NOT','DISTINCT','BETWEEN','LIKE','IN','AS','IS NULL','UPDATE','SET','DELETE','INSERT INTO','VALUES','ASC','DESC'];
+
+/* --- הצגת פתרונות חלופיים תקינים (יש כמה דרכים נכונות!) --- */
+function altSolutionsHtml(q){
+  if(!q || !q.alt || !q.alt.length) return '';
+  return `<div class="alt-sol-label">💡 יש עוד דרכים נכונות! לדוגמה:</div>` +
+    q.alt.map(s => `<pre class="alt-sol-pre">${esc(s)}</pre>`).join('');
+}
 
 /* --- תרגום שגיאות SQL לעברית + הצעות תיקון --- */
 function friendlyError(rawMsg){
@@ -839,6 +849,8 @@ function selectSqlQ(id){
   $('#sqlLint').innerHTML = '';
   $('#sqlSolution').className = 'sol-box';
   $('#sqlSolution').textContent = currentSqlQ.solution;
+  $('#sqlAltSolutions').className = 'alt-sol';
+  $('#sqlAltSolutions').innerHTML = altSolutionsHtml(currentSqlQ);
   $('#sqlHint').textContent = '';
 }
 function setupSql(){
@@ -874,7 +886,7 @@ function setupSql(){
     catch(e){ showSqlFeedback({msg:friendlyError(e.message), kind:'err'}); }
   };
   $('#sqlHintBtn').onclick = () => $('#sqlHint').textContent = '💡 ' + currentSqlQ.hint;
-  $('#sqlSolBtn').onclick = () => $('#sqlSolution').classList.toggle('show');
+  $('#sqlSolBtn').onclick = () => { $('#sqlSolution').classList.toggle('show'); $('#sqlAltSolutions').classList.toggle('show'); };
   $('#sqlReset').onclick = () => { $('#sqlInput').value=''; $('#sqlResult').innerHTML=''; $('#sqlLint').innerHTML=''; $('#sqlFeedback').className='feedback'; };
   $('#sqlInput').addEventListener('keydown', e => {
     if(e.ctrlKey && e.key === 'Enter'){ e.preventDefault(); $('#sqlRun').click(); }
@@ -969,7 +981,7 @@ function finishExam(){
     if(res.ok){ sqlCorrect++; ta.style.borderColor='var(--good)'; } else ta.style.borderColor='var(--bad)';
     const exp = $('#exam-sqlexp-'+q.id);
     exp.innerHTML = res.ok ? '<b>✓ נכון.</b>' :
-      `<b>✗ ${res.msg}</b><br>הפתרון: <pre style="direction:ltr;text-align:left;margin:8px 0 0;background:var(--code-bg);color:#cfe3ff;padding:10px;border-radius:8px">${esc(q.solution)}</pre>`;
+      `<b>✗ ${res.msg}</b><br>הפתרון: <pre style="direction:ltr;text-align:left;margin:8px 0 0;background:var(--code-bg);color:#cfe3ff;padding:10px;border-radius:8px">${esc(q.solution)}</pre>${altSolutionsHtml(q)}`;
     exp.classList.add('show');
     detail.push(`<li>שאלה ${q.id}: ${res.ok?'✓ נכון':'✗ שגוי'}</li>`);
   });

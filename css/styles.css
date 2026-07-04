@@ -177,6 +177,11 @@ textarea#sqlInput{width:100%;min-height:150px;background:var(--code-bg);color:#c
 .sol-box{background:var(--code-bg);border:1px solid var(--line);border-radius:10px;padding:12px;direction:ltr;text-align:left;
   font-family:Consolas,monospace;font-size:14px;color:#9fe6c2;white-space:pre-wrap;display:none}
 .sol-box.show{display:block}
+.alt-sol{display:none;margin-top:8px}
+.alt-sol.show{display:block}
+.alt-sol-label{font-size:13px;color:var(--accent2);font-weight:700;margin:4px 0 6px}
+.alt-sol-pre{background:var(--code-bg);border:1px dashed var(--line);border-radius:10px;padding:10px 12px;margin:0 0 8px;
+  direction:ltr;text-align:left;font-family:Consolas,monospace;font-size:13.5px;color:#9fe6c2;white-space:pre-wrap}
 .engine-status{font-size:12px;color:var(--muted);text-align:center;margin-top:8px}
 
 /* ---------- Exam sim ---------- */

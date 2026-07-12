@@ -186,10 +186,23 @@ function updateScore(){
 
 /* ---------- סימולציית מבחן (20 שאלות = 100) ---------- */
 let examTimer=null, examSec=0, examActive=false, examSel={}, examSet=[], examPerm=[];
+/* מחולל מבחן מובנה — 20 שאלות במתכונת המבחן לדוגמה */
+function drawStructuredExam(){
+  const pool=t=>shuffle(S.quiz.map((q,gi)=>({q,gi})).filter(o=>o.q.topic===t));
+  const plan={descriptive:7, regression:5, probability:6, normal:2};
+  let set=[];
+  Object.entries(plan).forEach(([t,n])=>{ set=set.concat(pool(t).slice(0,n)); });
+  if(set.length<20){ // השלמה אם נושא כלשהו קטן מהמכסה
+    const used=new Set(set.map(o=>o.gi));
+    const rest=shuffle(S.quiz.map((q,gi)=>({q,gi})).filter(o=>!used.has(o.gi)));
+    set=set.concat(rest.slice(0,20-set.length));
+  }
+  return shuffle(set).slice(0,20);
+}
 function startExam(){
   examActive=true; examSec=0; examSel={};
   $('#examIntro').classList.add('hidden'); $('#examRun').classList.remove('hidden'); $('#examResult').innerHTML='';
-  examSet=shuffle(S.quiz.map((q,gi)=>({q,gi}))).slice(0,20);
+  examSet=drawStructuredExam();
   examPerm=[];
   $('#examBody').innerHTML=examSet.map((o,i)=>{
     const q=o.q; const perm=shuffle([...q.options.keys()]); examPerm[i]=perm;

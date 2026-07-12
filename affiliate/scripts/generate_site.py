@@ -17,7 +17,7 @@ OUT = ROOT / "site" / "index.html"
 
 BRAND = "MasterStox"
 TAGLINE = "הדילים והגאדג'טים ששווים את הכסף 🛒"
-INSTAGRAM = "https://instagram.com/masterstox"
+INSTAGRAM = "https://instagram.com/master.stox"
 
 
 def card(p: dict) -> str:

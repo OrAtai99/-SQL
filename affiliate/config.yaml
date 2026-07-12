@@ -1,0 +1,71 @@
+# =========================================================================
+#  הגדרות הקמפיין האוטומטי של MasterStox
+#  כאן שולטים על מה מפרסמים, כמה, ובאיזה סגנון — בלי לגעת בקוד.
+# =========================================================================
+
+brand:
+  name: "MasterStox"
+  instagram_handle: "masterstox"
+  tagline: "הגאדג'טים והדילים ששווים את הכסף 🛒"
+
+# נישות/מילות חיפוש שמהן נשלפים מוצרים. הצינור עובר עליהן בסבב.
+niches:
+  - keywords: "smart home gadgets"
+    hashtags: ["#smarthome", "#gadgets", "#homeautomation", "#tech"]
+  - keywords: "kitchen accessories"
+    hashtags: ["#kitchengadgets", "#cooking", "#homehacks"]
+  - keywords: "phone accessories"
+    hashtags: ["#phoneaccessories", "#techdeals", "#gadgets"]
+  - keywords: "fitness gear"
+    hashtags: ["#fitness", "#homegym", "#workout"]
+  - keywords: "car accessories"
+    hashtags: ["#caraccessories", "#cargadgets", "#autolife"]
+
+# סינון מוצרים
+filters:
+  min_rating: 4.5            # דירוג מינימלי (0-5)
+  min_orders: 300           # מינימום הזמנות (הוכחת ביקוש)
+  max_price: 40.0           # מחיר מקסימלי במטבע היעד
+  min_discount_pct: 15      # מינימום אחוז הנחה
+
+# כמה מוצרים למשוך ולפרסם בכל ריצה
+run:
+  products_per_niche: 5      # כמה מוצרים למשוך מכל נישה למאגר האתר
+  instagram_posts_per_run: 1 # כמה פוסטים להעלות לאינסטגרם בכל ריצה (זהירות ממגבלת 25/יום)
+  avoid_repost_days: 30      # לא לפרסם שוב מוצר שכבר פורסם ב-X הימים האחרונים
+
+# תבניות כיתוב לפוסטים (נבחרת אחת אקראית). placeholders זמינים:
+# {title} {price} {currency} {discount} {orders} {rating} {hashtags} {handle}
+caption_templates:
+  - |
+    🔥 מצאתי דיל שאסור לפספס!
+
+    {title}
+
+    💰 רק {price} {currency}  ({discount}% הנחה!)
+    ⭐ {rating}/5 · {orders}+ הזמנות
+
+    🔗 הקישור לרכישה בביו! (@{handle})
+
+    {hashtags}
+  - |
+    😍 הגאדג'ט הזה שווה כל שקל
+
+    {title}
+
+    ✅ {orders}+ אנשים כבר קנו
+    💸 מחיר: {price} {currency} · {discount}% הנחה
+
+    👆 לינק בביו · @{handle}
+
+    {hashtags}
+  - |
+    🛒 דיל היום ב-MasterStox
+
+    {title}
+
+    ⭐ דירוג {rating}/5 · {price} {currency}
+
+    🔗 כל הלינקים בביו!
+
+    {hashtags}

@@ -1,0 +1,56 @@
+name: closeout-verify
+on:
+  push:
+    paths:
+      - '.github/workflows/closeout-verify.yml'
+permissions:
+  contents: read
+  security-events: read
+jobs:
+  verify:
+    if: github.repository == 'OrAtai99/-SQL'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Production deploy check
+        run: |
+          set -e
+          BASE="https://master-stox.vercel.app"
+          echo "== root =="
+          ROOT_CODE=$(curl -s -o /tmp/root.html -w '%{http_code}' "$BASE/")
+          echo "root_status=$ROOT_CODE"
+          echo -n "has_heading="; grep -c "Picks worth your time" /tmp/root.html || true
+          echo -n "commission_count="; grep -o "may earn a commission" /tmp/root.html | wc -l || true
+          echo -n "coll_disc_before_grid="; python3 - <<'PY'
+          import re
+          h=open('/tmp/root.html').read()
+          d=h.find('coll-disc'); g=h.find('id="grid"')
+          print(bool(d!=-1 and g!=-1 and d<g))
+          PY
+          echo "== /review (expect 404) =="
+          curl -s -o /dev/null -w 'review_status=%{http_code}\n' "$BASE/review"
+          echo "== /storefront (expect 404) =="
+          curl -s -o /dev/null -w 'storefront_status=%{http_code}\n' "$BASE/storefront"
+      - name: Code scanning readability probe
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "== code-scanning/alerts (open) =="
+          CODE=$(curl -s -o /tmp/cs.json -w '%{http_code}' \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/OrAtai99/-SQL/code-scanning/alerts?state=open&per_page=100")
+          echo "api_status=$CODE"
+          echo "-- body head --"; head -c 600 /tmp/cs.json; echo
+          if [ "$CODE" = "200" ]; then
+            python3 - <<'PY'
+          import json
+          a=json.load(open('/tmp/cs.json'))
+          sev={}
+          for x in a:
+              s=(x.get('rule') or {}).get('security_severity_level') or 'none'
+              sev[s]=sev.get(s,0)+1
+          print("open_alerts_total=",len(a))
+          print("by_severity=",sev)
+          print("critical_or_high=", sev.get('critical',0)+sev.get('high',0))
+          PY
+          fi

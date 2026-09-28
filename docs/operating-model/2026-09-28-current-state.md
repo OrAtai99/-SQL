@@ -102,3 +102,68 @@ Repo variables (not secrets): `PUBLISH_ENABLED`, `REQUIRE_SIGNED_APPROVALS`, `PU
 3. Enforcement lives in code on an unprotected main; a push can change the gate itself.
 4. Content/trademark claims (MagSafe, Toyota, 4K/8K) and prior Instagram restriction.
 5. Unverified costs/terms: Upload-Post plan, Gemini monthly spend, Vercel plan/commercial use.
+
+---
+
+# שלב 2 — הצעה (ממתין ל"מאשר" של אור; שום דבר עוד לא נוצר)
+
+## סיכום לאור (עברית)
+- **צוות של 6 תפקידים** תחת אדם (מנהל הפרויקט): ארכיטקט ראשי (כולל אחריות קבועה על דקות ועלויות), QA, אבטחה, נתוני מוצר, משפטי/פלטפורמות, ותוכן. כל תפקיד = קובץ הוראות אחד. אין להם כוח לפרסם, לשלם או לאשר.
+- **שערי אישור:** 9 פעולות שרק אתה מאשר. 5 כבר נאכפות בקוד. ל-4 אחרות אני מציע אכיפה, כל אחת כהצעה נפרדת עם בדיקות, ורק באישורך.
+- **שגרות:**
+  - **בוקר:** מייל + התראה בטלפון, עם כרטיס לכל דבר שמחכה לך. זה שדרוג של הדו"ח הקיים ב-08:00.
+  - **אחרי אישורים:** בדיקה שהפרסום אכן יצא.
+  - **ראשון:** סקירת יעילות של עד 10 שורות.
+  - **כולן:** קריאה בלבד.
+- **משמרת לילה:** כמה סוכנים במקביל, כל אחד בעותק משלו. הם לא מוציאים כסף ולא דוחפים. אני בודק כל שינוי ומריץ את כל הבדיקות, ורק אז דוחף.
+- **תיעוד:** כל החלטה שלך נרשמת עם תאריך ב-docs/decisions.
+
+## A. Roles (`.claude/skills/<role>/SKILL.md`, one file each)
+Every file: YAML front matter (`name`, `description` with EN+HE trigger words) and sections Mission · Authority/limits · Sources of truth · How it works · Deliverables · How it talks to Or. No role may publish, spend, approve, message third parties, delete data or push to main; roles produce findings, diffs and proposals for Adam.
+
+| Role (file) | Mission | Authority / limits | Sources of truth | Deliverables | Triggers (EN / HE) |
+|---|---|---|---|---|---|
+| `adam` (project manager) | Orchestrate roles, keep gates, report to Or | Merges/pushes only after the full test gate; never approves for Or | this doc, `docs/decisions/`, routines | morning card, night report | adam, manager, status / אדם, סטטוס, מה המצב |
+| `chief-architect` | Technical authority; ADRs; stage gates. **Standing duty: efficiency** — Actions minutes (shared with Snuggleberry), run time, Gemini/Upload-Post usage, storage (435 MB media in git) | Proposes only; any workflow/code change = separate PR-style proposal with tests + Or's OK | workflows, Actions API (read), `data/*`, cost pages | `docs/adr/NNNN-*.md`; weekly `docs/efficiency/YYYY-MM-DD.md` (≤10 lines, proposals only) | architecture, ADR, efficiency, minutes / ארכיטקטורה, יעילות, דקות |
+| `qa-engineer` | Tests before every push; correctness review of every diff; media QA (safe zone, claims vs listing) | Can block a push; cannot waive a failing test | `tests/`, CI logs, rendered frames | `docs/qa/YYYY-MM-DD-*.md` pass/fail with evidence | QA, tests, review / בדיקות, QA |
+| `security-auditor` | Secrets, workflow permissions, owner-only checks, dependencies, HMAC gate integrity | Read-only; severity-ranked findings | workflows, `src/approval_signature.py`, constraints | `docs/security/YYYY-MM-DD.md` (critical→low) | security, secrets / אבטחה, סודות |
+| `product-data-analyst` (replaces "market analyst": no market/stock data in this project) | Prices, ratings, order counts, commission rates: source = AliExpress API / Portals, freshness + UTC timestamp on every number; spec-vs-title plausibility (4K/720P) | Read-only; never states a number without source+time | `data/catalog.json`, `price_history.json`, Portals reports (via Or) | findings list; weekly commission line | prices, commission, data / מחירים, עמלות, נתונים |
+| `legal-compliance` | Affiliate disclosure (FTC/ASA), platform terms (IG/YT/TikTok/Meta ads), trademarks in titles, seller-image rights, privacy on the site | Advisory; flags block content until Or decides | `docs/rights/`, platform policies (live, dated), `product_audit.py` | `docs/compliance/YYYY-MM-DD.md` | legal, trademark, policy / משפטי, סימן מסחרי, מדיניות |
+| `content-lead` (domain expert) | Hooks, template quality, paid-ad creatives, per-platform rules; runs QA agent rounds | Renders samples only; approval stays with Or | template D, QA reports, performance history | sample videos + QA scores | content, reels, hooks / תוכן, רילס, הוקים |
+
+## B. Gates — actions that need Or's explicit approval each time
+| # | Action | Enforced by code today? | Proposal |
+|---|---|---|---|
+| 1 | Publish a video to any platform | **Yes** — HMAC-signed per-package, per-platform approval; `PUBLISH_ENABLED`; daily limits; reserve-before-upload | keep |
+| 2 | Publish the weekly compilation | **Yes** — owner-only dispatch + `approval_sha256` covering video+text | keep |
+| 3 | Approve content (sign) | **Yes** — owner-only workflows (`author_association == OWNER` + actor) | keep |
+| 4 | Spend on ads (Meta, TikTok) | Outside the system (Or's accounts) | rule: agents never touch ad accounts or money (already practice) |
+| 5 | Change repo variables / secrets / switches | Only Or has settings access | keep; agents may only tell Or where to set |
+| 6 | New products appearing on the public site | **No** — discover-publish auto-approves | proposal P1: new products land as "pending" and a daily card lists them for Or; or Or accepts auto-add explicitly (ADR) |
+| 7 | Paid Gemini usage | **No** per-run cap | proposal P2: monthly call/cost counter in `data/`, build stops at a cap Or sets |
+| 8 | Code/workflow changes to main | **Partly** — test gate script + sensitive-change alert; no branch protection (free private repo) | proposal P3: every change to gate files (`approval_signature`, preflight, workflows) needs an ADR line + Or's "מאשר"; alert escalates to email |
+| 9 | Deleting data / hiding products | **No** (weekly-health hides after 2 failed checks) | proposal P4: hidden products listed in the morning card; nothing is deleted from git |
+P1–P4 are separate proposals, each with tests, reviewed by QA + security, merged only after Or approves.
+
+## C. Routines (proposed, not created)
+| Routine | Time (Israel) | Reads | Output | Writes |
+|---|---|---|---|---|
+| Morning summary (replaces current 08:00 UTC monitor) | 10:45 daily | `approval_digest.py`, preflight per platform, state commits, Actions minutes this month (all repos on the account), watchdog issues | **Email** (RTL cards: one per item waiting for Or + link to the approval page) **+ push** (one line) | none |
+| After-approval follow-up | 13:30 daily | approvals newer than the morning card, journal | 1–2 lines: what published / what's stuck | none |
+| Weekly efficiency review (chief-architect) | Sunday within the morning run | Actions runs (billed per job), Gemini/Upload-Post usage (as available), repo size | `docs/efficiency/YYYY-MM-DD.md` ≤10 lines, top 1–3 in the email | docs-only commit (the only write, if Or approves) |
+All routines: read-only except the docs-only commit Or approves; never approve, publish, dispatch publishing or spend. Actions minutes are read from the API, never estimated.
+
+## D. Night-shift pattern
+1. Adam writes one brief (goal, rules, what not to touch).
+2. 3–6 specialist subagents in parallel, each in its own `git worktree` (never `cp -r`), no paid API calls, no pushes, no dispatch.
+3. Each returns a diff + report with evidence.
+4. Adam reviews every diff, QA runs the full suite + ruff + guards, then one push after checking no publisher is running (one push = one CI run, saves minutes).
+5. Morning report to Or: what merged, what waits for his decision.
+
+## E. Documentation map
+- `CLAUDE.md` — project rules (gates, Hebrew to Or, no secrets in chat, no spending, test gate, worktrees).
+- `docs/decisions/YYYY-MM-DD-*.md` — every decision of Or's, dated (e.g. TikTok first 26/9, template D, weekly video 27/9).
+- `docs/adr/` · `docs/efficiency/` · `docs/security/` · `docs/qa/` · `docs/compliance/` · `docs/runbooks/` (existing RUNBOOK/ROLLBACK/REACTIVATION move or link here) · `docs/prompts/` (routine and agent prompts, versioned).
+
+## F. Phase 3 scope (after "מאשר")
+Additive only: the 7 skill files, `CLAUDE.md`, empty docs folders with README, `docs/decisions/` seeded with past decisions. No code/workflow/schedule/data change. Committed on branch `operating-model` in Master.Stox (note: a branch push may trigger CI minutes; will push after 1/10 or with Or's OK). Routine changes (morning card) are a separate approval.

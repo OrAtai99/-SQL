@@ -1,0 +1,169 @@
+<!--
+MasterStox daily email — design template (Or approved the content 2/10 and asked for a better design).
+How to use: copy this whole file as the email htmlBody and replace every {{...}} with real values.
+Rules:
+- Email-safe: tables + inline styles only (Gmail drops <style> and flex/grid). Keep widths in % with max-width 600.
+- Repeat a row block (marked REPEAT) once per item; delete a whole section's rows when there is no data and write the "אין" line instead.
+- Status chip colours: good #2E4B3C on #E3EDE7 · warning #8A5A00 on #FBEFD5 · bad #9B2C2C on #F8E1E1.
+- Runway bar width = min(runway_days, 30) / 30 * 100 %; colour good ≥10 days, warning 5–9, bad <5.
+- Deltas: compare yesterday with the 7-day daily average; write ▲/▼ and the % only when the 7-day total > 0.
+- Every section header keeps its small source line.
+-->
+<div dir="rtl" style="margin:0;padding:0;background:#F6F2EA;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F6F2EA;">
+<tr><td align="center" style="padding:20px 10px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;font-family:Arial,Helvetica,sans-serif;color:#1C1B19;">
+
+  <!-- Header -->
+  <tr><td style="background:#2E4B3C;border-radius:14px 14px 0 0;padding:18px 22px;">
+    <div style="font-size:12px;letter-spacing:1px;color:#BFD6C8;">MASTERSTOX · דוח יומי</div>
+    <div style="font-size:22px;font-weight:bold;color:#FFFFFF;margin-top:4px;">{{DAY_NAME}} {{DD/MM}}</div>
+    <div style="font-size:12px;color:#BFD6C8;margin-top:2px;">יום אתמול לפי שעון ישראל · נוצר ב-{{HH:MM}}</div>
+  </td></tr>
+
+  <!-- Headline -->
+  <tr><td style="background:#FFFFFF;padding:18px 22px;border-bottom:1px solid #ECE6DB;">
+    <div style="font-size:16px;line-height:1.5;"><b>{{ONE_SENTENCE_MOST_IMPORTANT}}</b></div>
+  </td></tr>
+
+  <!-- KPI tiles: 2 x 2 -->
+  <tr><td style="background:#FFFFFF;padding:16px 16px 6px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <td width="50%" style="padding:6px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F6F2EA;border-radius:10px;">
+            <tr><td style="padding:12px 14px;">
+              <div style="font-size:12px;color:#6E685F;">הזמנות</div>
+              <div style="font-size:28px;font-weight:bold;">{{ORDERS_1D}}</div>
+              <div style="font-size:12px;color:#6E685F;">7 ימים: {{ORDERS_7D}}</div>
+            </td></tr>
+          </table>
+        </td>
+        <td width="50%" style="padding:6px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F6F2EA;border-radius:10px;">
+            <tr><td style="padding:12px 14px;">
+              <div style="font-size:12px;color:#6E685F;">עמלה</div>
+              <div style="font-size:28px;font-weight:bold;">${{COMMISSION_1D}}</div>
+              <div style="font-size:12px;color:#6E685F;">7 ימים: ${{COMMISSION_7D}}</div>
+            </td></tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td width="50%" style="padding:6px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F6F2EA;border-radius:10px;">
+            <tr><td style="padding:12px 14px;">
+              <div style="font-size:12px;color:#6E685F;">מבקרים באתר</div>
+              <div style="font-size:28px;font-weight:bold;">{{VISITORS_1D}} <span style="font-size:13px;color:{{DELTA_COLOR}};">{{VISITORS_DELTA}}</span></div>
+              <div style="font-size:12px;color:#6E685F;">7 ימים: {{VISITORS_7D}}</div>
+            </td></tr>
+          </table>
+        </td>
+        <td width="50%" style="padding:6px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F6F2EA;border-radius:10px;">
+            <tr><td style="padding:12px 14px;">
+              <div style="font-size:12px;color:#6E685F;">קליקים לאליאקספרס</div>
+              <div style="font-size:28px;font-weight:bold;">{{CLICKS_1D}} <span style="font-size:13px;color:#6E685F;">({{CLICK_RATE_1D}}%)</span></div>
+              <div style="font-size:12px;color:#6E685F;">7 ימים: {{CLICKS_7D}} ({{CLICK_RATE_7D}}%)</div>
+            </td></tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+    <div style="font-size:11px;color:#8F887D;padding:2px 6px 8px;">מקורות: הזמנות ועמלה — AliExpress API · מבקרים וקליקים — Vercel Analytics</div>
+  </td></tr>
+
+  <!-- Visitors by country + top pages -->
+  <tr><td style="background:#FFFFFF;padding:14px 22px;border-top:1px solid #ECE6DB;">
+    <div style="font-size:15px;font-weight:bold;margin-bottom:8px;">מאיפה הגיעו אתמול</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;">
+      <!-- REPEAT per country (top 4) -->
+      <tr>
+        <td style="padding:5px 0;width:38%;">{{FLAG}} {{COUNTRY_HE}}</td>
+        <td style="padding:5px 0;"><div style="background:#2E4B3C;height:8px;border-radius:4px;width:{{COUNTRY_SHARE}}%;"></div></td>
+        <td style="padding:5px 0 5px 0;width:12%;text-align:left;font-weight:bold;">{{COUNTRY_VISITORS}}</td>
+      </tr>
+      <!-- /REPEAT -->
+    </table>
+    <div style="font-size:15px;font-weight:bold;margin:16px 0 8px;">הדפים הכי נצפים</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;">
+      <!-- REPEAT per page (top 5; product pages by product name, not id; skip "Others") -->
+      <tr>
+        <td style="padding:5px 0;border-bottom:1px solid #F1ECE3;">{{PAGE_NAME}}</td>
+        <td style="padding:5px 0;border-bottom:1px solid #F1ECE3;text-align:left;font-weight:bold;width:15%;">{{PAGE_VISITORS}}</td>
+      </tr>
+      <!-- /REPEAT -->
+    </table>
+  </td></tr>
+
+  <!-- Posts in the last 24h -->
+  <tr><td style="background:#FFFFFF;padding:14px 22px;border-top:1px solid #ECE6DB;">
+    <div style="font-size:15px;font-weight:bold;margin-bottom:2px;">פורסם ב-24 השעות האחרונות ({{POSTS_COUNT}})</div>
+    <div style="font-size:11px;color:#8F887D;margin-bottom:8px;">מקור: יומן הפרסום</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;">
+      <!-- REPEAT per post. Channel chip colours: Instagram #C13584, YouTube #CC0000, TikTok #111111, Telegram #229ED9 (white text) -->
+      <tr>
+        <td style="padding:6px 0;border-bottom:1px solid #F1ECE3;width:28%;">
+          <span style="display:inline-block;background:{{CHANNEL_COLOR}};color:#FFFFFF;font-size:11px;padding:2px 8px;border-radius:10px;">{{CHANNEL}}</span>
+        </td>
+        <td style="padding:6px 0;border-bottom:1px solid #F1ECE3;">{{PRODUCT_NAME}}</td>
+        <td style="padding:6px 0;border-bottom:1px solid #F1ECE3;text-align:left;width:14%;"><a href="{{POST_URL}}" style="color:#2E4B3C;font-weight:bold;text-decoration:none;">צפה ←</a></td>
+      </tr>
+      <!-- /REPEAT -->
+    </table>
+  </td></tr>
+
+  <!-- Reach -->
+  <tr><td style="background:#FFFFFF;padding:14px 22px;border-top:1px solid #ECE6DB;">
+    <div style="font-size:15px;font-weight:bold;margin-bottom:2px;">חשיפה בערוצים</div>
+    <div style="font-size:11px;color:#8F887D;margin-bottom:8px;">מקור: Upload-Post · סה"כ מצטבר בחשבון, לא רק אתמול</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:13px;text-align:center;">
+      <tr style="color:#6E685F;">
+        <td style="padding:4px;text-align:right;">ערוץ</td><td style="padding:4px;">צפיות</td><td style="padding:4px;">לייקים</td><td style="padding:4px;">שמירות</td><td style="padding:4px;">עוקבים</td>
+      </tr>
+      <!-- REPEAT per channel (instagram, tiktok, youtube); use – for a missing metric -->
+      <tr>
+        <td style="padding:6px 4px;text-align:right;border-top:1px solid #F1ECE3;font-weight:bold;">{{CHANNEL}}</td>
+        <td style="padding:6px 4px;border-top:1px solid #F1ECE3;">{{VIEWS}}</td>
+        <td style="padding:6px 4px;border-top:1px solid #F1ECE3;">{{LIKES}}</td>
+        <td style="padding:6px 4px;border-top:1px solid #F1ECE3;">{{SAVES}}</td>
+        <td style="padding:6px 4px;border-top:1px solid #F1ECE3;">{{FOLLOWERS}}</td>
+      </tr>
+      <!-- /REPEAT -->
+    </table>
+  </td></tr>
+
+  <!-- Runway -->
+  <tr><td style="background:#FFFFFF;padding:14px 22px;border-top:1px solid #ECE6DB;">
+    <div style="font-size:15px;font-weight:bold;margin-bottom:8px;">סרטונים מוכנים לפרסום</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;">
+      <!-- REPEAT per channel -->
+      <tr>
+        <td style="padding:5px 0;width:24%;">{{CHANNEL}}</td>
+        <td style="padding:5px 0;"><div style="background:#ECE6DB;border-radius:4px;"><div style="background:{{RUNWAY_COLOR}};height:8px;border-radius:4px;width:{{RUNWAY_PCT}}%;"></div></div></td>
+        <td style="padding:5px 0;width:18%;text-align:left;font-weight:bold;">{{RUNWAY_DAYS}} ימים</td>
+      </tr>
+      <!-- /REPEAT -->
+    </table>
+  </td></tr>
+
+  <!-- Issues: green box when none, amber/red box per issue -->
+  <tr><td style="background:#FFFFFF;padding:14px 22px 18px;border-top:1px solid #ECE6DB;">
+    <div style="font-size:15px;font-weight:bold;margin-bottom:8px;">תקלות ודברים לטיפול</div>
+    <!-- when there are no issues: -->
+    <div style="background:#E3EDE7;color:#2E4B3C;border-radius:8px;padding:10px 12px;font-size:14px;">✓ אין תקלות</div>
+    <!-- REPEAT per issue instead of the box above -->
+    <div style="background:#FBEFD5;color:#8A5A00;border-radius:8px;padding:10px 12px;font-size:14px;margin-bottom:6px;">{{ISSUE_TEXT}}</div>
+    <!-- /REPEAT -->
+  </td></tr>
+
+  <!-- Footer -->
+  <tr><td style="background:#EFE9DE;border-radius:0 0 14px 14px;padding:14px 22px;font-size:12px;color:#6E685F;line-height:1.6;">
+    אם משהו נראה לא תקין — תענה לי בצ'אט. · <a href="https://master-stox.vercel.app" style="color:#2E4B3C;">לאתר</a><br>
+    — אדם, מנהל הפרויקט
+  </td></tr>
+
+</table>
+</td></tr>
+</table>
+</div>

@@ -21,4 +21,11 @@ Steps:
    - Runway per channel (bar; warning colour under 10 days, bad under 5).
    - Issues: every entry from errors plus anything you noticed (failed workflow runs since yesterday that touch publishing or the site), or the green "אין תקלות" box.
    - Footer line stays.
+
+Extra checks for the Issues section (added 2/10 after the system audit):
+- GitHub Actions minutes cap: if any workflow run in OrAtai99/Master.Stox since yesterday completed as failure within ~15 seconds with no steps/logs (get_job_logs 404), write 🔴 "דקות GitHub נגמרו — הפרסום עוצר עד ה-1 לחודש" (only if that run is in the current UTC month).
+- Gemini credits: if the latest discover-publish or build-packages run log contains "RESOURCE_EXHAUSTED" or "402", write 🔴 "קרדיט Gemini נגמר — סרטונים חדשים ייצאו בלי קריינות ומוצרים חדשים בלי טקסט; צריך להטעין ב-Google AI Studio" (never ask for keys).
+- If the daily-numbers JSON has `app_link_coverage` and share < 0.95, write ⚠️ with the number of live products whose buy button still uses the short link (they show a blank page in the AliExpress app).
+- Any scheduled workflow (publish-slot, build-packages, discover-publish, price-snapshot) whose latest run failed: one line with the workflow name and the failed step.
+
 6. Send with the Gmail send tool to oratai12380@gmail.com. Confirm it was sent. Finish.

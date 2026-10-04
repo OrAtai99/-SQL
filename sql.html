@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>פורטל מבחן · שפת SQL + NoSQL</title>
+  <link rel="stylesheet" href="css/styles.css?v=20">
+</head>
+<body class="p-sql">
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <div class="logo sql-logo">🧩</div>
+      <div>
+        <h1>שפת SQL + NoSQL</h1>
+        <p>פורטל הכנה למבחן · קורס 3964 · אפי פרופוס</p>
+      </div>
+    </div>
+    <nav class="tabs">
+      <button data-view="home" class="active">🏠 בית</button>
+      <button data-view="chapters">📚 סיכומים</button>
+      <button data-view="syntax">📐 תחביר</button>
+      <button data-view="flashcards">🎴 כרטיסיות</button>
+      <button data-view="quiz">❓ בוחן</button>
+      <button data-view="lab">💻 תרגול</button>
+      <button data-view="exam">📝 סימולציה</button>
+    </nav>
+    <a class="theme-btn course-switch" href="index.html" title="חזרה לבחירת קורס">🏫</a>
+    <button class="theme-btn" id="themeBtn" title="החלף ערכת נושא">🌙</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ בית ============ -->
+  <section id="view-home" class="view active">
+    <div class="hero">
+      <h2>מרכז הבקרה שלך למבחן 🎯</h2>
+      <p>המבחן הסופי (90% מהציון) כולל שאלות <b>SQL</b> (Microsoft SQL Server) ו-<b>NoSQL</b> (MongoDB) — וכמו ב"עבודת ישור קו", כל שאלה כדאי לדעת לפתור <b>בשתי השפות</b>. כאן יש מנוע SQL ומנוע MongoDB אמיתיים בדפדפן — כותבים, מריצים ומקבלים בדיקה מיידית.</p>
+      <div class="ready-wrap">
+        <div class="ready-num"><span id="readyPct">0%</span><small>מוכנות למבחן</small></div>
+        <div class="ready-bar"><i id="readyBar"></i></div>
+        <button class="btn" id="homeStart">📝 לסימולציה</button>
+      </div>
+      <div class="stat-row">
+        <div class="stat"><div class="num" id="stRead">0</div><div class="lbl">סיכומים שנקראו</div></div>
+        <div class="stat"><div class="num" id="stQuiz">0</div><div class="lbl">שאלות בוחן נכונות</div></div>
+        <div class="stat"><div class="num" id="stSql">0</div><div class="lbl">תרגילי SQL</div></div>
+        <div class="stat"><div class="num" id="stMongo">0</div><div class="lbl">תרגילי MongoDB</div></div>
+        <div class="stat"><div class="num" id="stDual">0</div><div class="lbl">שאלות כפולות</div></div>
+        <div class="stat"><div class="num" id="stExam">0</div><div class="lbl">ציון סימולציה הטוב</div></div>
+      </div>
+    </div>
+
+    <div class="home-grid">
+      <div>
+        <h3 class="sec-h">💾 סיכומי SQL</h3>
+        <div class="grid cards" id="homeSqlCards"></div>
+        <h3 class="sec-h" style="margin-top:22px">🍃 סיכומי NoSQL</h3>
+        <div class="grid cards" id="homeNosqlCards"></div>
+      </div>
+      <div>
+        <h3 class="sec-h">🔥 דגשים חמים למבחן</h3>
+        <div class="card"><ul id="tipsList" class="tips"></ul></div>
+        <div class="card" style="margin-top:14px">
+          <h3 style="margin:0 0 8px">📋 איך להתכונן</h3>
+          <ol class="exam-struct">
+            <li>קראו את הסיכומים (SQL ואז NoSQL) + דף התחביר.</li>
+            <li>בוחן אמריקאי לפי נושאים — חזקו את החלשים.</li>
+            <li>תרגול חי: SQL, MongoDB, ו<b>שאלות כפולות</b> (SQL + MongoDB).</li>
+            <li>סימולציה במתכונת המבחן — עד שמגיעים ל-90+.</li>
+          </ol>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <h3 style="margin:0 0 8px">📉 ניתוח נושאים</h3>
+          <div id="weakList"></div>
+          <button class="btn ghost small" id="resetProg" style="margin-top:10px">🗑 אפס התקדמות</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ סיכומים ============ -->
+  <section id="view-chapters" class="view">
+    <h2 class="view-title">📚 סיכומים</h2>
+    <p class="subtitle">כל הנושאים מהמצגות, החוברות והעבודות — עם דוגמאות שרצות על הנתונים של הקורס.</p>
+    <div class="topic-nav track-toggle" id="chapTrack"></div>
+    <div class="topic-nav" id="chapNav"></div>
+    <div class="topic-body" id="chapBody"></div>
+  </section>
+
+  <!-- ============ תחביר ============ -->
+  <section id="view-syntax" class="view">
+    <h2 class="view-title">📐 דף תחביר מרוכז</h2>
+    <p class="subtitle">T-SQL ו-MongoDB בטבלה אחת + מילון תרגום בין השפות. מצוין לחזרה של הרגע האחרון.</p>
+    <div id="syntaxBody"></div>
+  </section>
+
+  <!-- ============ כרטיסיות ============ -->
+  <section id="view-flashcards" class="view">
+    <h2 class="view-title">🎴 כרטיסיות זיכרון</h2>
+    <p class="subtitle">לחצו על הכרטיס כדי להפוך אותו.</p>
+    <div class="topic-nav track-toggle" id="fcTrack" style="justify-content:center"></div>
+    <div class="fc-controls">
+      <button class="btn ghost small" id="fcPrev">→ הקודם</button>
+      <span id="fcCounter" style="font-weight:700"></span>
+      <button class="btn ghost small" id="fcNext">הבא ←</button>
+      <button class="btn small" id="fcShuffle">🔀 ערבב</button>
+      <button class="btn ghost small" id="fcMode">🔁 רק מה שעוד לא ידוע</button>
+    </div>
+    <div class="flashcard">
+      <div class="fc-inner" id="fcInner">
+        <div class="fc-face fc-front"><div class="tag">מושג / פקודה <span id="fcKnownBadge" class="fc-badge">✓ ידוע</span></div><div class="txt" id="fcFrontTxt"></div><div class="fc-hint">לחצו להצגת ההסבר</div></div>
+        <div class="fc-face fc-back"><div class="tag">הסבר</div><div class="txt" id="fcBackTxt"></div></div>
+      </div>
+    </div>
+    <div class="fc-actions">
+      <button class="btn small" id="fcKnow" style="background:linear-gradient(135deg,var(--good),#1ba273)">✓ ידעתי</button>
+      <button class="btn ghost small" id="fcDontKnow">✗ עוד לא — הצג שוב בקרוב</button>
+    </div>
+  </section>
+
+  <!-- ============ בוחן ============ -->
+  <section id="view-quiz" class="view">
+    <h2 class="view-title">❓ בוחן אמריקאי</h2>
+    <p class="subtitle">סננו לפי SQL / NoSQL ולפי נושא. הסבר מלא מיד אחרי כל תשובה. סדר התשובות מעורבב בכל פעם.</p>
+    <div id="quizFilters"></div>
+    <div id="quizResult"></div>
+    <div id="quizBody"></div>
+    <div class="scorebar">
+      <span id="quizScore" style="font-weight:700"></span>
+      <button class="btn ghost small" id="quizRestart">🔄 ערבב והתחל מחדש</button>
+    </div>
+  </section>
+
+  <!-- ============ תרגול ============ -->
+  <section id="view-lab" class="view">
+    <h2 class="view-title">💻 תרגול חי</h2>
+    <p class="subtitle">כותבים, מריצים ובודקים מול מנוע אמיתי. SQL נכתב בתחביר <b>SQL Server</b> (TOP, YEAR, ISNULL, + …) ומומר אוטומטית.</p>
+    <div class="lab-tabs" id="labTabs">
+      <button data-lab="dual">🔀 שאלות כפולות: SQL + MongoDB</button>
+      <button data-lab="sql">💾 מעבדת SQL</button>
+      <button data-lab="mongo">🍃 מעבדת MongoDB</button>
+    </div>
+
+    <!-- --- שאלות כפולות --- -->
+    <div class="lab-pane" id="lab-dual">
+      <div id="dualFilters"></div>
+      <div class="sql-layout">
+        <aside class="sql-side">
+          <h4 id="dualListHead">שאלות</h4>
+          <div id="dualQList" class="q-list"></div>
+        </aside>
+        <div class="sql-main">
+          <div class="prompt-box">
+            <div class="q-title" id="dualTitle"></div>
+            <div id="dualPrompt" class="prompt-text"></div>
+            <div id="dualPreview"></div>
+          </div>
+          <div class="dual-grid">
+            <div class="dual-col">
+              <div class="col-title">💾 SQL (T-SQL)</div>
+              <textarea class="code-input" id="dualSql" spellcheck="false" placeholder="SELECT …"></textarea>
+              <div class="sql-actions">
+                <button class="btn small" id="dualSqlRun">▶ הרץ</button>
+                <button class="btn small ok-btn" id="dualSqlCheck">✓ בדוק</button>
+              </div>
+              <div id="dualSqlLint"></div>
+              <div class="feedback" id="dualSqlFb"></div>
+              <div class="result-wrap slim" id="dualSqlRes"></div>
+            </div>
+            <div class="dual-col">
+              <div class="col-title">🍃 MongoDB</div>
+              <textarea class="code-input" id="dualMongo" spellcheck="false" placeholder="db.students.find({ … })"></textarea>
+              <div class="sql-actions">
+                <button class="btn small" id="dualMongoRun">▶ הרץ</button>
+                <button class="btn small ok-btn" id="dualMongoCheck">✓ בדוק</button>
+              </div>
+              <div id="dualMongoLint"></div>
+              <div class="feedback" id="dualMongoFb"></div>
+              <div class="result-wrap slim" id="dualMongoRes"></div>
+            </div>
+          </div>
+          <div><button class="btn ghost small" id="dualSolBtn">👁 הצג פתרונות + הסברים</button></div>
+          <div id="dualSolution" class="sol-wrap hidden"></div>
+          <div class="engine-status" data-engine-status></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- --- מעבדת SQL --- -->
+    <div class="lab-pane hidden" id="lab-sql">
+      <div id="sqlFilters"></div>
+      <div class="sql-layout">
+        <aside class="sql-side">
+          <h4 id="sqlListHead">תרגילים</h4>
+          <div id="sqlQList" class="q-list"></div>
+          <h4 style="margin-top:14px">🗂 הטבלאות</h4>
+          <div class="tbl-list" id="sqlSchemaBox"></div>
+        </aside>
+        <div class="sql-main">
+          <div class="prompt-box">
+            <div class="q-title" id="sqlTitle"></div>
+            <div id="sqlPrompt" class="prompt-text"></div>
+            <div id="sqlPreview"></div>
+          </div>
+          <textarea id="sqlInput" class="code-input big" placeholder="-- כתבו כאן את השאילתה (T-SQL)&#10;SELECT * FROM Students;" spellcheck="false"></textarea>
+          <div class="sql-actions">
+            <button class="btn" id="sqlRun" title="Ctrl+Enter">▶ הרץ</button>
+            <button class="btn ok-btn" id="sqlCheck">✓ בדוק תשובה</button>
+            <button class="btn ghost small" id="sqlExpect">🎯 תוצאה רצויה</button>
+            <button class="btn ghost small" id="sqlHintBtn">💡 רמז</button>
+            <button class="btn ghost small" id="sqlSolBtn">👁 פתרון</button>
+            <button class="btn ghost small" id="sqlReset">🗑 נקה</button>
+          </div>
+          <div id="sqlHint" class="hint-line"></div>
+          <div id="sqlLint"></div>
+          <div class="feedback" id="sqlFeedback"></div>
+          <div id="sqlNotes"></div>
+          <div id="sqlSolution" class="sol-wrap hidden"></div>
+          <div class="result-wrap" id="sqlResult"></div>
+          <div class="engine-status" data-engine-status></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- --- מעבדת MongoDB --- -->
+    <div class="lab-pane hidden" id="lab-mongo">
+      <div id="mongoFilters"></div>
+      <div class="sql-layout">
+        <aside class="sql-side">
+          <h4 id="mongoListHead">תרגילים</h4>
+          <div id="mongoQList" class="q-list"></div>
+          <h4 style="margin-top:14px">🍃 Collections</h4>
+          <div class="tbl-list" id="mongoCollBox"></div>
+        </aside>
+        <div class="sql-main">
+          <div class="prompt-box">
+            <div class="q-title" id="mongoTitle"></div>
+            <div id="mongoPrompt" class="prompt-text"></div>
+            <div id="mongoPreview"></div>
+          </div>
+          <textarea id="mongoInput" class="code-input big" placeholder='db.students.find({ city: "Tel Aviv" })' spellcheck="false"></textarea>
+          <div class="sql-actions">
+            <button class="btn" id="mongoRun" title="Ctrl+Enter">▶ הרץ</button>
+            <button class="btn ok-btn m-graded" id="mongoCheck">✓ בדוק תשובה</button>
+            <button class="btn ghost small m-graded" id="mongoExpect">🎯 תוצאה רצויה</button>
+            <button class="btn ghost small" id="mongoHintBtn">💡 רמז</button>
+            <button class="btn ghost small m-graded" id="mongoSolBtn">👁 פתרון</button>
+            <button class="btn ghost small" id="mongoReset">🗑 נקה</button>
+          </div>
+          <div id="mongoHint" class="hint-line"></div>
+          <div id="mongoLint"></div>
+          <div class="feedback" id="mongoFeedback"></div>
+          <div id="mongoSolution" class="sol-wrap hidden"></div>
+          <div class="result-wrap" id="mongoResult"></div>
+          <div class="engine-status" data-engine-status></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ סימולציה ============ -->
+  <section id="view-exam" class="view">
+    <h2 class="view-title">📝 סימולציית מבחן</h2>
+    <div id="examIntro">
+      <p class="subtitle">כל לחיצה מחוללת מבחן חדש מהמאגר. אפשר להריץ שאילתות במהלך המבחן — הציון והפתרונות מוצגים בסיום.</p>
+      <div class="exam-modes" id="examModes"></div>
+    </div>
+    <div id="examRun" class="hidden">
+      <div class="scorebar exam-bar">
+        <b id="examModeTitle"></b>
+        <span>⏱ <span class="exam-timer" id="examTimer">00:00</span></span>
+        <button class="btn small" id="examFinishBtn">סיים והצג ציון</button>
+        <button class="btn ghost small hidden" id="examRestartBtn">↺ מבחן חדש</button>
+      </div>
+      <div id="examResult"></div>
+      <div id="examBody"></div>
+      <div class="engine-status" data-engine-status></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>נבנה ככלי עזר ללמידה · שפת SQL (3964) · התוכן מבוסס על מצגות הקורס, חוברת ה-JOIN, שיעור ה-NoSQL ועבודות ההגשה</footer>
+
+<script src="js/tsql-compat.js?v=20"></script>
+<script src="js/mongo-sim.js?v=20"></script>
+<script src="js/grader.js?v=20"></script>
+<script src="js/college2-data.js?v=20"></script>
+<script src="js/sql-data.js?v=20"></script>
+<script src="js/nosql-data.js?v=20"></script>
+<script src="js/sql-content.js?v=20"></script>
+<script src="js/nosql-content.js?v=20"></script>
+<script src="js/sql-questions.js?v=20"></script>
+<script src="js/nosql-questions.js?v=20"></script>
+<script src="js/sql-exercises.js?v=20"></script>
+<script src="js/nosql-exercises.js?v=20"></script>
+<script src="js/dual-questions.js?v=20"></script>
+<script src="js/sql-app.js?v=20"></script>
+</body>
+</html>

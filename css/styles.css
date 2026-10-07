@@ -350,7 +350,7 @@ textarea#sqlInput:focus{border-color:var(--accent)}
   display:grid;place-items:center;font-size:34px;margin:0 auto 16px;box-shadow:var(--shadow)}
 .picker-head h1{font-size:30px;margin:0 0 8px}
 .picker-head p{color:var(--muted);margin:0;font-size:16px}
-.picker-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:22px;max-width:1120px;width:100%}
+.picker-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:22px;max-width:840px;width:100%}
 .course-card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:28px 26px;
   box-shadow:var(--shadow);cursor:pointer;transition:.18s;text-decoration:none;color:inherit;display:flex;flex-direction:column}
 .course-card:hover{transform:translateY(-5px);border-color:var(--accent);box-shadow:0 14px 40px rgba(40,60,110,.18)}
@@ -497,4 +497,91 @@ textarea#sqlInput:focus{border-color:var(--accent)}
 @media(max-width:640px){
   .p-sql .topic-body table.mini, .p-sql .topic-body table.dict-table, .p-sql .topic-body table.mini-table{display:block;overflow-x:auto;max-width:100%}
   .p-sql .topic-body section{padding:16px 14px}
+}
+
+/* ============================================================
+   קורס 7186 — מבוא להגנת סייבר
+   ============================================================ */
+.course-card .cc-ic.cyber{background:linear-gradient(135deg,#d6336c,#7048e8)}
+.course-card.cyber .cc-go{background:linear-gradient(135deg,#d6336c,#7048e8)}
+.brand .logo.cyber-logo{background:linear-gradient(135deg,#d6336c,#7048e8)}
+.p-cyber .cyber-hero{background:linear-gradient(135deg,rgba(214,51,108,.14),rgba(112,72,232,.14))}
+.p-cyber .lesson-cards{grid-template-columns:1fr}
+.p-cyber .home-card.done-card{border-color:var(--good)}
+.p-cyber .hc-sub{font-size:12.5px;color:var(--muted)}
+.p-cyber .topic-body h4{margin:18px 0 8px;font-size:16.5px;color:var(--ink)}
+.p-cyber .topic-body h4.lesson-sub{margin-top:28px;padding-top:14px;border-top:1px dashed var(--line);font-size:18px}
+.p-cyber .topic-body table.mini{width:100%;border-collapse:collapse;margin:10px 0;font-size:14px}
+.p-cyber .topic-body table.mini th,.p-cyber .topic-body table.mini td{border:1px solid var(--line);padding:7px 10px;text-align:right;vertical-align:top}
+.p-cyber .topic-body table.mini th{background:var(--card2)}
+.p-cyber .topic-body .callout.warn{background:rgba(255,180,84,.12);border-inline-start-color:var(--warn)}
+.p-cyber .lesson-summary{font-size:15px}
+.p-cyber .lesson-actions{margin:22px 0 4px;text-align:center}
+.p-cyber .chap-nav-bottom{display:flex;justify-content:space-between;gap:10px;margin-top:22px;padding-top:14px;border-top:1px dashed var(--line);flex-wrap:wrap}
+.p-cyber .en{font-size:12.5px;color:var(--muted);font-weight:500;direction:ltr;unicode-bidi:isolate}
+
+/* מילון מושגים */
+.gloss-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.gloss-search{flex:1;min-width:220px;padding:10px 14px;border-radius:11px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-family:inherit;font-size:15px}
+.gloss-search:focus{outline:none;border-color:var(--accent)}
+#glossHide.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+.gloss-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin:10px 0}
+.gloss-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:6px}
+.gloss-card.known{border-color:var(--good)}
+.gc-term{font-weight:800;font-size:16px;color:var(--ink)}
+.gc-def{color:var(--ink2);font-size:14.5px;line-height:1.65}
+.gc-ex{color:var(--muted);font-size:13px;border-inline-start:3px solid var(--line);padding-inline-start:8px}
+.gc-meta{color:var(--muted);font-size:11.5px;margin-top:auto}
+.hide-defs .gloss-card{cursor:pointer}
+.hide-defs .gloss-card .gc-def,.hide-defs .gloss-card .gc-ex{filter:blur(6px);user-select:none;transition:filter .2s}
+.hide-defs .gloss-card.reveal .gc-def,.hide-defs .gloss-card.reveal .gc-ex{filter:none}
+
+/* תהליכים */
+.proc-card{margin-bottom:16px}
+.p-cyber .topic-body .proc-card{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.pc-head{font-size:17px;margin-bottom:4px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pc-purpose{color:var(--muted);font-size:14px;margin-bottom:10px}
+.proc-flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:8px}
+.proc-step{display:flex;gap:9px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;flex:1 1 180px;min-width:0}
+.ps-n{width:28px;height:28px;flex-shrink:0;border-radius:50%;background:linear-gradient(135deg,#d6336c,#7048e8);color:#fff;display:grid;place-items:center;font-weight:800;font-size:14px}
+.ps-name{font-weight:700;font-size:14.5px}
+.ps-desc{color:var(--muted);font-size:13px;line-height:1.55;margin-top:2px}
+.ps-arrow{align-self:center;color:var(--muted);font-size:18px}
+@media(max-width:640px){.ps-arrow{display:none}.proc-step{flex-basis:100%}}
+.pc-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.badge-pill.ok{background:rgba(35,201,139,.18);color:var(--good)}
+.order-game{background:var(--card2);border:1px dashed var(--line);border-radius:12px;padding:12px;margin-top:10px}
+.og-help{font-size:14px;margin-bottom:8px}
+.og-done,.og-pool{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}
+.og-chip{background:var(--card);border:1.5px solid var(--line);color:var(--ink);padding:8px 12px;border-radius:10px;font-family:inherit;font-size:14px;cursor:pointer;transition:.12s}
+button.og-chip:hover{border-color:var(--accent)}
+.og-chip.ok{border-color:var(--good);background:rgba(35,201,139,.14);cursor:default}
+.og-chip.shake{animation:shake .35s;border-color:var(--bad)}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.og-msg{color:var(--warn);font-size:13.5px;min-height:18px}
+
+/* מקרי בוחן */
+.case-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+@media(max-width:400px){.case-grid,.gloss-grid{grid-template-columns:1fr}}
+.case-card{background:var(--card);border:1px solid var(--line);border-inline-start:4px solid #d6336c;border-radius:14px;padding:14px 16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:6px}
+.cc-name{font-weight:800;font-size:16.5px}
+.cc-row{font-size:14px;color:var(--ink2);line-height:1.6}
+
+/* בוחן וסימולציה */
+.p-cyber .quiz-q .qtext{white-space:pre-wrap}
+.p-cyber .explain{white-space:pre-line}
+.p-cyber .explain.ok-exp{border-inline-start-color:var(--good);background:rgba(35,201,139,.10)}
+.slide-ref{color:var(--muted);font-size:12px}
+.p-cyber .cyber-fc{height:300px}
+.p-cyber .cyber-fc .fc-face .txt{font-size:18px;line-height:1.6;overflow-y:auto;max-height:200px}
+.exam-breakdown{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:700px){.exam-breakdown{grid-template-columns:1fr}}
+.exam-breakdown h4{margin:6px 0 8px}
+.p-cyber .weak-name{width:auto;flex:0 1 230px}
+/* 7186 — מניעת גלישה רוחבית במסכים צרים */
+.p-cyber .topic-body code{max-width:100%;overflow-wrap:anywhere}
+.p-cyber .topic-body p,.p-cyber .topic-body li,.p-cyber .gc-def,.p-cyber .cc-row{overflow-wrap:anywhere}
+@media(max-width:640px){
+  .p-cyber .topic-body table.mini{display:block;overflow-x:auto;max-width:100%}
+  .p-cyber .topic-body section{padding:16px 14px}
 }

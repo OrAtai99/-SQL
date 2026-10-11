@@ -685,3 +685,13 @@ html[data-theme="dark"] .p-sql nav.tabs button.tab-star:not(.active){color:#f5c5
 .p-cyber .seq-pill{background:rgba(79,140,255,.16);color:var(--accent)}
 .p-cyber .list-pill{background:rgba(124,92,255,.12);color:var(--accent2)}
 @media(max-width:400px){.p-cyber .acr-grid,.p-cyber .proc-list{grid-template-columns:1fr}}
+
+/* ---------- 7186 — שאלות הדוגמה של המרצה ---------- */
+.p-cyber nav.tabs button.tab-star:not(.active){color:#b8860b;font-weight:700}
+html[data-theme="dark"] .p-cyber nav.tabs button.tab-star:not(.active){color:#f5c542}
+.p-cyber .emph-btn.emph-star{border-color:#f0b400;background:linear-gradient(135deg,rgba(240,180,0,.12),var(--card))}
+.p-cyber .sample-list{margin-bottom:22px}
+.p-cyber .sim-group{margin-bottom:14px}
+.p-cyber .sim-head{font-weight:700;color:var(--ink2);margin:6px 0 8px}
+.p-cyber .go-lesson{margin-top:8px}
+.p-cyber #view-sample .explain{white-space:pre-line}

@@ -10,7 +10,7 @@ const $$ = (s, r) => [...(r || document).querySelectorAll(s)];
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const bidi = s => window.bidiLtr ? window.bidiLtr(String(s ?? '')) : String(s ?? '');
 const eb = s => esc(bidi(s));
-const LET = ['א','ב','ג','ד'];
+const LET = ['א','ב','ג','ד','ה'];
 const PKEY = 'cyberportal_v1', TKEY = 'bdportal_theme';
 const KIND = { concept:'מושגים', process:'תהליכים', scenario:'תרחישים', case:'מקרי בוחן', tool:'כלים ותפקידים', fact:'עובדות', acronym:'🔤 ראשי תיבות', stage:'🔢 שלבים וסדר' };
 function shuffle(a){ a = a.slice(); for(let i=a.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; }
@@ -53,26 +53,58 @@ function genAcronymQs(){
     words.forEach(w => { t = t.replace(new RegExp('(^|[^A-Za-z0-9])' + reEsc(w) + '(?=[^A-Za-z0-9]|$)', 'gi'), '$1___'); });
     return t.replace(/(___[\s,]*){2,}/g, '___ ');
   };
+  /* "מהו X?" — תשובות בעברית (כמו בשאלות הדוגמה של המרצה): הרישא של ההגדרה, עד הנקודתיים/הנקודה */
+  const shortHe = a => { let t = String(a.he || '').split(/[:.(]|\s[–—]\s/)[0].trim(); if(t.length > 55 && t.includes(',')) t = t.split(',')[0].trim();
+    return t.length > 70 ? t.slice(0, 68).replace(/\s+\S*$/, '') + '…' : t; };
+  /* אותיות הקיצור ← מילות ההרחבה (CIA → Confidentiality, Integrity, Availability; DDoS → D,D,S) */
+  const STOP = /^(of|and|as|a|an|the|for|to|in|on|by|with|&)$/i;
+  const letterMap = a => {
+    const letters = String(a.abbr).replace(/[^A-Z]/g, ''), words = String(a.full).split(/[\s,\/\-–]+/).map(w => w.replace(/[^A-Za-z0-9]/g, '')).filter(w => w && !STOP.test(w));
+    return letters.length >= 2 && words.length === letters.length && words.every((w,i) => w[0].toUpperCase() === letters[i]) ? { letters, words } : null;
+  };
+  const ALLWORDS = [...new Set(ACRONYMS.flatMap(a => { const m = letterMap(a); return m ? m.words : []; }))];
   ACRONYMS.forEach(a => {
     const lesson = (a.lessons || ['L1'])[0], explain = `${a.abbr} = ${a.full} — ${a.he}${a.tip ? ' · ' + a.tip : ''}`;
-    const d1 = others(a, 3, 'full');
-    if(d1.length === 3) out.push({ key:'G:af:' + a.abbr, kind:'acronym', lesson, difficulty:1, source:'gen', slide:a.slide,
+    const d1 = others(a, 4, 'full');
+    if(d1.length === 4) out.push({ key:'G:af:' + a.abbr, kind:'acronym', lesson, difficulty:1, source:'gen', slide:a.slide,
       q:`מה פירוש ראשי התיבות ${a.abbr}?`, options:[a.full, ...d1.map(x => x.full)], correct:0, explain });
-    const d2 = others(a, 3, 'abbr');
-    if(d2.length === 3 && a.he) out.push({ key:'G:ha:' + a.abbr, kind:'acronym', lesson, difficulty:2, source:'gen', slide:a.slide,
+    const d2 = others(a, 4, 'abbr');
+    if(d2.length === 4 && a.he) out.push({ key:'G:ha:' + a.abbr, kind:'acronym', lesson, difficulty:2, source:'gen', slide:a.slide,
       q:`איזה קיצור מתאים להגדרה: «${mask(a.he, a)}»?`, options:[a.abbr, ...d2.map(x => x.abbr)], correct:0, explain });
+    /* "מהו X?" עם תשובות בעברית */
+    const mine = shortHe(a), re = new RegExp('(^|[^A-Za-z0-9])' + reEsc(a.abbr) + '([^A-Za-z0-9]|$)', 'i');
+    if(mine.length >= 8 && !re.test(mine)){
+      const seen = new Set([mine]), d3 = [];
+      for(const x of [...others(a, 30, 'abbr')]){ const s = shortHe(x); if(d3.length >= 4) break; if(s.length >= 8 && !seen.has(s) && !re.test(s)){ seen.add(s); d3.push(s); } }
+      if(d3.length === 4) out.push({ key:'G:ah:' + a.abbr, kind:'acronym', lesson, difficulty:1, source:'gen', slide:a.slide,
+        q:`מהו ${a.abbr}?`, options:[mine, ...d3], correct:0, explain });
+    }
+    /* "מה מייצגת האות L ב-X?" — אות אחת לכל קיצור (אות שמופיעה פעם אחת בלבד) */
+    const m = letterMap(a);
+    if(m){
+      const idx = sshuffle(m.letters.split('').map((L,i) => i).filter(i => m.letters.split(m.letters[i]).length === 2), a.abbr + 'L');
+      if(idx.length){
+        const i = idx[0], L = m.letters[i], word = m.words[i], seen = new Set([word.toLowerCase()]), dist = [];
+        const pool = [...m.words.filter((w,j) => j !== i), ...sshuffle(ALLWORDS.filter(w => w[0].toUpperCase() === L), a.abbr + 'w'), ...sshuffle(ALLWORDS, a.abbr + 'x')];
+        for(const w of pool){ if(dist.length >= 4) break; if(!seen.has(w.toLowerCase())){ seen.add(w.toLowerCase()); dist.push(w); } }
+        if(dist.length === 4) out.push({ key:'G:lt:' + a.abbr, kind:'acronym', lesson, difficulty:2, source:'gen', slide:a.slide,
+          q:`מה מייצגת האות ${L} בקיצור ${a.abbr}?`, options:[word, ...dist], correct:0, explain:`${a.abbr} = ${a.full}, ולכן ${L} = ${word}. ${a.he}` });
+      }
+    }
   });
   return out;
 }
 function genStageQs(){
   const out = [], seenQ = new Set(), seenProc = new Set();
-  const push = q => { const k = q.q + '|' + q.options.join('|'); if(seenQ.has(k) || new Set(q.options).size !== 4) return; seenQ.add(k); out.push(q); };
+  const push = q => { const k = q.q + '|' + q.options.join('|'); if(seenQ.has(k) || q.options.length !== 5 || new Set(q.options).size !== 5) return; seenQ.add(k); out.push(q); };
   PROCESSES.filter(p => p.ordered && p.steps.length >= 3).forEach(p => {
     if(seenProc.has(p.name)) return; seenProc.add(p.name);   /* אותו תהליך שמופיע בשני שיעורים — פעם אחת */
     const names = p.steps.map(stepName); if(new Set(names).size !== names.length) return;
     const seq = names.map((n,i) => `${i+1}. ${n}`).join(' ← ');
     const explain = `הסדר ב"${p.name}": ${seq}.`, base = { kind:'stage', lesson:p.lesson, slide:p.slide, source:'gen' };
-    const dist = (exclude, seed) => sshuffle(names.filter(n => !exclude.includes(n)), seed).slice(0,3);
+    /* 4 מסיחים: קודם שלבים אחרים מאותו תהליך, ואם אין מספיק — שלבים מתהליכים אחרים באותו שיעור */
+    const foreign = PROCESSES.filter(x => x.lesson === p.lesson && x.name !== p.name).flatMap(x => x.steps.map(stepName)).filter(n => !names.includes(n));
+    const dist = (exclude, seed) => [...sshuffle(names.filter(n => !exclude.includes(n)), seed), ...sshuffle([...new Set(foreign)], seed + 'x')].slice(0,4);
     push({ ...base, key:'G:first:' + p.key, difficulty:1, q:`מהו השלב הראשון ב"${p.name}"?`, options:[names[0], ...dist([names[0]], p.key + 'f')], correct:0, explain });
     push({ ...base, key:'G:last:' + p.key, difficulty:2, q:`מהו השלב האחרון ב"${p.name}"?`, options:[names[names.length-1], ...dist([names[names.length-1]], p.key + 'l')], correct:0, explain });
     const i = Math.max(0, Math.floor((names.length - 1) / 2) - (names.length > 4 ? 1 : 0));
@@ -80,13 +112,24 @@ function genStageQs(){
     if(names.length >= 4){
       const [a,b,c,d] = names.slice(0,4), J = ' ← ';
       push({ ...base, key:'G:ord:' + p.key, difficulty:3, q:`מה הסדר הנכון של ארבעת השלבים הראשונים ב"${p.name}"?`,
-        options:[[a,b,c,d].join(J), [b,a,c,d].join(J), [a,c,b,d].join(J), [a,b,d,c].join(J)], correct:0, explain });
+        options:[[a,b,c,d].join(J), [b,a,c,d].join(J), [a,c,b,d].join(J), [a,b,d,c].join(J), [b,a,d,c].join(J)], correct:0, explain });
     }
   });
   return out;
 }
-const GEN_QS = [...genAcronymQs(), ...genStageQs()];
-const QUESTIONS = [...LESSON_QS, ...EXTRA_QS, ...GEN_QS];
+/* שאלות הדוגמה של המרצה + שאלות דומות + בנק במתכונת המבחן (js/cyber-sample.js) — 5 תשובות */
+const SX = C.sampleExam || {};
+const SAMPLE_QS = [
+  ...(SX.official || []).map(q => ({ ...q, key:'S:o:' + q.n, kind: q.kind || 'concept', source:'official',
+      explain: q.explain + (q.eliminationTip ? ' 💡 איך לפסול מסיחים: ' + q.eliminationTip : '') })),
+  ...(SX.similar || []).map((q,i) => ({ ...q, key:'S:s:' + i, kind: q.kind || 'concept', source:'similar' })),
+  ...(SX.bank || []).map((q,i) => ({ ...q, key:'S:b:' + i, kind: q.kind || 'concept', source:'bank' })),
+];
+/* שאלה שנוצרה אוטומטית ושנוסחה זהה לשאלה קיימת (למשל "מהו RaaS?" משאלות הדוגמה) — מוותרים עליה */
+const normQ = s => String(s || '').replace(/\s+/g, ' ').trim();
+const TAKEN = new Set([...LESSON_QS, ...SAMPLE_QS, ...EXTRA_QS].map(q => normQ(q.q)));
+const GEN_QS = [...genAcronymQs(), ...genStageQs()].filter(q => !TAKEN.has(normQ(q.q)));
+const QUESTIONS = [...LESSON_QS, ...SAMPLE_QS, ...EXTRA_QS, ...GEN_QS];
 const isEmph = q => q.kind === 'acronym' || q.kind === 'stage';
 C.allQuestions = QUESTIONS;   /* לבדיקות (verify) — קריאה בלבד */
 
@@ -100,12 +143,13 @@ function applyTheme(t){ document.documentElement.dataset.theme = t; try { localS
 /* ============================================================
    ניווט
    ============================================================ */
-const VIEWS = ['home','lessons','glossary','acronyms','processes','cases','flashcards','quiz','exam'];
+const VIEWS = ['home','sample','lessons','glossary','acronyms','processes','cases','flashcards','quiz','exam'];
 function showView(id){
   if(!VIEWS.includes(id)) id = 'home';
   $$('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + id));
   $$('nav.tabs button').forEach(b => b.classList.toggle('active', b.dataset.view === id));
   if(id === 'home') renderHome();
+  if(id === 'sample') renderSample();
   window.scrollTo(0, 0);
   try { history.replaceState(null, '', '#' + id); } catch(e){}
 }
@@ -273,6 +317,49 @@ function startDrill(){
 }
 
 /* ============================================================
+   ⭐ שאלות הדוגמה של המרצה (js/cyber-sample.js)
+   ============================================================ */
+let sampleBankLesson = 'all', sampleBuilt = false;
+const sampleAns = {};
+function bindInline(root){
+  $$('.i-opt', root).forEach(b => b.onclick = () => {
+    const k = b.dataset.key; if(sampleAns[k] !== undefined) return;
+    const q = QUESTIONS.find(x => x.key === k), j = +b.dataset.j;
+    sampleAns[k] = j; P.quiz[k] = (j === q.correct); P.seen[k] = (P.seen[k]||0) + 1; save();
+    paintQ(root, k, j);
+    const lessonBtn = $(`.quiz-q[data-key="${CSS.escape(k)}"] .go-lesson`, root); if(lessonBtn) lessonBtn.classList.remove('hidden');
+  });
+  $$('.go-lesson', root).forEach(b => b.onclick = () => openLesson(b.dataset.l));
+  Object.entries(sampleAns).forEach(([k,j]) => { if($(`.quiz-q[data-key="${CSS.escape(k)}"]`, root)) paintQ(root, k, j); });
+}
+function sampleQHtml(q, num){
+  return qHtml(q, num, 'i-opt').replace(/<div class="explain"><\/div><\/div>$/, `<div class="explain"></div><button class="btn ghost small go-lesson hidden" data-l="${esc(q.lesson)}">📚 לשיעור ${esc(String(lessonOf(q.lesson).num))}${q.slide ? ` · שקף ${esc(q.slide)}` : ''}</button></div>`);
+}
+function renderSample(){
+  const box = $('#sampleBody'); if(!box) return;
+  if(!SAMPLE_QS.length){ box.innerHTML = '<div class="card">שאלות הדוגמה עוד לא נטענו.</div>'; return; }
+  const off = SAMPLE_QS.filter(q => q.source === 'official').sort((a,b) => a.n - b.n), sim = SAMPLE_QS.filter(q => q.source === 'similar'), bank = SAMPLE_QS.filter(q => q.source === 'bank');
+  const bankL = bank.filter(q => sampleBankLesson === 'all' || q.lesson === sampleBankLesson);
+  box.innerHTML = `
+    <div class="card emph-box"><b>📋 מתכונת המבחן:</b> ${eb((SX.format && SX.format.note) || 'שאלות אמריקאיות עם 5 תשובות (א–ה) ותשובה נכונה אחת.')}
+      <ul class="tips">${(SX.tips || []).map(t => `<li>${eb(t)}</li>`).join('')}</ul>
+      <div class="sql-actions"><button class="btn" id="sampleExamBtn">📝 מבחן במתכונת המבחן — 30 שאלות</button>
+        <button class="btn ghost small" id="sampleQuizBtn">❓ כל ${SAMPLE_QS.length} השאלות בסגנון המרצה בבוחן</button></div></div>
+    <h3 class="sec-h">⭐ 6 שאלות הדוגמה — ענו, ואז קראו את ההסבר ואיך לפסול מסיחים</h3>
+    <div class="sample-list" id="sampleOfficial">${off.map((q,i) => sampleQHtml(q, i+1)).join('')}</div>
+    <h3 class="sec-h">🔁 שאלות דומות לשאלות הדוגמה (${sim.length})</h3>
+    <p class="muted-sm">לכל שאלת דוגמה — שאלות על אותו רעיון מזוויות אחרות.</p>
+    <div class="sample-list" id="sampleSimilar">${off.map(o => { const g = sim.filter(q => q.base === o.n); return g.length ? `<div class="sim-group"><div class="sim-head">דומות לשאלה ${o.n}: ${eb(o.topic || o.q)}</div>${g.map((q,i) => sampleQHtml(q, `${o.n}.${i+1}`)).join('')}</div>` : ''; }).join('')}</div>
+    <h3 class="sec-h">📝 בנק שאלות במתכונת המבחן (${bank.length})</h3>
+    <div class="chip-row small" id="sampleBankLessons">${[['all','כל השיעורים'], ...LESSONS.filter(l => bank.some(q => q.lesson === l.id)).map(l => [l.id, `שיעור ${l.num}`])].map(([k,t]) => `<button data-l="${esc(k)}" class="${sampleBankLesson===k?'active':''}">${esc(t)}</button>`).join('')}</div>
+    <div class="sample-list" id="sampleBank">${bankL.map((q,i) => sampleQHtml(q, i+1)).join('')}</div>`;
+  bindInline(box);
+  $$('#sampleBankLessons button').forEach(b => b.onclick = () => { sampleBankLesson = b.dataset.l; renderSample(); $('#sampleBankLessons').scrollIntoView(); });
+  $('#sampleExamBtn').onclick = () => { showView('exam'); startExam(30, 'format'); };
+  $('#sampleQuizBtn').onclick = () => goQuizKind('__sample');
+}
+
+/* ============================================================
    תהליכים + משחק "סדר את השלבים"
    ============================================================ */
 let game = null, procF = 'ordered';
@@ -391,17 +478,18 @@ function setupFlashcards(){
    בוחן
    ============================================================ */
 let quizLesson = 'all', quizKind = 'all', quizOrder = [], quizShown = 20, quizPerm = {}, quizAns = {};
-function quizSet(){ return QUESTIONS.filter(q => (quizLesson === 'all' || q.lesson === quizLesson) && (quizKind === 'all' || q.kind === quizKind) && (quizLesson !== 'wrong' || true)); }
+function quizSet(){ return QUESTIONS.filter(q => (quizLesson === 'all' || q.lesson === quizLesson) &&
+  (quizKind === 'all' || (quizKind === '__sample' ? !!q.source && ['official','similar','bank'].includes(q.source) : q.kind === quizKind))); }
 function renderQuizFilters(){
   const lessons = [['all','כל השיעורים'], ...LESSONS.map(l => [l.id, `שיעור ${l.num}`])];
-  const kinds = [['all','כל הסוגים'], ...Object.keys(KIND).filter(k => QUESTIONS.some(q => q.kind === k)).map(k => [k, KIND[k]])];
+  const kinds = [['all','כל הסוגים'], ...(SAMPLE_QS.length ? [['__sample','⭐ בסגנון שאלות הדוגמה']] : []), ...Object.keys(KIND).filter(k => QUESTIONS.some(q => q.kind === k)).map(k => [k, KIND[k]])];
   $('#quizFilters').innerHTML = `<div class="chip-row">${lessons.map(([k,t]) => `<button data-ql="${esc(k)}" class="${quizLesson===k?'active':''}">${esc(t)}</button>`).join('')}</div>
     <div class="chip-row small">${kinds.map(([k,t]) => `<button data-qk="${esc(k)}" class="${quizKind===k?'active':''}">${esc(t)}</button>`).join('')}</div>`;
   $$('#quizFilters [data-ql]').forEach(b => b.onclick = () => { quizLesson = b.dataset.ql; renderQuizFilters(); renderQuiz(true); });
   $$('#quizFilters [data-qk]').forEach(b => b.onclick = () => { quizKind = b.dataset.qk; renderQuizFilters(); renderQuiz(true); });
 }
 function qHtml(q, num, cls, extraAttr){
-  const perm = quizPerm[q.key] = quizPerm[q.key] || shuffle([0,1,2,3]);
+  const perm = quizPerm[q.key] = quizPerm[q.key] || shuffle([...q.options.keys()]);
   return `<div class="quiz-q" data-key="${esc(q.key)}" ${extraAttr||''}>
     <div class="qnum">שאלה ${num} <span class="qtopic">${esc(lessonLabel(q.lesson))} · ${esc(KIND[q.kind]||q.kind)}</span></div>
     <div class="qtext">${eb(q.q)}</div>
@@ -447,6 +535,28 @@ function pickExam(n, mode){
     const pool = shuffle(QUESTIONS.filter(q => P.quiz[q.key] === false));
     return pool.slice(0, n);
   }
+  const fresh = pool => shuffle(pool).sort((x,y) => (P.seen[x.key]||0) - (P.seen[y.key]||0));
+  /* ראשי תיבות ושלבים — חצי משאלות ההבנה שנכתבו ונבדקו ידנית, חצי מהשאלות שנוצרו מהנתונים */
+  const emphPick = (kind, k, only5) => {
+    const ok = q => !only5 || q.options.length === 5;
+    const hand = fresh(EXTRA_QS.filter(q => q.kind === kind && ok(q))), gen = fresh(GEN_QS.filter(q => q.kind === kind && ok(q)));
+    const take = [...hand.slice(0, Math.ceil(k / 2)), ...gen.slice(0, k)].slice(0, k);
+    return take.length < k ? take.concat(hand.slice(Math.ceil(k / 2)).slice(0, k - take.length)) : take;
+  };
+  /* בסבב לפי שיעורים — כדי שכל השיעורים ייוצגו */
+  const roundRobin = (pool, k) => { const by = {}; pool.forEach(q => (by[q.lesson] = by[q.lesson] || []).push(q)); const ls = shuffle(Object.keys(by)), out = []; let i = 0;
+    while(out.length < k && ls.some(l => by[l].length)){ const l = ls[i++ % ls.length]; if(by[l].length) out.push(by[l].shift()); } return out; };
+  if(mode === 'format'){
+    /* במתכונת המבחן: 5 תשובות לכל שאלה — שאלות דומות לשאלות הדוגמה, בנק בסגנון המרצה, ראשי תיבות, שלבים ושאלות שיעור */
+    const five = q => q.options.length === 5, out = [];
+    out.push(...fresh(SAMPLE_QS.filter(q => q.source === 'similar')).slice(0, Math.round(n * 0.2)));
+    out.push(...roundRobin(fresh(SAMPLE_QS.filter(q => q.source === 'bank')), Math.round(n * 0.3)));
+    out.push(...emphPick('acronym', Math.round(n / 6), true), ...emphPick('stage', Math.round(n / 6), true));
+    const used = new Set(out.map(q => q.key));
+    out.push(...roundRobin(fresh(LESSON_QS.filter(q => five(q) && !used.has(q.key))), n - out.length));
+    if(out.length < n) out.push(...fresh(QUESTIONS.filter(q => five(q) && !out.includes(q))).slice(0, n - out.length));
+    return shuffle(out.slice(0, n));
+  }
   /* תמהיל: ~2/3 שאלות שיעור · ~1/6 ראשי תיבות · ~1/6 שלבים (הדגשי המרצה) */
   const nA = Math.round(n / 6), nS = Math.round(n / 6), nL = n - nA - nS;
   /* שאלות השיעור — חלוקה יחסית לפי מספר השאלות בכל שיעור, עם עדיפות לשאלות שנראו פחות */
@@ -454,21 +564,16 @@ function pickExam(n, mode){
   alloc.forEach(a => a.k = Math.floor(a.exact));
   let rest = nL - alloc.reduce((s,a) => s + a.k, 0);
   alloc.slice().sort((a,b) => (b.exact - b.k) - (a.exact - a.k)).forEach(a => { if(rest > 0 && a.k < a.l.quiz.length){ a.k++; rest--; } });
-  const out = [], fresh = pool => shuffle(pool).sort((x,y) => (P.seen[x.key]||0) - (P.seen[y.key]||0));
+  const out = [];
   alloc.forEach(a => {
-    const pool = fresh(LESSON_QS.filter(q => q.lesson === a.l.id));
+    /* שאלות השיעור + שאלות בסגנון המרצה (דומות ובנק) של אותו שיעור */
+    const pool = fresh([...LESSON_QS, ...SAMPLE_QS.filter(q => q.source !== 'official')].filter(q => q.lesson === a.l.id));
     /* גיוון בסוגי השאלות */
     const byKind = {}; pool.forEach(q => (byKind[q.kind] = byKind[q.kind] || []).push(q));
     const kinds = shuffle(Object.keys(byKind)); let i = 0;
     while(out.filter(q => q.lesson === a.l.id).length < a.k && kinds.some(k => byKind[k].length)){ const k = kinds[i++ % kinds.length]; if(byKind[k].length) out.push(byKind[k].shift()); }
   });
-  /* ראשי תיבות ושלבים — חצי משאלות ההבנה שנכתבו ונבדקו ידנית, חצי מהשאלות שנוצרו מהנתונים */
-  const emph = (kind, k) => {
-    const hand = fresh(EXTRA_QS.filter(q => q.kind === kind)), gen = fresh(GEN_QS.filter(q => q.kind === kind));
-    const take = [...hand.slice(0, Math.ceil(k / 2)), ...gen.slice(0, k)].slice(0, k);
-    return take.length < k ? take.concat(hand.slice(Math.ceil(k / 2)).slice(0, k - take.length)) : take;
-  };
-  out.push(...emph('acronym', nA), ...emph('stage', nS));
+  out.push(...emphPick('acronym', nA), ...emphPick('stage', nS));
   return shuffle(out);
 }
 function startExam(n, mode){
@@ -477,7 +582,7 @@ function startExam(n, mode){
   exam = { items, sel:{}, sec:0, active:true, mode, n: items.length };
   $('#examIntro').classList.add('hidden'); $('#examRun').classList.remove('hidden'); $('#examResult').innerHTML = '';
   $('#examFinishBtn').classList.remove('hidden'); $('#examRestartBtn').classList.add('hidden');
-  $('#examModeTitle').textContent = mode === 'wrong' ? `מבחן על הטעויות שלך — ${items.length} שאלות` : `מבחן אמריקאי — ${items.length} שאלות`;
+  $('#examModeTitle').textContent = mode === 'wrong' ? `מבחן על הטעויות שלך — ${items.length} שאלות` : mode === 'format' ? `⭐ במתכונת המבחן — ${items.length} שאלות, 5 תשובות לכל שאלה` : `מבחן אמריקאי — ${items.length} שאלות`;
   items.forEach(q => delete quizPerm[q.key]);
   $('#examBody').innerHTML = items.map((q,i) => qHtml(q, i+1, 'ex-opt')).join('');
   $$('#examBody .ex-opt').forEach(b => b.onclick = () => { if(!exam.active) return; const k = b.dataset.key; exam.sel[k] = +b.dataset.j;
@@ -516,12 +621,13 @@ function finishExam(){
 }
 function setupExam(){
   const modes = [
+    ...(SAMPLE_QS.length ? [{ n:30, mode:'format', title:'⭐ במתכונת המבחן', desc:'30 שאלות עם 5 תשובות (א–ה) כמו בשאלות הדוגמה של המרצה: שאלות דומות לשאלות הדוגמה, בנק בסגנון שלה, ראשי תיבות, שלבים ושאלות מכל השיעורים.', featured:true, badge:'⭐ כמו המבחן האמיתי' }] : []),
     { n:20, title:'מבחן קצר', desc:'20 שאלות מכל השיעורים, כולל ראשי תיבות ושלבים — חזרה מהירה.' },
-    { n:30, title:'מבחן מלא', desc:'30 שאלות: כ-20 מהשיעורים (בחלוקה יחסית), 5 על ראשי תיבות ו-5 על סדר שלבים — לפי הדגשי המרצה.', featured:true },
+    { n:30, title:'מבחן מלא', desc:'30 שאלות: כ-20 מהשיעורים (בחלוקה יחסית), 5 על ראשי תיבות ו-5 על סדר שלבים — לפי הדגשי המרצה.', featured:!SAMPLE_QS.length },
     { n:40, title:'מבחן מורחב', desc:'40 שאלות — לאימון סיבולת ולכיסוי רחב.' },
     { n:30, mode:'wrong', title:'מבחן על הטעויות שלי', desc:'רק שאלות שטעיתם בהן בבוחן או בסימולציות קודמות.' },
   ];
-  $('#examModes').innerHTML = modes.map((m,i) => `<div class="card exam-mode ${m.featured?'featured':''}">${m.featured?'<div class="rec-badge">⭐ מומלץ</div>':''}
+  $('#examModes').innerHTML = modes.map((m,i) => `<div class="card exam-mode ${m.featured?'featured':''}">${m.featured?`<div class="rec-badge">${m.badge || '⭐ מומלץ'}</div>`:''}
       <h3>${esc(m.title)}</h3><p>${esc(m.desc)}</p><button class="btn" data-m="${i}">🚀 התחל</button></div>`).join('');
   $$('#examModes [data-m]').forEach(b => b.onclick = () => { const m = modes[+b.dataset.m]; startExam(m.n, m.mode); });
   $('#examFinishBtn').onclick = finishExam;

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>פורטל מבחן · מבוא להגנת סייבר</title>
-  <link rel="stylesheet" href="css/styles.css?v=22">
+  <link rel="stylesheet" href="css/styles.css?v=23">
 </head>
 <body class="p-cyber">
 
@@ -19,6 +19,7 @@
     </div>
     <nav class="tabs">
       <button data-view="home" class="active">🏠 בית</button>
+      <button data-view="sample" class="tab-star">⭐ שאלות דוגמה</button>
       <button data-view="lessons">📚 שיעורים</button>
       <button data-view="glossary">📖 מושגים</button>
       <button data-view="acronyms">🔤 ראשי תיבות</button>
@@ -59,6 +60,7 @@
       <h3>🎯 מה המרצה הדגישה למבחן</h3>
       <p>"להכיר את <b>המושגים</b>, את <b>קיצורי הדרך באנגלית</b> ואת <b>השלבים</b>." — אלה שלושת הצירים של המבחן האמריקאי. <span id="emphCounts"></span></p>
       <div class="emph-grid">
+        <button class="emph-btn emph-star" data-view-go="sample"><span class="eb-ic">⭐</span><b>שאלות הדוגמה של המרצה</b><small>5 תשובות (א–ה) · דומות · מבחן במתכונת</small></button>
         <button class="emph-btn" data-view-go="glossary"><span class="eb-ic">📖</span><b>מושגים ללמידה</b><small>מילון עם חיפוש ומצב שינון</small></button>
         <button class="emph-btn" data-view-go="acronyms"><span class="eb-ic">🔤</span><b>ראשי תיבות</b><small>CIA, AAA, SIEM, RTO… עם פירוש ומלכודות</small></button>
         <button class="emph-btn" data-view-go="processes" data-pf="ordered"><span class="eb-ic">🔢</span><b>השלבים</b><small>רצפי שלבים + משחק סידור</small></button>
@@ -89,6 +91,13 @@
         </div>
       </div>
     </div>
+  </section>
+
+  <!-- ============ שאלות דוגמה ============ -->
+  <section id="view-sample" class="view">
+    <h2 class="view-title">⭐ שאלות הדוגמה של המרצה</h2>
+    <p class="subtitle">כך נראה המבחן: שאלות אמריקאיות עם 5 תשובות. כאן שאלות הדוגמה עם הסבר ואיך לפסול מסיחים, שאלות דומות, ובנק שאלות בסגנון המרצה מכל השיעורים.</p>
+    <div id="sampleBody"></div>
   </section>
 
   <!-- ============ שיעורים ============ -->
@@ -208,18 +217,19 @@
 
 <footer>נבנה ככלי עזר ללמידה · מבוא להגנת סייבר (7186) · התוכן מבוסס על מצגות הקורס והסילבוס</footer>
 
-<script src="js/bidi.js?v=22"></script>
-<script src="js/cyber-meta.js?v=22"></script>
-<script src="js/cyber-L1.js?v=22"></script>
-<script src="js/cyber-L2.js?v=22"></script>
-<script src="js/cyber-L3.js?v=22"></script>
-<script src="js/cyber-L4.js?v=22"></script>
-<script src="js/cyber-L5.js?v=22"></script>
-<script src="js/cyber-L6.js?v=22"></script>
-<script src="js/cyber-L7.js?v=22"></script>
-<script src="js/cyber-L8.js?v=22"></script>
-<script src="js/cyber-stages.js?v=22"></script>
-<script src="js/cyber-acronyms.js?v=22"></script>
-<script src="js/cyber-app.js?v=22"></script>
+<script src="js/bidi.js?v=23"></script>
+<script src="js/cyber-meta.js?v=23"></script>
+<script src="js/cyber-L1.js?v=23"></script>
+<script src="js/cyber-L2.js?v=23"></script>
+<script src="js/cyber-L3.js?v=23"></script>
+<script src="js/cyber-L4.js?v=23"></script>
+<script src="js/cyber-L5.js?v=23"></script>
+<script src="js/cyber-L6.js?v=23"></script>
+<script src="js/cyber-L7.js?v=23"></script>
+<script src="js/cyber-L8.js?v=23"></script>
+<script src="js/cyber-stages.js?v=23"></script>
+<script src="js/cyber-acronyms.js?v=23"></script>
+<script src="js/cyber-sample.js?v=23"></script>
+<script src="js/cyber-app.js?v=23"></script>
 </body>
 </html>

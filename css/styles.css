@@ -585,3 +585,103 @@ button.og-chip:hover{border-color:var(--accent)}
   .p-cyber .topic-body table.mini{display:block;overflow-x:auto;max-width:100%}
   .p-cyber .topic-body section{padding:16px 14px}
 }
+
+/* ============================================================
+   3964 — ⭐ המבחן לדוגמה (sample-view.js)
+   ============================================================ */
+.p-sql nav.tabs button.tab-star:not(.active){color:#b8860b;font-weight:700}
+html[data-theme="dark"] .p-sql nav.tabs button.tab-star:not(.active){color:#f5c542}
+.p-sql .sample-banner{display:flex;align-items:center;gap:16px;margin:18px 0 20px;border:2px solid #f0b400;background:linear-gradient(135deg,rgba(240,180,0,.14),rgba(124,92,255,.08))}
+.p-sql .sample-banner .sb-ic{font-size:36px;line-height:1}
+.p-sql .sample-banner h3{margin:0 0 4px}
+.p-sql .sample-banner p{margin:0;color:var(--muted);font-size:14px}
+.p-sql .sample-banner .btn{margin-inline-start:auto;white-space:nowrap}
+.p-sql #view-sample .card{margin-bottom:14px}
+.p-sql #view-sample .sm-tabs{margin-bottom:14px}
+.p-sql .sm-hero{margin-bottom:16px}
+.p-sql .sm-weights{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0 0}
+.p-sql .sm-weights .w{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+.p-sql .sm-weights .w b{display:block;font-size:24px;color:var(--accent);line-height:1.3}
+.p-sql .sm-weights .w span{font-size:13px;color:var(--muted)}
+.p-sql .sm-list{margin:6px 0;padding-inline-start:22px}
+.p-sql .sm-list li{margin:4px 0}
+.p-sql .sm-howto{background:rgba(79,140,255,.08);border-inline-start:4px solid var(--accent)}
+.p-sql .sm-story{white-space:pre-wrap;unicode-bidi:plaintext;line-height:1.9}
+.p-sql .sm-storycard{border-inline-start:4px solid #f0b400}
+.p-sql .sm-progress{margin-top:10px;font-weight:600;color:var(--ink2)}
+.p-sql .sm-step h4{margin:0 0 6px}
+.p-sql .cand-grid{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.p-sql .cand{display:inline-flex;align-items:center;gap:7px;background:var(--card2);border:1.5px solid var(--line);border-radius:999px;padding:5px 13px;cursor:pointer;font-size:14px;user-select:none}
+.p-sql .cand input{accent-color:var(--accent);width:16px;height:16px;margin:0}
+.p-sql .cand.good{border-color:var(--good);background:rgba(35,201,139,.15)}
+.p-sql .cand.bad{border-color:var(--bad);background:rgba(255,93,108,.13)}
+.p-sql .cand-why{font-size:13.5px}
+.p-sql .rel-table select,.p-sql .dict-play select{font-family:inherit;font-size:14px;padding:4px 8px;border-radius:8px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);min-width:90px}
+.p-sql select.good{border-color:var(--good)!important;background:rgba(35,201,139,.12)!important}
+.p-sql select.bad{border-color:var(--bad)!important;background:rgba(255,93,108,.10)!important}
+.p-sql .rel-why{font-size:12.5px;color:var(--muted);margin-top:5px;line-height:1.55;max-width:420px}
+.p-sql .dict-ans{font-size:13px;line-height:1.6;min-width:220px}
+.p-sql .bad-txt{color:var(--bad);font-weight:600}
+.p-sql .tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.p-sql .sq-card{margin-bottom:14px}
+.p-sql .sq-card .exam-prompt{white-space:pre-wrap;unicode-bidi:plaintext}
+.p-sql .sq-cols{font-size:13.5px;color:var(--ink2);margin:6px 0;background:var(--card2);border-radius:8px;padding:4px 10px;display:inline-block}
+.p-sql .sq-card .code-input{min-height:110px;margin-top:8px}
+.p-sql .bad-pre{border-inline-start:3px solid var(--bad)!important}
+.p-sql .wrong-why{font-size:13px;color:var(--muted);margin:-4px 0 10px}
+.p-sql .badge-pill.good{background:rgba(35,201,139,.18);color:var(--good)}
+.p-sql .erd-wrap{background:var(--card2);border-radius:12px;padding:8px;margin:8px 0}
+.p-sql .erd-svg{width:100%;height:auto;display:block;max-width:760px;margin:0 auto}
+.p-sql .sm-mock-pick{display:flex;flex-wrap:wrap;gap:8px;max-width:none;margin:12px 0}
+.p-sql .sm-mockbar{margin-bottom:12px}
+.p-sql #view-sample .q-pick{margin-bottom:6px}
+@media (max-width:640px){
+  .p-sql .sample-banner{flex-direction:column;align-items:flex-start}
+  .p-sql .sample-banner .btn{margin-inline-start:0}
+  .p-sql .sm-weights{grid-template-columns:1fr}
+}
+
+/* ---------- מובייל: הלשוניות בשורה אחת נגללת — הכותרת נשארת נמוכה ---------- */
+@media (max-width:640px){
+  .top-inner{padding:10px 14px;gap:8px}
+  nav.tabs{order:3;flex-wrap:nowrap;overflow-x:auto;width:100%;margin-inline-start:0;padding-bottom:2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  nav.tabs::-webkit-scrollbar{display:none}
+  nav.tabs button{flex:0 0 auto;padding:6px 11px;font-size:13px}
+  .brand{flex:1;min-width:0}
+}
+
+/* ============================================================
+   7186 — ראשי תיבות, הדגשי המרצה, שלבים מול רשימות
+   ============================================================ */
+.p-cyber .emph-card{margin:18px 0 20px;border:2px solid #d6336c;background:linear-gradient(135deg,rgba(214,51,108,.10),rgba(112,72,232,.08))}
+.p-cyber .emph-card h3{margin:0 0 6px}
+.p-cyber .emph-card p{margin:0 0 12px;color:var(--ink2)}
+.p-cyber .emph-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.p-cyber .emph-btn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:right;font-family:inherit;color:var(--ink);background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;cursor:pointer;transition:.15s}
+.p-cyber .emph-btn:hover{border-color:#d6336c;transform:translateY(-2px);box-shadow:var(--shadow)}
+.p-cyber .emph-btn .eb-ic{font-size:22px}
+.p-cyber .emph-btn small{color:var(--muted);font-size:12.5px}
+.p-cyber .emph-box{margin-bottom:12px;border-inline-start:4px solid #d6336c}
+.p-cyber .acr-actions{margin:4px 0 14px}
+.p-cyber .acr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin:10px 0}
+.p-cyber .acr-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:6px}
+.p-cyber .acr-card.known{border-color:var(--good)}
+.p-cyber .acr-top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.p-cyber .acr-abbr{font-size:22px;font-weight:800;letter-spacing:.5px;color:#d6336c;direction:ltr;unicode-bidi:isolate}
+.p-cyber .acr-full{font-weight:600;direction:ltr;text-align:left;unicode-bidi:isolate}
+.p-cyber .acr-he{color:var(--ink2);font-size:14.5px}
+.p-cyber .acr-tip{font-size:13px;background:rgba(255,180,84,.12);border-radius:8px;padding:6px 9px}
+.p-cyber .acr-conf{font-size:13px;color:var(--muted)}
+.p-cyber .acr-know{align-self:flex-start;margin-top:4px}
+.p-cyber .acr-card.known .acr-know{border-color:var(--good);color:var(--good)}
+.p-cyber .hide-defs .acr-card{cursor:pointer}
+.p-cyber .hide-defs .acr-card .acr-hid{filter:blur(6px);user-select:none;transition:filter .2s}
+.p-cyber .hide-defs .acr-card.reveal .acr-hid{filter:none}
+.p-cyber .acr-mini{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 14px}
+.p-cyber .acr-chip{background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:3px 11px;font-size:13px}
+.p-cyber .acr-chip b{color:#d6336c}
+.p-cyber .proc-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+.p-cyber .proc-item{background:var(--card);border:1px dashed var(--line);border-radius:12px;padding:9px 12px}
+.p-cyber .seq-pill{background:rgba(79,140,255,.16);color:var(--accent)}
+.p-cyber .list-pill{background:rgba(124,92,255,.12);color:var(--accent2)}
+@media(max-width:400px){.p-cyber .acr-grid,.p-cyber .proc-list{grid-template-columns:1fr}}

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>פורטל מבחן · מבוא להגנת סייבר</title>
-  <link rel="stylesheet" href="css/styles.css?v=21">
+  <link rel="stylesheet" href="css/styles.css?v=22">
 </head>
 <body class="p-cyber">
 
@@ -21,6 +21,7 @@
       <button data-view="home" class="active">🏠 בית</button>
       <button data-view="lessons">📚 שיעורים</button>
       <button data-view="glossary">📖 מושגים</button>
+      <button data-view="acronyms">🔤 ראשי תיבות</button>
       <button data-view="processes">🔄 תהליכים</button>
       <button data-view="cases">📰 מקרי בוחן</button>
       <button data-view="flashcards">🎴 כרטיסיות</button>
@@ -48,8 +49,21 @@
         <div class="stat"><div class="num" id="stRead">0</div><div class="lbl">שיעורים שנקראו</div></div>
         <div class="stat"><div class="num" id="stQuiz">0</div><div class="lbl">שאלות נכונות</div></div>
         <div class="stat"><div class="num" id="stKnown">0</div><div class="lbl">מושגים שידעתי</div></div>
-        <div class="stat"><div class="num" id="stOrder">0</div><div class="lbl">תהליכים שסודרו</div></div>
+        <div class="stat"><div class="num" id="stAcr">0</div><div class="lbl">ראשי תיבות שידעתי</div></div>
+        <div class="stat"><div class="num" id="stOrder">0</div><div class="lbl">רצפי שלבים שסודרו</div></div>
         <div class="stat"><div class="num" id="stExam">0</div><div class="lbl">ציון סימולציה הטוב</div></div>
+      </div>
+    </div>
+
+    <div class="card emph-card">
+      <h3>🎯 מה המרצה הדגישה למבחן</h3>
+      <p>"להכיר את <b>המושגים</b>, את <b>קיצורי הדרך באנגלית</b> ואת <b>השלבים</b>." — אלה שלושת הצירים של המבחן האמריקאי. <span id="emphCounts"></span></p>
+      <div class="emph-grid">
+        <button class="emph-btn" data-view-go="glossary"><span class="eb-ic">📖</span><b>מושגים ללמידה</b><small>מילון עם חיפוש ומצב שינון</small></button>
+        <button class="emph-btn" data-view-go="acronyms"><span class="eb-ic">🔤</span><b>ראשי תיבות</b><small>CIA, AAA, SIEM, RTO… עם פירוש ומלכודות</small></button>
+        <button class="emph-btn" data-view-go="processes" data-pf="ordered"><span class="eb-ic">🔢</span><b>השלבים</b><small>רצפי שלבים + משחק סידור</small></button>
+        <button class="emph-btn" data-quiz-go="acronym"><span class="eb-ic">❓</span><b>שאלות ראשי תיבות</b><small>פירוש ← קיצור ← פירוש</small></button>
+        <button class="emph-btn" data-quiz-go="stage"><span class="eb-ic">❓</span><b>שאלות שלבים</b><small>ראשון · הבא · אחרון · סדר</small></button>
       </div>
     </div>
 
@@ -98,6 +112,25 @@
     <div id="glossBody"></div>
   </section>
 
+  <!-- ============ ראשי תיבות ============ -->
+  <section id="view-acronyms" class="view">
+    <h2 class="view-title">🔤 ראשי תיבות — קיצורי הדרך באנגלית</h2>
+    <p class="subtitle">כל הקיצורים מכל השיעורים: הפירוש באנגלית, המשמעות בעברית, מלכודות ("לא להתבלבל עם") ומספרי שקפים. במבחן שואלים גם "מה פירוש X" וגם "איזה קיצור מתאים להגדרה".</p>
+    <div class="gloss-tools">
+      <input type="search" id="acrSearch" class="gloss-search" placeholder="🔍 חיפוש (CIA, RTO, זמינות…)">
+      <button class="btn ghost small" id="acrHide">🙈 מצב שינון (הסתר פירושים)</button>
+      <span class="muted-sm" id="acrCount"></span>
+    </div>
+    <div class="chip-row small" id="acrCats"></div>
+    <div class="sql-actions acr-actions">
+      <button class="btn small" id="acrDrillBtn">⚡ תרגול מהיר — 10 שאלות</button>
+      <button class="btn ghost small" id="acrQuizBtn">❓ כל שאלות ראשי התיבות בבוחן</button>
+      <button class="btn ghost small" id="acrFcBtn">🎴 כרטיסיות ראשי תיבות</button>
+    </div>
+    <div id="acrBody"></div>
+    <div id="acrDrill"></div>
+  </section>
+
   <!-- ============ תהליכים ============ -->
   <section id="view-processes" class="view">
     <h2 class="view-title">🔄 תהליכים ומודלים</h2>
@@ -116,7 +149,8 @@
   <section id="view-flashcards" class="view">
     <h2 class="view-title">🎴 כרטיסיות מושגים</h2>
     <p class="subtitle">לחצו על הכרטיס כדי להפוך. אפשר לתרגל בשני הכיוונים: מושג ← הגדרה, והגדרה ← מושג.</p>
-    <div class="chip-row" id="fcLessons" style="justify-content:center"></div>
+    <div class="chip-row" id="fcSrc" style="justify-content:center"></div>
+    <div class="chip-row small" id="fcLessons" style="justify-content:center"></div>
     <div class="fc-controls">
       <button class="btn ghost small" id="fcPrev">→ הקודם</button>
       <span id="fcCounter" style="font-weight:700"></span>
@@ -174,16 +208,18 @@
 
 <footer>נבנה ככלי עזר ללמידה · מבוא להגנת סייבר (7186) · התוכן מבוסס על מצגות הקורס והסילבוס</footer>
 
-<script src="js/bidi.js?v=21"></script>
-<script src="js/cyber-meta.js?v=21"></script>
-<script src="js/cyber-L1.js?v=21"></script>
-<script src="js/cyber-L2.js?v=21"></script>
-<script src="js/cyber-L3.js?v=21"></script>
-<script src="js/cyber-L4.js?v=21"></script>
-<script src="js/cyber-L5.js?v=21"></script>
-<script src="js/cyber-L6.js?v=21"></script>
-<script src="js/cyber-L7.js?v=21"></script>
-<script src="js/cyber-L8.js?v=21"></script>
-<script src="js/cyber-app.js?v=21"></script>
+<script src="js/bidi.js?v=22"></script>
+<script src="js/cyber-meta.js?v=22"></script>
+<script src="js/cyber-L1.js?v=22"></script>
+<script src="js/cyber-L2.js?v=22"></script>
+<script src="js/cyber-L3.js?v=22"></script>
+<script src="js/cyber-L4.js?v=22"></script>
+<script src="js/cyber-L5.js?v=22"></script>
+<script src="js/cyber-L6.js?v=22"></script>
+<script src="js/cyber-L7.js?v=22"></script>
+<script src="js/cyber-L8.js?v=22"></script>
+<script src="js/cyber-stages.js?v=22"></script>
+<script src="js/cyber-acronyms.js?v=22"></script>
+<script src="js/cyber-app.js?v=22"></script>
 </body>
 </html>

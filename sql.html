@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>פורטל מבחן · שפת SQL + NoSQL</title>
-  <link rel="stylesheet" href="css/styles.css?v=21">
+  <link rel="stylesheet" href="css/styles.css?v=22">
 </head>
 <body class="p-sql">
 
@@ -19,6 +19,7 @@
     </div>
     <nav class="tabs">
       <button data-view="home" class="active">🏠 בית</button>
+      <button data-view="sample" class="tab-star">⭐ מבחן לדוגמה</button>
       <button data-view="chapters">📚 סיכומים</button>
       <button data-view="syntax">📐 תחביר</button>
       <button data-view="flashcards">🎴 כרטיסיות</button>
@@ -49,8 +50,16 @@
         <div class="stat"><div class="num" id="stSql">0</div><div class="lbl">תרגילי SQL</div></div>
         <div class="stat"><div class="num" id="stMongo">0</div><div class="lbl">תרגילי MongoDB</div></div>
         <div class="stat"><div class="num" id="stDual">0</div><div class="lbl">שאלות כפולות</div></div>
+        <div class="stat"><div class="num" id="stSample">0</div><div class="lbl">⭐ שאילתות מבחן לדוגמה</div></div>
         <div class="stat"><div class="num" id="stExam">0</div><div class="lbl">ציון סימולציה הטוב</div></div>
       </div>
+    </div>
+
+    <div class="card sample-banner">
+      <div class="sb-ic">⭐</div>
+      <div><h3>המבחן יתבסס על המבחן לדוגמה</h3>
+        <p>שאלה 1 — ERD מסיפור (45) · שאלה 2 — מילון נתונים (10) · שאלה 3 — 10 שאילתות SQL (45). הכל עם בדיקה אוטומטית ופתרונות מלאים, 40 שאלות דומות ו-4 מבחנים מקבילים.</p></div>
+      <button class="btn" data-view-go="sample">לעמוד המבחן לדוגמה ←</button>
     </div>
 
     <div class="home-grid">
@@ -66,6 +75,7 @@
         <div class="card" style="margin-top:14px">
           <h3 style="margin:0 0 8px">📋 איך להתכונן</h3>
           <ol class="exam-struct">
+            <li><b>⭐ המבחן לדוגמה</b> — שלוש השאלות שלו, ואז 4 המבחנים המקבילים.</li>
             <li>קראו את הסיכומים (SQL ואז NoSQL) + דף התחביר.</li>
             <li>בוחן אמריקאי לפי נושאים — חזקו את החלשים.</li>
             <li>תרגול חי: SQL, MongoDB, ו<b>שאלות כפולות</b> (SQL + MongoDB).</li>
@@ -79,6 +89,11 @@
         </div>
       </div>
     </div>
+  </section>
+
+  <!-- ============ מבחן לדוגמה ============ -->
+  <section id="view-sample" class="view">
+    <div id="sampleBody"></div>
   </section>
 
   <!-- ============ סיכומים ============ -->
@@ -285,19 +300,23 @@
 
 <footer>נבנה ככלי עזר ללמידה · שפת SQL (3964) · התוכן מבוסס על מצגות הקורס, חוברת ה-JOIN, שיעור ה-NoSQL ועבודות ההגשה</footer>
 
-<script src="js/tsql-compat.js?v=20"></script>
-<script src="js/mongo-sim.js?v=20"></script>
-<script src="js/grader.js?v=20"></script>
-<script src="js/college2-data.js?v=20"></script>
-<script src="js/sql-data.js?v=20"></script>
-<script src="js/nosql-data.js?v=20"></script>
-<script src="js/sql-content.js?v=20"></script>
-<script src="js/nosql-content.js?v=20"></script>
-<script src="js/sql-questions.js?v=20"></script>
-<script src="js/nosql-questions.js?v=20"></script>
-<script src="js/sql-exercises.js?v=20"></script>
-<script src="js/nosql-exercises.js?v=20"></script>
-<script src="js/dual-questions.js?v=20"></script>
-<script src="js/sql-app.js?v=20"></script>
+<script src="js/tsql-compat.js?v=22"></script>
+<script src="js/mongo-sim.js?v=22"></script>
+<script src="js/grader.js?v=22"></script>
+<script src="js/college2-data.js?v=22"></script>
+<script src="js/sql-data.js?v=22"></script>
+<script src="js/nosql-data.js?v=22"></script>
+<script src="js/sql-content.js?v=22"></script>
+<script src="js/nosql-content.js?v=22"></script>
+<script src="js/sql-questions.js?v=22"></script>
+<script src="js/nosql-questions.js?v=22"></script>
+<script src="js/sql-exercises.js?v=22"></script>
+<script src="js/sample-variants.js?v=22"></script>
+<script src="js/sample-exam.js?v=22"></script>
+<script src="js/sample-stories.js?v=22"></script>
+<script src="js/nosql-exercises.js?v=22"></script>
+<script src="js/dual-questions.js?v=22"></script>
+<script src="js/sql-app.js?v=22"></script>
+<script src="js/sample-view.js?v=22"></script>
 </body>
 </html>

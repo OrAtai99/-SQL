@@ -22,7 +22,7 @@ S.chapters = S.chapters || []; S.flashcards = S.flashcards || []; S.quiz = S.qui
 S.exercises = S.exercises || []; S.nosql = S.nosql || {}; S.nosql.exercises = S.nosql.exercises || []; S.dual = S.dual || [];
 
 /* ---------------- התקדמות ---------------- */
-const DEF = () => ({ read:{}, quiz:{}, sql:{}, mongo:{}, dual:{}, fcKnown:{}, examBest:0, exams:[] });
+const DEF = () => ({ read:{}, quiz:{}, sql:{}, mongo:{}, dual:{}, sample:{}, fcKnown:{}, examBest:0, exams:[] });
 let P = (() => { try { return Object.assign(DEF(), JSON.parse(localStorage.getItem(PKEY) || '{}')); } catch(e){ return DEF(); } })();
 function save(){ try { localStorage.setItem(PKEY, JSON.stringify(P)); } catch(e){} }
 
@@ -40,7 +40,7 @@ const TOPIC_NAMES = {
   mssql:'T-SQL', 'nosql-basics':'יסודות NoSQL', 'nosql-crud':'CRUD במונגו', 'nosql-operators':'אופרטורים',
   'nosql-agg':'Aggregation', 'nosql-design':'תכנון מסמכים', 'nosql-vs-sql':'SQL מול NoSQL'
 };
-const SQL_SETS = { workbook:'📘 חוברת JOIN', space:'👽 חייזרים (מצגות)', college2:'🏫 מערכת המכללה', ddl:'🏗️ DDL ו-DML' };
+const SQL_SETS = { sample:'⭐ דומות למבחן לדוגמה', workbook:'📘 חוברת JOIN', space:'👽 חייזרים (מצגות)', college2:'🏫 מערכת המכללה', ddl:'🏗️ DDL ו-DML' };
 const SQL_TOPICS = { select:'SELECT', where:'WHERE', join:'JOIN', outer:'OUTER JOIN', group:'GROUP BY', case:'CASE/CAST', nested:'מקוננות', dml:'DML', ddl:'DDL', temp:'טבלאות זמניות' };
 const M_SETS = { pdf:'📄 עבודת MongoDB', lesson:'🍃 שיעור NoSQL', crud:'✏️ CRUD ואופרטורים', agg:'🔗 Aggregation' };
 const DUAL_TOPICS = { filter:'סינון', join:'JOIN', group:'קיבוץ', having:'HAVING', anti:'אנטי-JOIN', top:'TOP/limit', nulls:'NULL', dates:'תאריכים', distinct:'DISTINCT', case:'CASE', multi:'כמה טבלאות' };
@@ -72,13 +72,14 @@ const dataset = key => S.nosql.datasets[key || 'college2'];
 /* ============================================================
    ניווט
    ============================================================ */
-const VIEWS = ['home','chapters','syntax','flashcards','quiz','lab','exam'];
+const VIEWS = ['home','sample','chapters','syntax','flashcards','quiz','lab','exam'];
 function showView(id){
   if(!VIEWS.includes(id)) id = 'home';
   $$('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + id));
   $$('nav.tabs button').forEach(b => b.classList.toggle('active', b.dataset.view === id));
   if(id === 'home') renderHome();
-  if(id === 'lab' || id === 'exam') ensureEngines();
+  if(id === 'lab' || id === 'exam' || id === 'sample') ensureEngines();
+  if(id === 'sample' && window.SampleView) SampleView.show();
   window.scrollTo(0, 0);
   try { history.replaceState(null, '', '#' + id); } catch(e){}
 }
@@ -92,11 +93,14 @@ function stats(){
   const sN = S.exercises.length, sOk = S.exercises.filter(q => P.sql[q.id]).length;
   const mN = S.nosql.exercises.length, mOk = S.nosql.exercises.filter(q => P.mongo[q.id]).length;
   const dN = S.dual.length, dOk = S.dual.filter(d => P.dual[d.id] && P.dual[d.id].sql && P.dual[d.id].mongo).length;
-  return { chN, chR, qN, qOk, sN, sOk, mN, mOk, dN, dOk };
+  /* ⭐ מבחן לדוגמה: 10 השאילתות + 10 לכל מבחן מקביל (מפתחות q:<מבחן>:<מספר>) */
+  const smN = (S.examQueries||[]).length + (S.sampleStories||[]).reduce((a,st) => a + (st.queries||[]).length, 0);
+  const smOk = Object.keys(P.sample||{}).filter(k => k.startsWith('q:') && P.sample[k]).length;
+  return { chN, chR, qN, qOk, sN, sOk, mN, mOk, dN, dOk, smN, smOk };
 }
 function readiness(){
   const s = stats(), r = (a,b) => b ? a/b : 0;
-  return Math.round(100 * (0.12*r(s.chR,s.chN) + 0.23*r(s.qOk,s.qN) + 0.2*r(s.sOk,s.sN) + 0.2*r(s.mOk,s.mN) + 0.15*r(s.dOk,s.dN) + 0.10*(P.examBest/100)));
+  return Math.round(100 * (0.10*r(s.chR,s.chN) + 0.20*r(s.qOk,s.qN) + 0.17*r(s.sOk,s.sN) + 0.17*r(s.mOk,s.mN) + 0.13*r(s.dOk,s.dN) + 0.13*r(s.smOk,s.smN) + 0.10*(P.examBest/100)));
 }
 function renderHome(){
   const s = stats(), pct = readiness();
@@ -106,6 +110,7 @@ function renderHome(){
   $('#stSql').textContent = `${s.sOk}/${s.sN}`;
   $('#stMongo').textContent = `${s.mOk}/${s.mN}`;
   $('#stDual').textContent = `${s.dOk}/${s.dN}`;
+  if($('#stSample')) $('#stSample').textContent = `${s.smOk}/${s.smN}`;
   $('#stExam').textContent = P.examBest;
   const card = c => `<div class="card home-card ${P.read[c.id]?'done-card':''}" data-ch="${esc(c.id)}">
       <div class="ic">${c.icon||'📘'}</div><div><h3>${esc(c.title)}</h3>
@@ -727,7 +732,7 @@ function setupDual(){
 let exam = null, examTimer = null;
 const EXAM_MODES = {
   dual:   { title:'מבחן SQL + NoSQL', desc:'5 שאלות — כל שאלה נענית גם ב-SQL וגם ב-MongoDB (10+10 נק\'), בדיוק כמו "עבודת ישור קו".' },
-  sample: { title:'המבחן לדוגמה (14.2.25)', desc:'10 שאילתות SQL על מערכת המכללה מהמבחן לדוגמה (שאלה 3, 45 נק\' — מנורמל ל-100).' },
+  sample: { title:'המבחן לדוגמה (14.2.25)', desc:'10 שאילתות SQL על מערכת המכללה מהמבחן לדוגמה (שאלה 3, 45 נק\' — מנורמל ל-100). המבחן המלא (ERD + מילון + שאילתות) ו-4 מבחנים מקבילים — בלשונית ⭐ מבחן לדוגמה.' },
   theory: { title:'מבחן תאוריה', desc:'20 שאלות אמריקאיות מעורבות SQL + NoSQL (5 נק\' לשאלה).' },
 };
 function pickDualExam(){
@@ -854,13 +859,30 @@ async function finishExam(){
   $('#examResult').scrollIntoView({ behavior:'smooth' });
 }
 function setupExam(){
-  $('#examModes').innerHTML = Object.entries(EXAM_MODES).map(([k,m]) => `<div class="card exam-mode ${k==='dual'?'featured':''}">
-      ${k==='dual'?'<div class="rec-badge">⭐ מומלץ — במתכונת המבחן</div>':''}<h3>${esc(m.title)}</h3><p>${esc(m.desc)}</p>
-      <button class="btn" data-mode="${k}">🚀 התחל</button></div>`).join('');
+  const BADGE = { dual:'⭐ מומלץ — SQL + NoSQL', sample:'⭐ המבחן יתבסס עליו' };
+  $('#examModes').innerHTML = Object.entries(EXAM_MODES).map(([k,m]) => `<div class="card exam-mode ${BADGE[k]?'featured':''}">
+      ${BADGE[k]?`<div class="rec-badge">${BADGE[k]}</div>`:''}<h3>${esc(m.title)}</h3><p>${esc(m.desc)}</p>
+      <button class="btn" data-mode="${k}">🚀 התחל</button>${k==='sample'?'<button class="btn ghost small" data-view-go="sample">⭐ למבחן המלא (45/10/45)</button>':''}</div>`).join('');
+  $$('#examModes [data-view-go]').forEach(b => b.onclick = () => showView(b.dataset.viewGo));
   $$('#examModes [data-mode]').forEach(b => b.onclick = () => startExam(b.dataset.mode));
   $('#examFinishBtn').onclick = finishExam;
   $('#examRestartBtn').onclick = () => { $('#examRun').classList.add('hidden'); $('#examIntro').classList.remove('hidden'); window.scrollTo(0,0); };
 }
+
+/* ============================================================
+   ממשק לעמוד "⭐ מבחן לדוגמה" (js/sample-view.js)
+   ============================================================ */
+window.SQLAPP = {
+  esc, bidi, ebidi, clean, shuffle, LET,
+  ensureEngines, runSqlUI, gradeSqlUI, expectedSql, resultTable, solutionBlock, tablePreview, tablesInQuery,
+  notesHtml, lintSql, lintHtml, editorKeys, fb, friendlySqlError,
+  prog: () => P, save, showView,
+  openLabSet(set, id){
+    sqlSetF = set; sqlTopicF = 'all'; curSql = null;
+    showView('lab'); showLab('sql'); renderSqlFilters(); renderSqlList();
+    if(id) selectSql(id);
+  }
+};
 
 /* ============================================================
    אתחול
@@ -871,6 +893,7 @@ function init(){
   $$('nav.tabs button').forEach(b => b.onclick = () => showView(b.dataset.view));
   $$('#labTabs button').forEach(b => b.onclick = () => showLab(b.dataset.lab));
   $('#homeStart').onclick = () => showView('exam');
+  $$('main [data-view-go]').forEach(b => b.onclick = () => showView(b.dataset.viewGo));
   $('#resetProg').onclick = () => { if(confirm('לאפס את כל ההתקדמות בקורס הזה?')){ P = DEF(); save(); location.reload(); } };
   const firstSql = S.chapters.find(c => c.track === 'sql'); if(firstSql){ currentChap = firstSql.id; }
   renderChapTrack(); if(firstSql) { $('#chapBody').innerHTML = ''; selectChapterSilently(firstSql.id); }

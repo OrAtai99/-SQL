@@ -11,7 +11,8 @@ import re
 import sys
 from pathlib import Path
 
-CHIP = {"Instagram": "#C13584", "YouTube": "#CC0000", "TikTok": "#111111", "Telegram": "#229ED9"}
+CHIP = {"Instagram": "#C13584", "YouTube": "#CC0000", "TikTok": "#111111", "Telegram": "#229ED9",
+        "Pinterest": "#E60023"}
 
 
 def fill(spec: dict) -> str:

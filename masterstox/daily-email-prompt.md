@@ -6,7 +6,9 @@ Steps:
 1. Load the GitHub, Vercel and Gmail tools (ToolSearch: "+github actions", "+Vercel aggregate", "+Gmail send"). If GitHub calls to OrAtai99/Master.Stox are refused as out of scope, call the add_repo tool (owner OrAtai99, repo Master.Stox, access read) once and retry.
 2. Dispatch the workflow `daily-numbers.yml` in OrAtai99/Master.Stox on ref main (no inputs). Note the time.
 3. While it runs, read Vercel Web Analytics for project prj_gwmAyNs2ApIA1wxLsdNYS7J385E2 (team team_Ex2hrfapYjTNsF1J33qdIF4b). "Yesterday" = the previous calendar day in Asia/Jerusalem (convert to UTC bounds).
+   - Real visitors only (added 16/10): pass filter `osName ne ''` on every aggregate_pageviews and aggregate_events call. Visits with no OS recorded are almost all automated (14 such "US" visits on 9–16/10). From 16/10 the site also drops visits from devices Or marked with ?owner=1.
    - aggregate_pageviews by ["day","country"] for the last 7 days (limit 5) → visitors yesterday by country, and 7-day total.
+   - aggregate_pageviews by ["day","deviceType"] for the last 7 days → phone visitors (deviceType mobile) yesterday and 7 days. Put "מטלפון: N" in the visitors tile's 7-day line, e.g. "7 ימים: 62 · מטלפון: 0". Phone visits are the shoppers: real traffic from Instagram was almost all phones, and on 9–16/10 all 57 Israeli visits were one Windows desktop around each YouTube upload. If phone visitors yesterday = 0, say so in the headline.
    - aggregate_events by ["day","eventName"] for the last 7 days → affiliate_click (clicks out to AliExpress) and direct_click, yesterday and 7-day total.
    - aggregate_pageviews by ["requestPath"] for yesterday, limit 5 → top pages (product pages are /p/<id>).
    - Click-out rate = clicks ÷ visitors (yesterday and 7 days).

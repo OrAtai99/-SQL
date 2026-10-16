@@ -695,3 +695,8 @@ html[data-theme="dark"] .p-cyber nav.tabs button.tab-star:not(.active){color:#f5
 .p-cyber .sim-head{font-weight:700;color:var(--ink2);margin:6px 0 8px}
 .p-cyber .go-lesson{margin-top:8px}
 .p-cyber #view-sample .explain{white-space:pre-line}
+
+/* ---------- 3964 — הערות על הפתרון הרשמי בשאלות הכפולות ---------- */
+.p-sql .official-notes{margin-top:12px;background:rgba(255,180,84,.10);border:1px solid var(--warn);border-radius:12px;padding:10px 14px}
+.p-sql .official-notes ul{margin:6px 0 0;padding-inline-start:22px}
+.p-sql .official-notes li{margin:3px 0;unicode-bidi:plaintext}

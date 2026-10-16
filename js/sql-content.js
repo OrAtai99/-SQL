@@ -832,13 +832,13 @@ JOIN Aliens_in_trips AIT ON A.id_no = AIT.id_no
 JOIN Trips T             ON AIT.t_no = T.t_no
 WHERE YEAR(T.d_date) &lt; 2000;</pre><p><b>תוצאה:</b> 5 שורות</p><div style="overflow-x:auto" dir="ltr"><table class="mini" dir="ltr"><tr><th>aname</th></tr><tr><td>Bill Gates</td></tr><tr><td>E.T.</td></tr><tr><td>Bin-Laden</td></tr><tr><td>B.A.</td></tr><tr><td>Spoc’s dog</td></tr></table></div>
 <p>(המסעות 5 ו-6 מ-1800.) <code>DISTINCT</code> חשוב כשמבקשים "שמות": חייזר שהשתתף בשני מסעות כאלה היה מופיע פעמיים.</p>
-<p><b>עבודת ישור קו, שאלה 1</b> — סטודנטים, קורסים ותאריך הרשמה, <u>הרשמות פעילות בלבד</u>:</p>
+<p><b>עבודת ישור קו, שאלה 6</b> — סטודנטים, קורסים ותאריך הרשמה, <u>הרשמות פעילות בלבד</u>:</p>
 <pre>SELECT s.firstName, s.lastName, c.courseName, e.enrollmentDate
 FROM enrollments e
 JOIN students s ON s.id = e.studentId
 JOIN courses c  ON c.id = e.courseId
 WHERE e.status = 'Active';</pre><p><b>תוצאה:</b> 13 שורות</p><div style="overflow-x:auto" dir="ltr"><table class="mini" dir="ltr"><tr><th>firstName</th><th>lastName</th><th>courseName</th><th>enrollmentDate</th></tr><tr><td>David</td><td>Levi</td><td>MongoDB</td><td>2025-10-01</td></tr><tr><td>David</td><td>Levi</td><td>SQL Server</td><td>2025-10-01</td></tr><tr><td>David</td><td>Levi</td><td>Python</td><td>2025-10-03</td></tr><tr><td>Noa</td><td>Cohen</td><td>MongoDB</td><td>2025-10-02</td></tr><tr><td>Yossi</td><td>Mizrahi</td><td>SQL Server</td><td>2025-10-04</td></tr><tr><td>Maya</td><td>Peretz</td><td>MongoDB</td><td>2025-10-06</td></tr><tr><td colspan="4">… ועוד 7 שורות</td></tr></table></div>
-<p><b>עבודת ישור קו, שאלה 4</b> — כל ההגשות עם שם הסטודנט, שם הקורס והמרצה (4 טבלאות):</p>
+<p><b>עבודת ישור קו, שאלה 9</b> — כל ההגשות עם שם הסטודנט, שם הקורס והמרצה (4 טבלאות):</p>
 <pre>SELECT sub.id AS submissionId,
        st.firstName + ' ' + st.lastName AS student,
        c.courseName,
@@ -898,7 +898,7 @@ WHERE e.enrollment_id IS NULL;</pre><p><b>תוצאה:</b> חוברת תרגיל 
 FROM Courses c
 LEFT JOIN Enrollments e ON c.course_id = e.course_id
 WHERE e.enrollment_id IS NULL;</pre><p><b>תוצאה:</b> חוברת תרגיל 10 — קורסים בלי אף סטודנט — 0 שורות (תוצאה ריקה)</p>
-<p>תוצאה ריקה היא תשובה נכונה — בחוברת לכל קורס יש סטודנט. ב-college2 (ישור קו שאלות 2 ו-5):</p>
+<p>תוצאה ריקה היא תשובה נכונה — בחוברת לכל קורס יש סטודנט. ב-college2 (ישור קו שאלות 7 ו-10):</p>
 <pre>SELECT s.id, s.firstName, s.lastName
 FROM students s
 LEFT JOIN enrollments e ON e.studentId = s.id
@@ -993,7 +993,7 @@ GROUP BY c.id, c.courseName;</pre><p><b>תוצאה:</b> 6 שורות</p><div sty
 <tr><td>מסנן</td><td>שורות</td><td>קבוצות</td></tr>
 <tr><td>מותר פונקציית צבירה?</td><td><b>לא</b> (שגיאה 147)</td><td>כן — זה כל הרעיון</td></tr>
 </table></div>
-<p><b>עבודת ישור קו, שאלה 3</b> — הסטודנטים הרשומים ליותר משני קורסים <u>פעילים</u>:</p>
+<p><b>עבודת ישור קו, שאלה 8</b> — הסטודנטים הרשומים ליותר משני קורסים <u>פעילים</u>:</p>
 <pre>SELECT s.id, s.firstName, s.lastName, COUNT(*) AS activeCourses
 FROM students s
 JOIN enrollments e ON e.studentId = s.id
@@ -1035,7 +1035,7 @@ JOIN Trips T             ON AIT.t_no = T.t_no
 JOIN Planets P           ON T.p_no  = P.p_no
 GROUP BY A.id_no, A.aname, P.p_no, P.pname;</pre><p><b>תוצאה:</b> 16 שורות</p><div style="overflow-x:auto" dir="ltr"><table class="mini" dir="ltr"><tr><th>aname</th><th>pname</th><th>visits</th></tr><tr><td>E.T.</td><td>Pluto</td><td>1</td></tr><tr><td>E.T.</td><td>London</td><td>1</td></tr><tr><td>Bin-Laden</td><td>Naren</td><td>1</td></tr><tr><td>Bin-Laden</td><td>Alpha Centaury</td><td>1</td></tr><tr><td>Bin-Laden</td><td>K-PAX</td><td>1</td></tr><tr><td colspan="3">… ועוד 11 שורות</td></tr></table></div>
 
-<h4>ממוצע לכל קורס עם שמות (ישור קו, שאלה 6)</h4>
+<h4>ממוצע לכל קורס עם שמות (ישור קו, שאלה 11)</h4>
 <pre>SELECT c.courseName,
        l.firstName + ' ' + l.lastName       AS lecturer,
        CAST(AVG(sub.grade) AS DECIMAL(5,2)) AS avgGrade
@@ -1138,7 +1138,7 @@ FROM students
 WHERE id IN (SELECT studentId FROM submissions WHERE courseId = 2);</pre><p><b>תוצאה:</b> סטודנטים שהגישו מטלה בקורס 2, הוא קורס SQL Server — 3 שורות</p><div style="overflow-x:auto" dir="ltr"><table class="mini" dir="ltr"><tr><th>firstName</th><th>lastName</th></tr><tr><td>David</td><td>Levi</td></tr><tr><td>Yossi</td><td>Mizrahi</td></tr><tr><td>Itai</td><td>Friedman</td></tr></table></div>
 <pre>SELECT id, firstName, lastName
 FROM students
-WHERE id NOT IN (SELECT studentId FROM enrollments);</pre><p><b>תוצאה:</b> סטודנטים בלי אף הרשמה — ישור קו שאלה 2 — שורה אחת</p><div style="overflow-x:auto" dir="ltr"><table class="mini" dir="ltr"><tr><th>id</th><th>firstName</th><th>lastName</th></tr><tr><td>10</td><td>Lior</td><td>Shalom</td></tr></table></div>
+WHERE id NOT IN (SELECT studentId FROM enrollments);</pre><p><b>תוצאה:</b> סטודנטים בלי אף הרשמה — ישור קו שאלה 7 — שורה אחת</p><div style="overflow-x:auto" dir="ltr"><table class="mini" dir="ltr"><tr><th>id</th><th>firstName</th><th>lastName</th></tr><tr><td>10</td><td>Lior</td><td>Shalom</td></tr></table></div>
 <div class="callout warn"><b>מלכודת NOT IN + NULL:</b> אם תת-השאילתה מחזירה ולו <b>NULL אחד</b>, <code>NOT IN</code> מחזיר תוצאה ריקה — כי <code>x &lt;&gt; NULL</code> הוא UNKNOWN:
 <pre>SELECT firstName
 FROM students
@@ -1154,7 +1154,7 @@ WHERE NOT EXISTS (SELECT 1
                   WHERE e.courseId = c.id);</pre><p><b>תוצאה:</b> קורסים בלי אף הרשמה — שורה אחת</p><div style="overflow-x:auto" dir="ltr"><table class="mini" dir="ltr"><tr><th>id</th><th>courseName</th></tr><tr><td>6</td><td>Cyber Security</td></tr></table></div>
 <pre>SELECT a.id, a.title
 FROM assignments a
-WHERE NOT EXISTS (SELECT 1 FROM submissions s WHERE s.assignmentId = a.id);</pre><p><b>תוצאה:</b> מטלות בלי אף הגשה — ישור קו שאלה 5 — שורה אחת</p><div style="overflow-x:auto" dir="ltr"><table class="mini" dir="ltr"><tr><th>id</th><th>title</th></tr><tr><td>7</td><td>Stored Procedures</td></tr></table></div>
+WHERE NOT EXISTS (SELECT 1 FROM submissions s WHERE s.assignmentId = a.id);</pre><p><b>תוצאה:</b> מטלות בלי אף הגשה — ישור קו שאלה 10 — שורה אחת</p><div style="overflow-x:auto" dir="ltr"><table class="mini" dir="ltr"><tr><th>id</th><th>title</th></tr><tr><td>7</td><td>Stored Procedures</td></tr></table></div>
 <p>שלוש דרכים שקולות ל-"X שאין לו Y": <code>LEFT JOIN … WHERE y.id IS NULL</code>, <code>NOT EXISTS</code>, <code>NOT IN</code> (בזהירות עם NULL).</p>
 <p>תת-שאילתה מתואמת עם צבירה — ההגשה עם הציון הגבוה ביותר <b>בכל קורס</b>:</p>
 <pre>SELECT s.id, s.courseId, s.studentId, s.grade

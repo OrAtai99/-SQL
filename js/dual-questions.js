@@ -7,7 +7,10 @@
    חוזה:
    SQLC.dual = [{ id, topic, difficulty(1-3), source, prompt,
                   sql:   { solution, alt?, explain },
-                  mongo: { solution, alt?, compare?, ordered?, explain } }]
+                  mongo: { solution, alt?, compare?, ordered?, explain },
+                  official?: { sql?, mongo?, notes[] } }]
+   official = הפתרון הרשמי של המרצה מילה במילה, כולל הטעויות (לתצוגה בלבד, לא נבדק),
+              ו-notes = מה שגוי בו ואיך כותבים נכון במבחן. בשאלה שהמרצה לא פתר: notes בלבד.
    topic: filter | join | group | having | anti | top | nulls | dates | distinct | case | multi
    • prompt מציין בדיוק אילו עמודות/שדות להציג ובאיזה סדר.
    • בדיקת SQL: משווים ערכים לפי סדר העמודות (שמות העמודות לא נבדקים);
@@ -16,15 +19,335 @@
      שמזהה יופיע כ-_id; אבל שדה מיותר (למשל _id שלא ביקשו) = תשובה שונה.
    • explain = טקסט רגיל; \n = שורה חדשה (להציג עם white-space: pre-line).
    הפתרונות כתובים בסגנון T-SQL (SQL Server) ומומרים ל-SQLite להרצה.
-   הפתרונות אינם רשמיים של המרצה — נכתבו ונבדקו מול הנתונים.
+   הפתרונות (solution/alt) אינם רשמיים של המרצה — נכתבו ונבדקו מול הנתונים.
    ============================================================ */
 window.SQLC = window.SQLC || {};
 
 SQLC.dual = [
 
-  /* ================== עבודת ישור קו — 6 השאלות ================== */
+  /* ================== עבודת ישור קו — 11 השאלות, לפי המספור בפתרון הרשמי ================== */
 
-  { id:'d1', topic:'join', difficulty:2, source:'עבודת ישור קו — שאלה 1 · עבודת MongoDB (PDF) — תרגיל 12',
+  { id:'yk1', topic:'join', difficulty:1, source:'עבודת ישור קו — שאלה 1 (פתרון רשמי)',
+    prompt:`הציגו את שם הסטודנט, כתובת הדוא״ל שלו, מזהה ההרשמה ותאריך ההרשמה (כל ההרשמות, בלי סינון לפי סטטוס).
+פלט (לפי הסדר): firstName, lastName, email, enrollmentId, enrollmentDate. במונגו מותר שמזהה ההרשמה יופיע בשדה _id במקום בשדה נפרד (לא בשניהם).`,
+    sql:{
+      solution:`SELECT s.firstName, s.lastName, s.email, e.id AS enrollmentId, e.enrollmentDate
+FROM students s
+JOIN enrollments e ON s.id = e.studentId;`,
+      alt:[
+`SELECT s.firstName, s.lastName, s.email, e.id, e.enrollmentDate
+FROM enrollments e
+INNER JOIN students s ON e.studentId = s.id;`,
+`SELECT s.firstName, s.lastName, s.email, e.id, e.enrollmentDate
+FROM students s, enrollments e
+WHERE s.id = e.studentId;`],
+      explain:`"מזהה ההרשמה" ו"תאריך ההרשמה" הם עמודות של טבלת enrollments: e.id ו-e.enrollmentDate. זה לא registrationYear, שהיא שנת ההרשמה של הסטודנט למכללה (עמודה בטבלת students). זו בדיוק הטעות בפתרון הרשמי.
+השם והדוא״ל נמצאים ב-students, ולכן צריך JOIN: e.studentId = s.id (המפתח הזר בטבלת ההרשמות מול המפתח הראשי של הסטודנט).
+כל הרשמה היא שורה בפלט: סטודנט עם 3 הרשמות יופיע 3 פעמים. בסך הכול 15 שורות.
+INNER JOIN משמיט את Lior, שאין לו אף הרשמה. השאלה לא ביקשה לסנן לפי status, ולכן גם ההרשמות הלא פעילות של Noa ושל Eyal מופיעות.
+יש עמודה בשם id בשתי הטבלאות, ולכן חובה לכתוב קידומת (e.id). בלי קידומת SQL Server מחזיר שגיאה: Ambiguous column name 'id'.`
+    },
+    mongo:{
+      solution:`db.students.aggregate([
+  { $lookup: { from: "enrollments", localField: "_id", foreignField: "studentId", as: "enrollment" } },
+  { $unwind: "$enrollment" },
+  { $project: { _id: 0, firstName: 1, lastName: 1, email: 1,
+                enrollmentId: "$enrollment._id", enrollmentDate: "$enrollment.enrollmentDate" } }
+])`,
+      alt:[
+`db.enrollments.aggregate([
+  { $lookup: { from: "students", localField: "studentId", foreignField: "_id", as: "student" } },
+  { $unwind: "$student" },
+  { $project: { firstName: "$student.firstName", lastName: "$student.lastName",
+                email: "$student.email", enrollmentDate: 1 } }
+])`],
+      explain:`זה המבנה של הפתרון הרשמי (מתחילים מ-students), אחרי תיקון:
+1) $lookup — מצרף לכל סטודנט מערך enrollment עם כל ההרשמות שלו. הכיוון: localField: "_id" (המזהה של הסטודנט) מול foreignField: "studentId" (השדה ב-enrollments שמפנה אליו). במונגו המפתח הראשי הוא _id, לא id.
+2) $unwind: "$enrollment" — מפרק את המערך: סטודנט עם 3 הרשמות הופך ל-3 מסמכים, אחד לכל הרשמה. סטודנט עם מערך ריק (Lior) נעלם, בדיוק כמו ב-INNER JOIN.
+3) $project — _id: 0 מסתיר את מזהה הסטודנט. enrollmentId: "$enrollment._id" ו-enrollmentDate: "$enrollment.enrollmentDate" שולפים שדות מתוך תת-המסמך (עם $ ונקודה).
+חלופה פשוטה יותר: להתחיל מ-enrollments. כל מסמך הוא כבר הרשמה, ה-_id שלו הוא מזהה ההרשמה, ומביאים את פרטי הסטודנט ב-$lookup אחד.
+שימו לב: ב-$project אסור לערבב 0 ו-1, חוץ מ-_id. לכן Id: 0 לצד firstName: 1 (כמו בפתרון הרשמי) נכשל, ו-_id: 0 תקין.`
+    },
+    official:{
+      sql:`Select s.firstname, s.email, s.registrationYear, e.status
+From students s
+Join enrollments e
+On s.id = e.studentId`,
+      mongo:`Db.students.aggregate([
+             {
+                  $lookup: {
+                           From:"enrollments" ,
+                           Localfield:"id",
+                           Foreignfield: studentId,
+                           As: "enrollment"
+}},{ $unwind: "$enrollment"},
+{ $project: {
+         Id: 0,
+         firstName: 1,
+         email: 1,
+         status: "$enrollment.status"
+}}]);`,
+      notes:[
+`SQL: השאלה מבקשת מזהה הרשמה ותאריך הרשמה, אבל בפתרון נבחרו s.registrationYear (שנת ההרשמה של הסטודנט למכללה, עמודה של students) ו-e.status. הנכון: e.id ו-e.enrollmentDate.`,
+`SQL: מוצג רק s.firstname. כדי להציג את "שם הסטודנט" עדיף להוסיף גם s.lastName, או לבנות שם מלא: s.firstName + ' ' + s.lastName.`,
+`מונגו: Db.students — ב-Shell כותבים db באות קטנה. Db הוא משתנה שלא קיים (ReferenceError).`,
+`מונגו: שמות הפרמטרים של $lookup רגישים לאותיות: from, localField, foreignField, as. עם From / Localfield / Foreignfield / As מתקבלת שגיאה (unknown argument to $lookup).`,
+`מונגו: localField: "id" — במונגו המפתח הראשי הוא _id, ואין שדה id. הנכון: localField: "_id". עם "id" כל המערכים יוצאים ריקים, ה-$unwind מוחק את כל המסמכים והתוצאה ריקה.`,
+`מונגו: Foreignfield: studentId בלי מרכאות — זה משתנה JavaScript ולא שם שדה (ReferenceError). שמות שדות כותבים כמחרוזת: foreignField: "studentId".`,
+`מונגו: Id: 0 ב-$project — צריך _id: 0. בנוסף, אסור לערבב 0 ו-1 באותו $project (חוץ מ-_id), ולכן Id: 0 לצד firstName: 1 גורם לשגיאה.`,
+`מונגו: מוצג status במקום מזהה ההרשמה ותאריך ההרשמה. הנכון: enrollmentId: "$enrollment._id", enrollmentDate: "$enrollment.enrollmentDate".`]
+    }
+  },
+
+  { id:'yk2', topic:'join', difficulty:1, source:'עבודת ישור קו — שאלה 2 (פתרון רשמי)',
+    prompt:`הציגו את שם הקורס ואת שם המרצה המלמד אותו.
+פלט: courseName, lecturerName (שם מלא בפורמט "שם פרטי, רווח, שם משפחה", למשל "Moshe Cohen"). במונגו בלי _id.`,
+    sql:{
+      solution:`SELECT c.courseName, l.firstName + ' ' + l.lastName AS lecturerName
+FROM courses c
+JOIN lecturers l ON c.lecturerId = l.id;`,
+      alt:[
+`SELECT c.courseName, CONCAT(l.firstName, ' ', l.lastName) AS lecturerName
+FROM courses c
+INNER JOIN lecturers l ON l.id = c.lecturerId;`,
+`SELECT c.courseName, l.firstName + ' ' + l.lastName
+FROM lecturers l
+JOIN courses c ON l.id = c.lecturerId;`],
+      explain:`בטבלת lecturers אין עמודה name. יש firstName ו-lastName, ולכן בונים שם מלא: l.firstName + ' ' + l.lastName (שרשור ב-T-SQL), או CONCAT(l.firstName, ' ', l.lastName).
+ההבדל ביניהם: עם + מספיק ערך NULL אחד כדי שכל השם יהיה NULL, ואילו CONCAT מתייחס ל-NULL כמחרוזת ריקה.
+המפתח הזר נמצא ב-courses (c.lecturerId), ולכן תנאי ה-JOIN הוא c.lecturerId = l.id.
+התוצאה: 6 קורסים. Moshe Cohen מלמד 2 קורסים, ולכן הוא מופיע פעמיים. Dana Klein לא מופיעה, כי היא לא מלמדת אף קורס ו-INNER JOIN משמיט אותה. כדי לכלול גם מרצים בלי קורסים מתחילים מ-lecturers עם LEFT JOIN.`
+    },
+    mongo:{
+      solution:`db.courses.aggregate([
+  { $lookup: { from: "lecturers", localField: "lecturerId", foreignField: "_id", as: "lecturer" } },
+  { $unwind: "$lecturer" },
+  { $project: { _id: 0, courseName: 1,
+                lecturerName: { $concat: ["$lecturer.firstName", " ", "$lecturer.lastName"] } } }
+])`,
+      alt:[
+`db.lecturers.aggregate([
+  { $lookup: { from: "courses", localField: "_id", foreignField: "lecturerId", as: "course" } },
+  { $unwind: "$course" },
+  { $project: { _id: 0, courseName: "$course.courseName",
+                lecturerName: { $concat: ["$firstName", " ", "$lastName"] } } }
+])`],
+      explain:`מתחילים מ-courses, כי כל שורה בפלט היא קורס.
+1) $lookup — localField: "lecturerId" (המפתח הזר בקורס) מול foreignField: "_id" (המזהה של המרצה). התוצאה היא מערך lecturer עם מרצה אחד.
+2) $unwind: "$lecturer" — הופך את המערך לאובייקט, כדי שאפשר יהיה לכתוב "$lecturer.firstName".
+3) $project — courseName: 1 משאיר את שם הקורס, ו-$concat מחבר שם פרטי, רווח ושם משפחה. זו המקבילה של + ב-T-SQL.
+חלופה: להתחיל מ-lecturers. אז ה-FK נמצא ב-Collection השני, והכיוון מתהפך: localField: "_id", foreignField: "lecturerId". ה-$unwind משמיט את Dana, שהמערך שלה ריק.`
+    },
+    official:{
+      sql:`Select c.coursename , l.name
+From courses c
+Join lecturers l
+On c.lecturerId = l.id`,
+      mongo:`Db.courses.aggragate([
+       {
+             $lookup : {
+                    From: " lecturers"
+                    Localfield: "lecturerid"
+                   Foreignfield:"id"
+                   As: "lecturer"
+}},
+{ $unwind: "$lecturer"},
+{ $project: {
+           Id: 0
+          Coursename: 1
+          Lecturername :"$lecturer.name"
+}}])`,
+      notes:[
+`SQL: l.name — אין עמודה כזו בטבלת lecturers. הנכון: l.firstName + ' ' + l.lastName AS lecturerName (או CONCAT).`,
+`SQL: c.coursename באותיות קטנות עובד ב-SQL Server, כי שמות עמודות לא רגישים לאותיות ב-Collation של ברירת המחדל. במונגו זה לא עובד: שם השדה חייב להיות בדיוק courseName.`,
+`מונגו: Db.courses.aggragate — צריך db באות קטנה ו-aggregate. עם שגיאת הכתיב מתקבלת שגיאה: aggragate is not a function.`,
+`מונגו: From: " lecturers" — יש רווח בתוך המחרוזת, ולכן מונגו מחפש Collection בשם " lecturers" שלא קיים. $lookup לא מתריע על כך: המערך יוצא ריק, ה-$unwind מוחק הכול והתוצאה ריקה. הנכון: from: "lecturers".`,
+`מונגו: חסרים פסיקים בין הפרמטרים של $lookup ובין השדות של $project (שגיאת תחביר). שמות הפרמטרים: from, localField, foreignField, as.`,
+`מונגו: Localfield: "lecturerid" — שמות שדות במונגו רגישים לאותיות, והשדה הוא "lecturerId". Foreignfield: "id" — צריך "_id".`,
+`מונגו: Id: 0 → _id: 0. עם Id: 0 לצד שדות עם 1 מתקבלת שגיאה, כי אסור לערבב 0 ו-1 ב-$project (חוץ מ-_id). Coursename: 1 → courseName: 1 (שדה בשם Coursename לא קיים, ולכן הוא פשוט לא יוצג).`,
+`מונגו: "$lecturer.name" — אין שדה name במסמך המרצה. הנכון: lecturerName: { $concat: ["$lecturer.firstName", " ", "$lecturer.lastName"] }.`]
+    }
+  },
+
+  { id:'yk3', topic:'join', difficulty:1, source:'עבודת ישור קו — שאלה 3 (פתרון רשמי)',
+    prompt:`הציגו את שם המטלה, תאריך ההגשה האחרון ושם הקורס שאליו היא שייכת.
+פלט: title, dueDate, courseName (במונגו בלי _id).`,
+    sql:{
+      solution:`SELECT a.title, a.dueDate, c.courseName
+FROM assignments a
+JOIN courses c ON a.courseId = c.id;`,
+      alt:[
+`SELECT a.title, a.dueDate, c.courseName
+FROM courses c
+INNER JOIN assignments a ON c.id = a.courseId;`],
+      explain:`לפי ה-DDL של העבודה, שם המטלה הוא העמודה title. אין עמודה assignmentName.
+"תאריך ההגשה האחרון" הוא dueDate, המועד האחרון של המטלה. זה לא submissionDate, שהוא התאריך שבו סטודנט הגיש בפועל (בטבלת submissions).
+שם הטבלה הוא assignments (יש n אחרי ה-g). ב-SQL Server שם טבלה שגוי נותן שגיאה: Invalid object name.
+התוצאה: 7 מטלות. Cyber Security לא מופיע, כי אין לו מטלות.`
+    },
+    mongo:{
+      solution:`db.assignments.aggregate([
+  { $lookup: { from: "courses", localField: "courseId", foreignField: "_id", as: "course" } },
+  { $unwind: "$course" },
+  { $project: { _id: 0, title: 1, dueDate: 1, courseName: "$course.courseName" } }
+])`,
+      alt:[
+`db.assignments.aggregate([
+  { $lookup: { from: "courses", localField: "courseId", foreignField: "_id", as: "course" } },
+  { $project: { _id: 0, title: 1, dueDate: 1,
+                courseName: { $arrayElemAt: ["$course.courseName", 0] } } }
+])`],
+      explain:`מתחילים מ-assignments, כי כל שורה בפלט היא מטלה.
+1) $lookup — localField: "courseId" (המפתח הזר במטלה) מול foreignField: "_id" (המזהה של הקורס).
+2) $unwind: "$course" — הופך את המערך course לאובייקט.
+3) $project — title: 1 ו-dueDate: 1 משאירים שדות קיימים. courseName: "$course.courseName" יוצר שדה חדש מתוך תת-המסמך. _id: 0 מסתיר את מזהה המטלה.
+חלופה בלי $unwind: { $arrayElemAt: ["$course.courseName", 0] } לוקח את האיבר הראשון מהמערך. התוצאה זהה, כי לכל מטלה יש בדיוק קורס אחד.
+שמות שדות במונגו רגישים לאותיות: DueDate או AssigmentName (כמו בפתרון הרשמי) הם שדות שלא קיימים, ולכן לא יוצגו.`
+    },
+    official:{
+      sql:`Select a.assigmentName , a.dueDate , c.courseName
+From assigments a
+Join courses c
+    On a.courseId = c.id`,
+      mongo:`Db.assigments.aggregate ([
+   {
+         $lookup: {
+                 From: "courses" ,
+                 Localfield: "courseId",
+                 ForeignField : "id",
+                 As: "course"
+           }
+         },
+         { $unwind: "$course" } ,
+         {
+               $project: {
+                     Id: 0 ,
+                     AssigmentName : 1,
+                    DueDate: 1,
+                    CourseName: "$course.courseName"   ,
+        }
+}])`,
+      notes:[
+`SQL: a.assigmentName — אין עמודה כזו. שם המטלה הוא a.title.`,
+`SQL: From assigments — שגיאת כתיב בשם הטבלה (חסרה n). הנכון: assignments. ב-SQL Server זו שגיאה: Invalid object name.`,
+`מונגו: Db.assigments — צריך db.assignments. במונגו שם Collection שגוי לא גורם לשגיאה: מתקבלת תוצאה ריקה, ולכן קשה לגלות את הטעות.`,
+`מונגו: From / Localfield / ForeignField / As → from / localField / foreignField / as. ForeignField: "id" → foreignField: "_id".`,
+`מונגו: Id: 0 → _id: 0. עם Id: 0 לצד שדות עם 1 מתקבלת שגיאה, כי אסור לערבב 0 ו-1 ב-$project (חוץ מ-_id).`,
+`מונגו: AssigmentName: 1 → title: 1, ו-DueDate: 1 → dueDate: 1. שמות שדות רגישים לאותיות, ושדה שלא קיים פשוט לא מוצג.`,
+`מונגו: הפסיק אחרי השדה האחרון ("$course.courseName"   ,) מותר ב-JavaScript, והוא לא טעות.`]
+    }
+  },
+
+  { id:'yk4', topic:'join', difficulty:1, source:'עבודת ישור קו — שאלה 4 (פתרון רשמי)',
+    prompt:`הציגו את מזהה ההגשה, תאריך ההגשה, הציון ושם הסטודנט שהגיש (כל ההגשות, גם אלה שעוד לא נבדקו).
+פלט (לפי הסדר): submissionId, submissionDate, grade, firstName, lastName. במונגו מותר שמזהה ההגשה יופיע בשדה _id במקום בשדה נפרד (לא בשניהם).`,
+    sql:{
+      solution:`SELECT sub.id AS submissionId, sub.submissionDate, sub.grade, s.firstName, s.lastName
+FROM submissions sub
+JOIN students s ON sub.studentId = s.id;`,
+      alt:[
+`SELECT sub.id, sub.submissionDate, sub.grade, s.firstName, s.lastName
+FROM students s
+INNER JOIN submissions sub ON s.id = sub.studentId;`,
+`SELECT sub.id, sub.submissionDate, sub.grade, s.firstName, s.lastName
+FROM submissions sub, students s
+WHERE sub.studentId = s.id;`],
+      explain:`המרצה לא פתר את השאלה הזו בקובץ, אבל היא באותה תבנית כמו שאלות 1–3: JOIN אחד בין טבלה עם מפתח זר לטבלה שהוא מפנה אליה.
+submissions.studentId מפנה ל-students.id, ולכן תנאי ה-JOIN הוא sub.studentId = s.id.
+התוצאה: 16 הגשות. ההגשות של Maya (8) ושל Shira (12) עוד לא נבדקו, ולכן מופיעות עם grade = NULL. ה-JOIN מתבצע על הסטודנט, ולכן NULL בציון לא מוציא את ההגשה מהתוצאה.
+כדאי לתת להגשות כינוי משלהן (sub), כי s משמש בדרך כלל ל-students. גם בהגשות וגם בסטודנטים יש עמודה בשם id, ולכן כותבים sub.id עם קידומת.`
+    },
+    mongo:{
+      solution:`db.submissions.aggregate([
+  { $lookup: { from: "students", localField: "studentId", foreignField: "_id", as: "student" } },
+  { $unwind: "$student" },
+  { $project: { submissionDate: 1, grade: 1,
+                firstName: "$student.firstName", lastName: "$student.lastName" } }
+])`,
+      alt:[
+`db.submissions.aggregate([
+  { $lookup: { from: "students", localField: "studentId", foreignField: "_id", as: "student" } },
+  { $unwind: "$student" },
+  { $project: { _id: 0, submissionId: "$_id", submissionDate: 1, grade: 1,
+                firstName: "$student.firstName", lastName: "$student.lastName" } }
+])`],
+      explain:`מתחילים מ-submissions, כי כל שורה בפלט היא הגשה.
+1) $lookup — localField: "studentId" מול foreignField: "_id" של students.
+2) $unwind: "$student" — אובייקט במקום מערך.
+3) $project — submissionDate: 1 ו-grade: 1 משאירים שדות של ההגשה, ושם הסטודנט נשלף מתוך תת-המסמך. _id לא מוסתר, והוא מזהה ההגשה.
+בהגשה שעוד לא נבדקה grade הוא null, והוא יוצג כ-null (ההגשה לא נעלמת).
+חלופה: _id: 0 ו-submissionId: "$_id", כדי שהמזהה יופיע בשם ברור.`
+    },
+    official:{ notes:[`המרצה לא פתר את השאלה בקובץ — הפתרון כאן שלנו.`] }
+  },
+
+  { id:'yk5', topic:'join', difficulty:1, source:'עבודת ישור קו — שאלה 5 (פתרון רשמי)',
+    prompt:`הציגו את מזהה ההרשמה, תאריך ההרשמה, שם הקורס ומספר הנקודות האקדמיות (credits).
+פלט (לפי הסדר): id, enrollmentDate, courseName, credits (במונגו: _id, enrollmentDate, courseName, credits).`,
+    sql:{
+      solution:`SELECT e.id, e.enrollmentDate, c.courseName, c.credits
+FROM enrollments e
+JOIN courses c ON e.courseId = c.id;`,
+      alt:[
+`SELECT e.id, e.enrollmentDate, c.courseName, c.credits
+FROM enrollments e, courses c
+WHERE e.courseId = c.id;`],
+      explain:`זה הפתרון של המרצה, והוא נכון.
+enrollments.courseId מפנה ל-courses.id. ממזהה ההרשמה ומתאריך ההרשמה (מ-enrollments) מגיעים לשם הקורס ולנקודות (מ-courses).
+התוצאה: 15 הרשמות, כולל הלא פעילות, כי השאלה לא ביקשה לסנן.
+credits הם הנקודות האקדמיות של הקורס, והם חוזרים בכל הרשמה לאותו קורס.`
+    },
+    mongo:{
+      solution:`db.enrollments.aggregate([
+  { $lookup: { from: "courses", localField: "courseId", foreignField: "_id", as: "course" } },
+  { $unwind: "$course" },
+  { $project: { enrollmentDate: 1, courseName: "$course.courseName", credits: "$course.credits" } }
+])`,
+      alt:[
+`db.enrollments.aggregate([
+  { $lookup: { from: "courses", localField: "courseId", foreignField: "_id", as: "course" } },
+  { $unwind: "$course" },
+  { $project: { _id: 1, enrollmentDate: 1, courseName: "$course.courseName", credits: "$course.credits" } }
+])`],
+      explain:`מתחילים מ-enrollments, כי כל שורה בפלט היא הרשמה.
+1) $lookup — localField: "courseId" מול foreignField: "_id" של courses.
+2) $unwind: "$course" — אובייקט במקום מערך.
+3) $project — enrollmentDate: 1 משאיר את תאריך ההרשמה, ו-"$course.courseName" ו-"$course.credits" שולפים שדות מהקורס.
+מזהה ההרשמה הוא _id, והוא מוצג כברירת מחדל. אין צורך לכתוב אותו, אבל _id: 1 מותר (ראו פתרון חלופי). בפתרון הרשמי נכתב Id: 1, ושדה בשם Id לא קיים.`
+    },
+    official:{
+      sql:`Select  e.id , e.enrollmentDate , c.courseName,
+                 c.credits
+From enrollments e
+Join courses c
+On e.courseId = c.id`,
+      mongo:`Db.enrollemts, aggregate ([
+    {
+        $lookup: {
+            From: "courses",
+            LocalFeild "courseId" ,
+           ForeignFeild:"id",
+           As: course
+}},
+{$unwind: "$course" },
+{
+      $project: {
+            Id: 1 ,
+            EnrollmentDate: 1 ,
+            CourseName: "$course.courseName",
+            Credits: "$course.creidits"
+}}])`,
+      notes:[
+`SQL: הפתרון הרשמי נכון.`,
+`מונגו: Db.enrollemts, aggregate — שלוש טעויות: db באות קטנה, שם ה-Collection הוא enrollments, ולפני aggregate באה נקודה ולא פסיק. עם הפסיק JavaScript מנסה לקרוא לפונקציה בשם aggregate שלא קיימת (ReferenceError).`,
+`מונגו: LocalFeild "courseId" — חסרות נקודתיים (שגיאת תחביר), ושם הפרמטר שגוי. הנכון: localField: "courseId". באותו אופן From → from, ForeignFeild → foreignField, ו-"id" → "_id".`,
+`מונגו: As: course בלי מרכאות — JavaScript מחפש משתנה בשם course (ReferenceError). הנכון: as: "course".`,
+`מונגו: "$course.creidits" — שגיאת כתיב, השדה הוא credits. שדה שלא קיים לא גורם לשגיאה, הוא פשוט לא יוצג.`,
+`מונגו: Id: 1 — אין שדה Id. מזהה ההרשמה הוא _id, והוא מוצג ממילא כברירת מחדל. EnrollmentDate: 1 → enrollmentDate: 1 (רגיש לאותיות).`]
+    }
+  },
+
+  { id:'d1', topic:'join', difficulty:2, source:'עבודת ישור קו — שאלה 6 (פתרון רשמי) · עבודת MongoDB (PDF) — תרגיל 12',
     prompt:`הציגו את שמות כל הסטודנטים, שמות הקורסים שאליהם הם רשומים ותאריך ההרשמה. יש להציג הרשמות פעילות בלבד (status = 'Active').
 פלט (לפי הסדר): firstName, lastName, courseName, enrollmentDate. במונגו: אותם שדות, בלי _id.`,
     sql:{
@@ -74,10 +397,65 @@ INNER JOIN מתאים כאן, כי מבקשים רק סטודנטים שרשומ
 3) $unwind: "$student" — הופך את המערך (עם איבר אחד) לאובייקט רגיל, כדי שאפשר יהיה לכתוב "$student.firstName".
 4) $lookup + $unwind ל-courses באותו אופן (courseId מול _id).
 5) $project — בוחר ומעצב את שדות הפלט: "$student.firstName" שולף שדה מתוך תת-המסמך, ו-_id: 0 מסתיר את מזהה ההרשמה.`
+    },
+    official:{
+      sql:`Select s.id , s.firstName , s.lastName, c.courseName, e.enrollmentDate
+From students s
+Join enrollments e
+On s.id = e.studentId
+Join courses c
+On e.courseId = c.id
+Where  e.status ='Active'`,
+      mongo:`Db.enrollemnts.aggregate ([
+{
+       $match: {
+                Status: 'active'
+       }
+},
+{
+        $lookup : {
+                From: 'students',
+                LocalField: "studentId" ,
+                ForeignField: "id"
+                As:"student"
+         }
+},
+    {
+           $unwind: "$student"
+    },
+{
+        $lookup: {
+              From: "courses"
+                LocalField: "courseId" ,
+                ForeignField: "id"
+                As:"course"
+}},
+
+    {
+           $unwind: "$course"
+    },
+{   $project: {
+            Id: 0,
+            StudentId : "$student.studentID",
+            FirstName: "$student.firstName",
+            LastName: "student.lastName",
+            CourseName: "$course.courseName",
+            EntrollmentDate: 1
+}}])`,
+      notes:[
+`SQL: הפתרון הרשמי נכון. הוא מציג גם s.id, שלא התבקש. זו לא טעות, אבל בבודק של האתר הפלט צריך להיות בדיוק העמודות שבניסוח השאלה.`,
+`SQL: ב-SQL Server ההשוואה e.status = 'Active' לא רגישה לאותיות (גם 'active' היה עובד). במונגו היא רגישה — ראו בהמשך.`,
+`מונגו: Db.enrollemnts — צריך db.enrollments. עם שם Collection שגוי מתקבלת תוצאה ריקה, בלי הודעת שגיאה.`,
+`מונגו: Status: 'active' — שתי טעויות: שם השדה הוא status (באות קטנה), והערך בנתונים הוא "Active" (באות גדולה). במונגו גם שמות שדות וגם ערכים רגישים לאותיות, ולכן ה-$match לא מחזיר אף מסמך. הנכון: { $match: { status: "Active" } }.`,
+`מונגו: From / LocalField / ForeignField / As → from / localField / foreignField / as. חסרים פסיקים אחרי ForeignField: "id" (בשני ה-$lookup) ואחרי From: "courses" (שגיאת תחביר).`,
+`מונגו: ForeignField: "id" (בשני ה-$lookup) → foreignField: "_id".`,
+`מונגו: Id: 0 → _id: 0 (עם Id: 0 לצד EntrollmentDate: 1 מתקבלת שגיאה, כי אסור לערבב 0 ו-1 ב-$project, חוץ מ-_id). StudentId: "$student.studentID" — אין שדה כזה במסמך הסטודנט. אם רוצים את מזהה הסטודנט: "$student._id" (או "$studentId" מתוך ההרשמה).`,
+`מונגו: LastName: "student.lastName" — חסר $. בלי $ זו לא הפניה לשדה אלא מחרוזת קבועה, וכל המסמכים יקבלו את הטקסט "student.lastName". הנכון: "$student.lastName".`,
+`מונגו: EntrollmentDate: 1 — שגיאת כתיב (שדה שלא קיים פשוט לא מוצג). הנכון: enrollmentDate: 1.`]
     }
   },
 
-  { id:'d2', topic:'anti', difficulty:2, source:'עבודת ישור קו — שאלה 2 · עבודת MongoDB (PDF) — תרגיל 10 · שיעור NoSQL — חלק ה׳ משימה 6',
+  { id:'d2', topic:'anti', difficulty:2, source:'עבודת ישור קו — שאלה 7 (פתרון רשמי) · עבודת MongoDB (PDF) — תרגיל 10 · שיעור NoSQL — חלק ה׳ משימה 6',
     prompt:`מצאו את כל הסטודנטים שאין להם אפילו הרשמה אחת לקורס (גם לא הרשמה לא פעילה).
 פלט: id, firstName, lastName (במונגו: _id, firstName, lastName).`,
     sql:{
@@ -119,10 +497,45 @@ LEFT JOIN שומר את כל הסטודנטים. לסטודנט בלי הרשמ�
 2) $match: { enrollments: { $size: 0 } } — משאיר רק סטודנטים שהמערך שלהם ריק.
 3) $project — מציג שם פרטי ושם משפחה. _id נשאר, כי הוא מוצג כברירת מחדל.
 חלופה קצרה עם find: db.enrollments.distinct("studentId") מחזיר רשימה של כל מי שיש לו הרשמה, ו-$nin בוחר את מי שלא ברשימה. זו המקבילה של NOT IN.`
+    },
+    official:{
+      sql:`Select s.id , s.firstname , s.lastname
+From students s
+Left join enrollemtns e
+On s.id = e.studentid
+Where e.id is null`,
+      mongo:`Db.students.aggregate ([
+{
+     $lookup: {
+           From: "enrollemtns",
+           LocalField: "id" ,
+           ForeignField: "studentId"
+          As: "studentEnrollments"
+      }
+},
+{
+          $match: {
+                StudentEnrollments: {
+                     $size: 0
+                }
+   }
+},
+{
+       $project: {
+            Id: 1,
+            Firstname: 1,
+            Lastname: 1.
+}}])`,
+      notes:[
+`SQL: Left join enrollemtns — שגיאת כתיב בשם הטבלה (Invalid object name). הנכון: enrollments. חוץ מזה הפתרון נכון: LEFT JOIN ואחריו WHERE e.id IS NULL.`,
+`מונגו: Db → db. From: "enrollemtns" — שם Collection שגוי, וזו טעות מסוכנת במיוחד: מונגו לא מתריע, כל סטודנט מקבל מערך ריק, ולכן (אחרי שמתקנים את שאר הטעויות) ה-$match מחזיר את כל 10 הסטודנטים, כאילו לאף אחד אין הרשמה.`,
+`מונגו: LocalField: "id" → localField: "_id" (עם "id" כל המערכים יוצאים ריקים, ושוב מוחזרים כל 10 הסטודנטים). חסר פסיק אחרי ForeignField: "studentId". שמות הפרמטרים: from, localField, foreignField, as.`,
+`מונגו: ה-$match בודק את StudentEnrollments (עם S גדולה), אבל ב-as נכתב "studentEnrollments". שמות שדות רגישים לאותיות, ושדה שלא קיים לא מתאים ל-$size: 0, ולכן התוצאה ריקה. הנכון: { $match: { studentEnrollments: { $size: 0 } } }.`,
+`מונגו: Id: 1 — אין שדה Id (מזהה הסטודנט הוא _id, והוא מוצג ממילא). Firstname / Lastname → firstName / lastName. הנקודה ב-"Lastname: 1." היא שגיאת הקלדה (במקרה היא עדיין מספר תקין ב-JavaScript).`]
     }
   },
 
-  { id:'d3', topic:'having', difficulty:2, source:'עבודת ישור קו — שאלה 3',
+  { id:'d3', topic:'having', difficulty:2, source:'עבודת ישור קו — שאלה 8 (פתרון רשמי)',
     prompt:`מצאו את הסטודנטים הרשומים ליותר משני קורסים פעילים.
 פלט: studentId, firstName, lastName, activeCourses (מספר ההרשמות הפעילות). במונגו מותר ש-studentId יופיע בשדה _id במקום בשדה נפרד (לא בשניהם).`,
     sql:{
@@ -179,10 +592,11 @@ JOIN (SELECT studentId, COUNT(*) AS activeCourses
 4) $lookup + $unwind ל-students — להביא את השם. ה-_id של הקבוצה הוא ה-studentId.
 5) $project — מעצב את הפלט. studentId: "$_id" מעתיק את מזהה הקבוצה לשדה בשם ברור.
 הכלל: $match לפני $group = WHERE, ו-$match אחרי $group = HAVING.`
-    }
+    },
+    official:{ notes:[`המרצה לא פתר את השאלה בקובץ — הפתרון כאן שלנו.`] }
   },
 
-  { id:'d4', topic:'multi', difficulty:3, source:'עבודת ישור קו — שאלה 4',
+  { id:'d4', topic:'multi', difficulty:3, source:'עבודת ישור קו — שאלה 9 (פתרון רשמי)',
     prompt:`הציגו את כל ההגשות עם שם הסטודנט, שם הקורס והמרצה.
 פלט: submissionId, studentName, courseName, lecturerName. שמות מלאים בפורמט "שם פרטי, רווח, שם משפחה" (למשל "David Levi"). במונגו מותר שמזהה ההגשה יופיע בשדה _id במקום בשדה נפרד (לא בשניהם).`,
     sql:{
@@ -250,10 +664,11 @@ submissions → assignments (assignmentId) → courses (courseId) → lecturers 
 5) $project — $concat: ["$student.firstName", " ", "$student.lastName"] בונה שם מלא, המקביל ל-+ ב-T-SQL. _id נשאר והוא מזהה ההגשה.
 בלי $unwind, השדה student היה מערך, ו-"$student.firstName" היה מחזיר מערך של שמות ולא מחרוזת.
 קיצור דרך: ההגשות שלנו מכילות גם courseId (כמו ב-PDF), ואז אפשר לדלג על assignments (ראו פתרון חלופי).`
-    }
+    },
+    official:{ notes:[`המרצה לא פתר את השאלה בקובץ — הפתרון כאן שלנו.`] }
   },
 
-  { id:'d5', topic:'anti', difficulty:2, source:'עבודת ישור קו — שאלה 5',
+  { id:'d5', topic:'anti', difficulty:2, source:'עבודת ישור קו — שאלה 10 (פתרון רשמי)',
     prompt:`מצאו את כל המטלות שאין להן אף הגשה.
 פלט: id, title, courseId (במונגו: _id, title, courseId).`,
     sql:{
@@ -268,7 +683,7 @@ WHERE id NOT IN (SELECT assignmentId FROM submissions);`,
 `SELECT a.id, a.title, a.courseId
 FROM assignments a
 WHERE NOT EXISTS (SELECT * FROM submissions sub WHERE sub.assignmentId = a.id);`],
-      explain:`אותו דפוס Anti-Join כמו בשאלה 2, הפעם בין assignments ל-submissions.
+      explain:`אותו דפוס Anti-Join כמו בשאלה 7, הפעם בין assignments ל-submissions.
 LEFT JOIN שומר את כל המטלות. למטלה בלי הגשה, sub.id יוצא NULL, ו-WHERE sub.id IS NULL משאיר רק אותה.
 בודקים IS NULL על עמודת המפתח של הטבלה הימנית (sub.id), כי היא אף פעם לא NULL בשורה אמיתית. אם תבדקו sub.grade IS NULL תקבלו בטעות גם הגשות שעוד לא נבדקו.
 התוצאה: Stored Procedures (מטלה 7, קורס SQL Server).`
@@ -289,10 +704,55 @@ LEFT JOIN שומר את כל המטלות. למטלה בלי הגשה, sub.id י
 2) $match: { submissions: { $size: 0 } } — רק מטלות שהמערך שלהן ריק, כלומר אין להן אף הגשה.
 3) $project — מציג title ו-courseId (_id מוצג כברירת מחדל).
 חלופה עם find: distinct("assignmentId") על submissions מחזיר את כל המטלות שהוגשו, ו-$nin בוחר את השאר.`
+    },
+    official:{
+      sql:`Select a.title
+            a.id
+            c.coursename
+From assignments a
+Join courses c
+On a.courseid = c.id
+Left join submissions s
+On a.id = s.assignmentId
+Where s.id is null`,
+      mongo:`Db.assignments.aggregate ([
+{
+      $lookup : {
+             From:"submissions"
+             LocalField: "id"
+             ForeignField:"assignmentId"
+             As: "submission"
+       }
+},
+{
+     $match: { submission : {
+                 $size : 0
+       }
+}},
+        $lookup: {
+                From: "courses"
+                LocalField: "courseId"
+                ForeignField: "id"
+                As:"course"
+         }
+        { $unwind: "$course" }
+{
+         $project: {
+              Id : 1
+             Title : 1 ,
+             Coursename: "$course.coursename"
+}}])`,
+      notes:[
+`SQL: חסרים פסיקים בין העמודות: a.title, a.id, c.coursename. בלי פסיקים SQL Server מחזיר שגיאת תחביר.`,
+`SQL: ה-JOIN ל-courses לא נדרש בשאלה, אבל הוא תקין (הוא מוסיף את שם הקורס): JOIN רגיל ל-courses, ואחריו LEFT JOIN ל-submissions עם WHERE s.id IS NULL. כדאי לתת להגשות כינוי אחר (sub), כי s משמש בדרך כלל ל-students.`,
+`מונגו: Db → db. בכל ה-$lookup חסרים פסיקים בין הפרמטרים, ושמות הפרמטרים צריכים להיות from, localField, foreignField, as.`,
+`מונגו: LocalField: "id" → localField: "_id" (ב-$lookup ל-submissions), ו-ForeignField: "id" → foreignField: "_id" (ב-$lookup ל-courses).`,
+`מונגו: ה-$lookup השני לא עטוף בסוגריים מסולסלים, וחסרים פסיקים בין השלבים (לפני ואחרי { $unwind: "$course" }). כל שלב ב-pipeline הוא אובייקט נפרד, { $lookup: { … } }, ובין השלבים יש פסיק.`,
+`מונגו: ב-$project: Id : 1 → _id (מוצג ממילא), Title → title, ו-"$course.coursename" → "$course.courseName". חסר פסיק אחרי Id : 1.`]
     }
   },
 
-  { id:'d6', topic:'multi', difficulty:3, source:'עבודת ישור קו — שאלה 6',
+  { id:'d6', topic:'multi', difficulty:3, source:'עבודת ישור קו — שאלה 11 (פתרון רשמי)',
     prompt:`הציגו ממוצע ציונים לכל קורס, כולל שם הקורס ושם המרצה.
 פלט: courseName, lecturerName ("שם פרטי, רווח, שם משפחה"), averageGrade (במונגו בלי _id). יוצגו רק קורסים שיש להם הגשות. הגשות שטרם נבדקו (grade = NULL) לא נכנסות לממוצע.`,
     sql:{
@@ -317,7 +777,7 @@ JOIN courses     c ON a.courseId       = c.id
 JOIN lecturers   l ON c.lecturerId     = l.id
 WHERE sub.grade IS NOT NULL
 GROUP BY c.id, c.courseName, l.firstName, l.lastName;`],
-      explain:`מסלול ה-JOIN זהה לשאלה 4: דרך assignments, כי בסכמת ה-DOCX אין courseId ב-submissions.
+      explain:`מסלול ה-JOIN זהה לשאלה 9: דרך assignments, כי בסכמת ה-DOCX אין courseId ב-submissions.
 AVG מתעלם אוטומטית מ-NULL. לכן ההגשה של Maya ב-MongoDB וההגשה של Shira ב-Marketing, שעוד לא נבדקו, לא מורידות את הממוצע: Marketing = 70 ולא 35.
 ב-GROUP BY מקבצים לפי c.id (המפתח), וגם לפי כל עמודה לא-מצטברת שמופיעה ב-SELECT (courseName, firstName, lastName).
 Cyber Security לא מופיע, כי אין לו הגשות ו-INNER JOIN מסנן אותו.
@@ -356,6 +816,392 @@ grade מוגדר DECIMAL(5,2), ולכן AVG מחזיר שבר (85.5). ב-SQL Ser
 5) $project — courseName, lecturerName עם $concat, ו-averageGrade.
 טיפ ביצועים: עושים $group לפני ה-$lookup של הקורס והמרצה. כך מצרפים 5 מסמכים (קבוצות) ולא 16 הגשות.
 אם יש courseId בהגשה (PDF), אפשר לקבץ ישר לפי "$courseId" (ראו פתרון חלופי).`
+    },
+    official:{ notes:[`המרצה לא פתר את השאלה בקובץ — הפתרון כאן שלנו.`] }
+  },
+
+  /* ================== טבלת ההשוואה של המרצה (בסוף פתרון עבודת ישור קו) — השורות שלא היו בבנק ================== */
+
+  { id:'yk-cmp-1', topic:'distinct', difficulty:1, source:'טבלת ההשוואה בפתרון עבודת ישור קו — COUNT(DISTINCT) ↔ $addToSet + $size · COUNT ↔ $count',
+    prompt:`כמה סטודנטים שונים הגישו לפחות מטלה אחת? סטודנט שהגיש כמה מטלות נספר פעם אחת.
+פלט: studentsCount (במונגו בלי _id).`,
+    sql:{
+      solution:`SELECT COUNT(DISTINCT studentId) AS studentsCount
+FROM submissions;`,
+      alt:[
+`SELECT COUNT(*) AS studentsCount
+FROM (SELECT DISTINCT studentId FROM submissions) t;`],
+      explain:`COUNT(*) סופר שורות: 16 הגשות. COUNT(DISTINCT studentId) סופר ערכים שונים: 8 סטודנטים. למשל, David הגיש 4 מטלות, אבל נספר פעם אחת.
+COUNT(DISTINCT ...) מתעלם מ-NULL, כמו COUNT(עמודה).
+חלופה: טבלה נגזרת עם SELECT DISTINCT, וסופרים את השורות שלה. ב-SQL Server חובה לתת כינוי (t) לטבלה נגזרת.
+התוצאה: 8. Lior ו-Eyal לא הגישו אף מטלה.`
+    },
+    mongo:{
+      solution:`db.submissions.aggregate([
+  { $group: { _id: null, students: { $addToSet: "$studentId" } } },
+  { $project: { _id: 0, studentsCount: { $size: "$students" } } }
+])`,
+      alt:[
+`db.submissions.aggregate([
+  { $group: { _id: "$studentId" } },
+  { $count: "studentsCount" }
+])`,
+`db.submissions.distinct("studentId").length`],
+      explain:`בטבלת ההשוואה של המרצה: COUNT(DISTINCT) ↔ $addToSet + $size.
+1) $group עם _id: null — קבוצה אחת לכל המסמכים. $addToSet: "$studentId" אוסף את מזהי הסטודנטים למערך בלי כפילויות. זה ה-DISTINCT.
+2) $project עם $size — גודל המערך הוא מספר הערכים השונים.
+חלופה 1: $group לפי "$studentId" יוצר מסמך אחד לכל סטודנט, ו-{ $count: "studentsCount" } סופר כמה מסמכים הגיעו לשלב. זו השורה "COUNT() ↔ $sum: 1 / $count" בטבלה.
+חלופה 2: distinct("studentId") מחזיר מערך של ערכים שונים, ו-.length הוא האורך שלו.
+ההבדל בין $push ל-$addToSet: $push שומר כפילויות (כמו COUNT(*)), ו-$addToSet לא (כמו COUNT(DISTINCT)).`
+    }
+  },
+
+  { id:'yk-cmp-2', topic:'group', difficulty:2, source:'טבלת ההשוואה בפתרון עבודת ישור קו — COUNT(DISTINCT) בקבוצות ↔ $addToSet + $size',
+    prompt:`לכל קורס הציגו את מספר ההגשות ואת מספר הסטודנטים השונים שהגישו בו מטלות. יוצגו רק קורסים שיש להם הגשות.
+פלט: courseName, submissionsCount, studentsCount (במונגו בלי _id).`,
+    sql:{
+      solution:`SELECT c.courseName,
+       COUNT(*) AS submissionsCount,
+       COUNT(DISTINCT sub.studentId) AS studentsCount
+FROM submissions sub
+JOIN assignments a ON sub.assignmentId = a.id
+JOIN courses     c ON a.courseId       = c.id
+GROUP BY c.id, c.courseName;`,
+      alt:[
+`SELECT c.courseName, COUNT(sub.id), COUNT(DISTINCT sub.studentId)
+FROM submissions sub
+JOIN courses c ON sub.courseId = c.id
+GROUP BY c.id, c.courseName;`],
+      explain:`בסכמה של עבודת ישור קו (DOCX) אין courseId בהגשה, ולכן מגיעים לקורס דרך assignments, כמו בשאלה 9.
+COUNT(*) סופר הגשות, ו-COUNT(DISTINCT sub.studentId) סופר סטודנטים שונים. את ההבדל רואים בקורס MongoDB: 7 הגשות, אבל רק 5 סטודנטים, כי David ו-Maya הגישו שתי מטלות כל אחד.
+ב-GROUP BY מקבצים לפי c.id (המפתח) וגם לפי c.courseName, כי היא מופיעה ב-SELECT.
+התוצאה: MongoDB 7/5, SQL Server 3/3, Python 2/2, Marketing 2/2, Statistics 2/2.`
+    },
+    mongo:{
+      solution:`db.submissions.aggregate([
+  { $lookup: { from: "assignments", localField: "assignmentId", foreignField: "_id", as: "assignment" } },
+  { $unwind: "$assignment" },
+  { $group: { _id: "$assignment.courseId",
+              submissionsCount: { $sum: 1 },
+              students: { $addToSet: "$studentId" } } },
+  { $lookup: { from: "courses", localField: "_id", foreignField: "_id", as: "course" } },
+  { $unwind: "$course" },
+  { $project: { _id: 0, courseName: "$course.courseName", submissionsCount: 1,
+                studentsCount: { $size: "$students" } } }
+])`,
+      alt:[
+`db.submissions.aggregate([
+  { $group: { _id: "$courseId", submissionsCount: { $sum: 1 }, students: { $addToSet: "$studentId" } } },
+  { $lookup: { from: "courses", localField: "_id", foreignField: "_id", as: "course" } },
+  { $unwind: "$course" },
+  { $project: { _id: 0, courseName: "$course.courseName", submissionsCount: 1,
+                studentsCount: { $size: "$students" } } }
+])`],
+      explain:`1) $lookup + $unwind ל-assignments — כדי לדעת לאיזה קורס שייכת כל הגשה (assignment.courseId).
+2) $group לפי הקורס, עם שני accumulators: submissionsCount: { $sum: 1 } סופר הגשות (COUNT(*)), ו-students: { $addToSet: "$studentId" } אוסף את מזהי הסטודנטים בלי כפילויות.
+3) $lookup + $unwind ל-courses — ה-_id של הקבוצה הוא מזהה הקורס, וכך מביאים את courseName.
+4) $project — studentsCount: { $size: "$students" } הופך את המערך למספר. זו המקבילה של COUNT(DISTINCT).
+אם הייתם כותבים $push במקום $addToSet, בקורס MongoDB היו יוצאים 7 ולא 5.
+אם יש courseId בהגשה (כמו באתר וב-PDF), אפשר לקבץ ישר לפי "$courseId" (ראו פתרון חלופי).`
+    }
+  },
+
+  { id:'yk-cmp-3', topic:'multi', difficulty:3, source:'טבלת ההשוואה בפתרון עבודת ישור קו — INTERSECT ↔ $all לאחר קיבוץ',
+    prompt:`הציגו את הסטודנטים שרשומים גם לקורס MongoDB וגם לקורס SQL Server. חפשו את הקורסים לפי השם (courseName).
+פלט: id, firstName, lastName (במונגו: _id, firstName, lastName).`,
+    sql:{
+      solution:`SELECT s.id, s.firstName, s.lastName
+FROM students s
+JOIN enrollments e ON s.id = e.studentId
+JOIN courses c ON e.courseId = c.id
+WHERE c.courseName = 'MongoDB'
+INTERSECT
+SELECT s.id, s.firstName, s.lastName
+FROM students s
+JOIN enrollments e ON s.id = e.studentId
+JOIN courses c ON e.courseId = c.id
+WHERE c.courseName = 'SQL Server';`,
+      alt:[
+`SELECT s.id, s.firstName, s.lastName
+FROM students s
+WHERE s.id IN (SELECT e.studentId FROM enrollments e JOIN courses c ON e.courseId = c.id
+               WHERE c.courseName = 'MongoDB')
+  AND s.id IN (SELECT e.studentId FROM enrollments e JOIN courses c ON e.courseId = c.id
+               WHERE c.courseName = 'SQL Server');`,
+`SELECT s.id, s.firstName, s.lastName
+FROM students s
+JOIN enrollments e ON s.id = e.studentId
+JOIN courses c ON e.courseId = c.id
+WHERE c.courseName IN ('MongoDB', 'SQL Server')
+GROUP BY s.id, s.firstName, s.lastName
+HAVING COUNT(DISTINCT c.courseName) = 2;`],
+      explain:`INTERSECT מחזיר רק שורות שמופיעות בתוצאה של שתי השאילתות (חיתוך קבוצות). שתי השאילתות חייבות להחזיר אותו מספר עמודות, מטיפוסים תואמים ובאותו סדר. INTERSECT גם מסיר כפילויות.
+שאילתה 1 מחזירה את הסטודנטים של MongoDB: David, Noa, Maya, Itai ו-Tamar. שאילתה 2 מחזירה את הסטודנטים של SQL Server: David, Yossi ו-Itai. החיתוך: David Levi ו-Itai Friedman.
+טעות נפוצה: WHERE c.courseName = 'MongoDB' AND c.courseName = 'SQL Server' מחזיר 0 שורות, כי כל שורה היא הרשמה לקורס אחד בלבד. התנאי "גם וגם" חל על כמה שורות של אותו סטודנט. לכן צריך INTERSECT, שני תנאי IN, או GROUP BY עם HAVING COUNT(DISTINCT c.courseName) = 2 (ראו פתרונות חלופיים).`
+    },
+    mongo:{
+      solution:`db.enrollments.aggregate([
+  { $lookup: { from: "courses", localField: "courseId", foreignField: "_id", as: "course" } },
+  { $unwind: "$course" },
+  { $group: { _id: "$studentId", courses: { $addToSet: "$course.courseName" } } },
+  { $match: { courses: { $all: ["MongoDB", "SQL Server"] } } },
+  { $lookup: { from: "students", localField: "_id", foreignField: "_id", as: "student" } },
+  { $unwind: "$student" },
+  { $project: { firstName: "$student.firstName", lastName: "$student.lastName" } }
+])`,
+      alt:[
+`db.students.find(
+  { $and: [
+      { _id: { $in: db.enrollments.distinct("studentId", { courseId: db.courses.findOne({ courseName: "MongoDB" })._id }) } },
+      { _id: { $in: db.enrollments.distinct("studentId", { courseId: db.courses.findOne({ courseName: "SQL Server" })._id }) } }
+  ] },
+  { firstName: 1, lastName: 1 }
+)`],
+      explain:`בטבלת ההשוואה של המרצה: INTERSECT ↔ $all לאחר קיבוץ מתאים.
+1) $lookup + $unwind ל-courses — כדי לדעת את שם הקורס של כל הרשמה.
+2) $group לפי "$studentId" עם $addToSet: "$course.courseName" — מסמך אחד לכל סטודנט, עם מערך הקורסים שלו. זה "הקיבוץ המתאים".
+3) $match: { courses: { $all: ["MongoDB", "SQL Server"] } } — $all עובר רק אם המערך מכיל את כל הערכים שברשימה, בכל סדר. $in היה מסתפק באחד מהם.
+4) $lookup + $unwind ל-students — מביאים את השם. ה-_id של הקבוצה הוא מזהה הסטודנט.
+5) $project — firstName ו-lastName (ה-_id נשאר והוא מזהה הסטודנט).
+חלופה עם find: שתי רשימות distinct של סטודנטים, אחת לכל קורס, ותנאי $in על _id לכל אחת מהן, מחוברות ב-$and. זו המקבילה של שני תנאי IN ב-SQL.`
+    }
+  },
+
+  { id:'yk-cmp-4', topic:'anti', difficulty:3, source:'טבלת ההשוואה בפתרון עבודת ישור קו — EXCEPT / NOT EXISTS ↔ $not + $in',
+    prompt:`הציגו את הסטודנטים שרשומים לקורס MongoDB אבל לא רשומים לקורס SQL Server. חפשו את הקורסים לפי השם (courseName).
+פלט: id, firstName, lastName (במונגו: _id, firstName, lastName).`,
+    sql:{
+      solution:`SELECT s.id, s.firstName, s.lastName
+FROM students s
+JOIN enrollments e ON s.id = e.studentId
+JOIN courses c ON e.courseId = c.id
+WHERE c.courseName = 'MongoDB'
+EXCEPT
+SELECT s.id, s.firstName, s.lastName
+FROM students s
+JOIN enrollments e ON s.id = e.studentId
+JOIN courses c ON e.courseId = c.id
+WHERE c.courseName = 'SQL Server';`,
+      alt:[
+`SELECT s.id, s.firstName, s.lastName
+FROM students s
+JOIN enrollments e ON s.id = e.studentId
+JOIN courses c ON e.courseId = c.id
+WHERE c.courseName = 'MongoDB'
+  AND NOT EXISTS (SELECT *
+                  FROM enrollments e2
+                  JOIN courses c2 ON e2.courseId = c2.id
+                  WHERE e2.studentId = s.id AND c2.courseName = 'SQL Server');`,
+`SELECT s.id, s.firstName, s.lastName
+FROM students s
+JOIN enrollments e ON s.id = e.studentId
+JOIN courses c ON e.courseId = c.id
+WHERE c.courseName = 'MongoDB'
+  AND s.id NOT IN (SELECT e2.studentId
+                   FROM enrollments e2
+                   JOIN courses c2 ON e2.courseId = c2.id
+                   WHERE c2.courseName = 'SQL Server');`],
+      explain:`EXCEPT מחזיר את השורות של השאילתה הראשונה שלא מופיעות בשנייה (הפרש קבוצות). הסדר חשוב: A EXCEPT B שונה מ-B EXCEPT A.
+הסטודנטים של MongoDB: David, Noa, Maya, Itai ו-Tamar. מורידים את מי שרשום ל-SQL Server (David ו-Itai), ונשארים Noa Cohen, Maya Peretz ו-Tamar Golan.
+המקבילות: NOT EXISTS עם תת-שאילתה מתואמת (e2.studentId = s.id), או NOT IN. בטבלת ההשוואה של המרצה: EXCEPT / NOT EXISTS ↔ $not + $in.
+זהירות ב-NOT IN: אם תת-השאילתה מחזירה ולו NULL אחד, התוצאה ריקה. EXCEPT ו-NOT EXISTS לא סובלים מהבעיה הזו.
+EXCEPT, כמו INTERSECT ו-UNION, מסיר כפילויות.`
+    },
+    mongo:{
+      solution:`db.enrollments.aggregate([
+  { $lookup: { from: "courses", localField: "courseId", foreignField: "_id", as: "course" } },
+  { $unwind: "$course" },
+  { $group: { _id: "$studentId", courses: { $addToSet: "$course.courseName" } } },
+  { $match: { courses: { $in: ["MongoDB"], $not: { $in: ["SQL Server"] } } } },
+  { $lookup: { from: "students", localField: "_id", foreignField: "_id", as: "student" } },
+  { $unwind: "$student" },
+  { $project: { firstName: "$student.firstName", lastName: "$student.lastName" } }
+])`,
+      alt:[
+`db.enrollments.aggregate([
+  { $lookup: { from: "courses", localField: "courseId", foreignField: "_id", as: "course" } },
+  { $unwind: "$course" },
+  { $group: { _id: "$studentId", courses: { $addToSet: "$course.courseName" } } },
+  { $match: { courses: { $in: ["MongoDB"], $nin: ["SQL Server"] } } },
+  { $lookup: { from: "students", localField: "_id", foreignField: "_id", as: "student" } },
+  { $unwind: "$student" },
+  { $project: { firstName: "$student.firstName", lastName: "$student.lastName" } }
+])`,
+`db.students.find(
+  { _id: {
+      $in:  db.enrollments.distinct("studentId", { courseId: db.courses.findOne({ courseName: "MongoDB" })._id }),
+      $nin: db.enrollments.distinct("studentId", { courseId: db.courses.findOne({ courseName: "SQL Server" })._id })
+  } },
+  { firstName: 1, lastName: 1 }
+)`],
+      explain:`1) $lookup + $unwind ל-courses — שם הקורס של כל הרשמה.
+2) $group לפי "$studentId" עם $addToSet — מערך הקורסים של כל סטודנט.
+3) $match: { courses: { $in: ["MongoDB"], $not: { $in: ["SQL Server"] } } } — שני תנאים על אותו שדה: המערך מכיל את "MongoDB", ולא מכיל את "SQL Server". על שדה מערך, $in בודק אם לפחות איבר אחד נמצא ברשימה, ו-$not הופך את התנאי. זו הצורה שבטבלת המרצה ($not + $in).
+$nin: ["SQL Server"] שקול ל-$not: { $in: ["SQL Server"] } (ראו פתרון חלופי).
+4) $lookup + $unwind ל-students, ו-$project לשם.
+חלופה עם find: _id: { $in: [הסטודנטים של MongoDB], $nin: [הסטודנטים של SQL Server] }. זו המקבילה של IN ו-NOT IN.`
+    }
+  },
+
+  { id:'yk-cmp-5', topic:'top', difficulty:3, source:'טבלת ההשוואה בפתרון עבודת ישור קו — ROW_NUMBER() ↔ $sort + $group + $first',
+    prompt:`לכל סטודנט הציגו את ההגשה הראשונה שלו (תאריך ההגשה המוקדם ביותר).
+פלט: studentId, submissionId, submissionDate, grade. במונגו מותר ש-studentId יופיע בשדה _id במקום בשדה נפרד (לא בשניהם).`,
+    sql:{
+      solution:`SELECT studentId, id AS submissionId, submissionDate, grade
+FROM (SELECT studentId, id, submissionDate, grade,
+             ROW_NUMBER() OVER (PARTITION BY studentId ORDER BY submissionDate) AS rn
+      FROM submissions) t
+WHERE rn = 1;`,
+      alt:[
+`WITH ranked AS (
+  SELECT studentId, id, submissionDate, grade,
+         ROW_NUMBER() OVER (PARTITION BY studentId ORDER BY submissionDate ASC) AS rn
+  FROM submissions
+)
+SELECT studentId, id, submissionDate, grade
+FROM ranked
+WHERE rn = 1;`,
+`SELECT sub.studentId, sub.id, sub.submissionDate, sub.grade
+FROM submissions sub
+WHERE sub.submissionDate = (SELECT MIN(s2.submissionDate)
+                            FROM submissions s2
+                            WHERE s2.studentId = sub.studentId);`],
+      explain:`ROW_NUMBER() OVER (PARTITION BY studentId ORDER BY submissionDate) ממספר את ההגשות של כל סטודנט בנפרד: 1 להגשה המוקדמת ביותר, 2 לזו שאחריה וכן הלאה. PARTITION BY קובע "לכל סטודנט", ו-ORDER BY קובע לפי מה ממספרים. בשביל "ההגשה האחרונה" כותבים ORDER BY submissionDate DESC.
+אי אפשר לכתוב WHERE rn = 1 באותה שאילתה: WHERE מתבצע לפני SELECT, ופונקציות חלון מותרות רק ב-SELECT וב-ORDER BY. לכן עוטפים בטבלה נגזרת (עם כינוי t) או ב-CTE, ומסננים בחוץ.
+חלופה בלי פונקציית חלון: תת-שאילתה מתואמת שמוצאת את MIN(submissionDate) של אותו סטודנט. ההבדל: אם יש שתי הגשות באותו תאריך מינימלי, MIN מחזיר את שתיהן ו-ROW_NUMBER רק אחת. בנתונים שלנו אין שוויון כזה.
+התוצאה: 8 שורות. למשל, אצל David זו הגשה 2 (2025-11-14), ואצל Shira הגשה 12 (2025-12-19), שעוד לא נבדקה ולכן grade = NULL.`
+    },
+    mongo:{
+      solution:`db.submissions.aggregate([
+  { $sort: { submissionDate: 1 } },
+  { $group: { _id: "$studentId",
+              submissionId: { $first: "$_id" },
+              submissionDate: { $first: "$submissionDate" },
+              grade: { $first: "$grade" } } }
+])`,
+      alt:[
+`db.submissions.aggregate([
+  { $sort: { submissionDate: 1 } },
+  { $group: { _id: "$studentId", first: { $first: "$$ROOT" } } },
+  { $project: { submissionId: "$first._id", submissionDate: "$first.submissionDate", grade: "$first.grade" } }
+])`,
+`db.submissions.aggregate([
+  { $setWindowFields: { partitionBy: "$studentId", sortBy: { submissionDate: 1 },
+                        output: { rn: { $documentNumber: {} } } } },
+  { $match: { rn: 1 } },
+  { $project: { _id: 0, studentId: 1, submissionId: "$_id", submissionDate: 1, grade: 1 } }
+])`],
+      ordered:false,
+      explain:`בטבלת ההשוואה של המרצה: ROW_NUMBER() ↔ $sort + $group + $first.
+1) $sort: { submissionDate: 1 } — מסדרים את כל ההגשות מהמוקדמת למאוחרת.
+2) $group לפי "$studentId" — $first לוקח את הערך מהמסמך הראשון שהגיע לכל קבוצה. בזכות המיון, זו ההגשה הראשונה של הסטודנט. $first: "$_id" נותן את מזהה ההגשה.
+בלי ה-$sort לפני ה-$group, $first מחזיר את ההגשה שבמקרה נשמרה ראשונה, ולא בהכרח את המוקדמת. זו הטעות הנפוצה.
+בשביל "ההגשה האחרונה" ממיינים { submissionDate: -1 } (או משאירים מיון עולה ומשתמשים ב-$last).
+חלופה 1: $first: "$$ROOT" שומר את כל המסמך הראשון, ואחר כך שולפים ממנו שדות ב-$project.
+חלופה 2 (MongoDB 5.0 ומעלה): $setWindowFields עם $documentNumber הוא המקבילה הישירה של ROW_NUMBER, ואחריו $match: { rn: 1 }.
+הסדר של הקבוצות שיוצאות מ-$group לא מובטח, ולכן הבדיקה כאן לא תלויה בסדר.`
+    }
+  },
+
+  { id:'yk-cmp-6', topic:'filter', difficulty:2, source:'טבלת ההשוואה בפתרון עבודת ישור קו — ביטוי ב-SELECT ↔ $addFields / $set',
+    prompt:`לכל הגשה שנבדקה חשבו את הציון באחוזים: grade * 100.0 / maxGrade (העמודה maxGrade נמצאת בטבלת המטלות). הציגו רק הגשות שהאחוז שלהן 85 ומעלה.
+פלט: submissionId, grade, maxGrade, pct. במונגו מותר שמזהה ההגשה יופיע בשדה _id במקום בשדה נפרד (לא בשניהם).`,
+    sql:{
+      solution:`SELECT sub.id AS submissionId, sub.grade, a.maxGrade,
+       sub.grade * 100.0 / a.maxGrade AS pct
+FROM submissions sub
+JOIN assignments a ON sub.assignmentId = a.id
+WHERE sub.grade * 100.0 / a.maxGrade >= 85;`,
+      alt:[
+`SELECT submissionId, grade, maxGrade, pct
+FROM (SELECT sub.id AS submissionId, sub.grade, a.maxGrade,
+             sub.grade * 100.0 / a.maxGrade AS pct
+      FROM submissions sub
+      JOIN assignments a ON sub.assignmentId = a.id) t
+WHERE pct >= 85;`],
+      explain:`השדה המחושב pct הוא ביטוי ב-SELECT. בטבלת ההשוואה של המרצה: "ביטוי ב-SELECT ↔ $addFields / $set".
+את הכינוי pct אי אפשר להזכיר ב-WHERE, כי WHERE מתבצע לפני SELECT. לכן חוזרים על הביטוי ב-WHERE, או עוטפים בטבלה נגזרת ומסננים בחוץ (ראו פתרון חלופי).
+100.0 (עם נקודה) מבטיח חילוק עשרוני. אילו שתי העמודות היו INT, ב-SQL Server החילוק היה נחתך למספר שלם. לפי ה-DDL של העבודה grade הוא DECIMAL(5,2), ולכן ב-SQL Server גם grade * 100 / maxGrade יוצא עשרוני. אבל במנוע של האתר (SQLite) הציונים נשמרים כמספרים שלמים: בלי ה-.0 בהגשה 6 יוצא 87 במקום 87.5, והתשובה נפסלת. 100.0 נכון בשני המנועים.
+להגשות שעוד לא נבדקו (grade = NULL) יוצא pct = NULL, והתנאי >= 85 לא מתקיים עבורן.
+התוצאה: 8 הגשות. הגשה 6 (Market Research, 70 מתוך 80, כלומר 87.5%) נכנסת, אף שהציון הגולמי שלה הוא 70.`
+    },
+    mongo:{
+      solution:`db.submissions.aggregate([
+  { $lookup: { from: "assignments", localField: "assignmentId", foreignField: "_id", as: "assignment" } },
+  { $unwind: "$assignment" },
+  { $addFields: { maxGrade: "$assignment.maxGrade",
+                  pct: { $divide: [ { $multiply: ["$grade", 100] }, "$assignment.maxGrade" ] } } },
+  { $match: { pct: { $gte: 85 } } },
+  { $project: { grade: 1, maxGrade: 1, pct: 1 } }
+])`,
+      alt:[
+`db.submissions.aggregate([
+  { $lookup: { from: "assignments", localField: "assignmentId", foreignField: "_id", as: "assignment" } },
+  { $unwind: "$assignment" },
+  { $set: { pct: { $divide: [ { $multiply: ["$grade", 100] }, "$assignment.maxGrade" ] } } },
+  { $match: { pct: { $gte: 85 } } },
+  { $project: { _id: 0, submissionId: "$_id", grade: 1, maxGrade: "$assignment.maxGrade", pct: 1 } }
+])`],
+      explain:`1) $lookup + $unwind ל-assignments — כדי לקבל את maxGrade של המטלה.
+2) $addFields — מוסיף שדות חדשים למסמך ומשאיר את כל השאר, בניגוד ל-$project, שמשאיר רק את מה שכתוב בו. את pct מחשבים עם $multiply ו-$divide. $set הוא שם נרדף ל-$addFields (ראו פתרון חלופי).
+3) $match: { pct: { $gte: 85 } } — סינון לפי השדה המחושב. זה היתרון של $addFields: אחרי שהשדה נוצר, אפשר לסנן, למיין ולקבץ לפיו בשלבים הבאים.
+4) $project — שדות הפלט. ה-_id נשאר, והוא מזהה ההגשה.
+כש-grade הוא null, גם pct יוצא null, והתנאי $gte: 85 לא מתקיים עבורו.
+מכפילים ב-100 לפני החילוק, כדי להימנע משגיאות עיגול של נקודה צפה: למשל 7 / 100 * 100 נותן 7.000000000000001, ואילו 7 * 100 / 100 נותן 7. בנתונים שלנו שני הסדרים נותנים אותה תוצאה.`
+    }
+  },
+
+  { id:'yk-cmp-7', topic:'top', difficulty:2, source:'טבלת ההשוואה בפתרון עבודת ישור קו — OFFSET ↔ $skip',
+    prompt:`דפדוף (Paging): מיינו את ההגשות שנבדקו לפי ציון מהגבוה לנמוך, ובשוויון לפי מזהה ההגשה מהקטן לגדול. דלגו על 3 הראשונות והציגו את 3 הבאות (מקומות 4–6).
+פלט: id, grade (במונגו: _id, grade), לפי סדר המיון.`,
+    sql:{
+      solution:`SELECT id, grade
+FROM submissions
+WHERE grade IS NOT NULL
+ORDER BY grade DESC, id
+OFFSET 3 ROWS FETCH NEXT 3 ROWS ONLY;`,
+      alt:[
+`SELECT id, grade
+FROM (SELECT id, grade,
+             ROW_NUMBER() OVER (ORDER BY grade DESC, id) AS rn
+      FROM submissions
+      WHERE grade IS NOT NULL) t
+WHERE rn BETWEEN 4 AND 6
+ORDER BY rn;`,
+`SELECT TOP 3 id, grade
+FROM submissions
+WHERE grade IS NOT NULL
+  AND id NOT IN (SELECT TOP 3 id
+                 FROM submissions
+                 WHERE grade IS NOT NULL
+                 ORDER BY grade DESC, id)
+ORDER BY grade DESC, id;`],
+      explain:`ב-SQL Server (מגרסה 2012) כותבים דפדוף ישירות עם OFFSET … FETCH — זו המקבילה המדויקת של skip ו-limit.
+OFFSET 3 ROWS פירושו "דלג על 3 שורות", ו-FETCH NEXT 3 ROWS ONLY פירושו "החזר את 3 הבאות". OFFSET חייב לבוא אחרי ORDER BY. ב-MySQL וב-SQLite כותבים במקום זה LIMIT 3 OFFSET 3 (האתר ממיר את התחביר של SQL Server אוטומטית).
+חלופות (בפתרונות החלופיים): ROW_NUMBER — ממספרים את השורות לפי סדר המיון ולוקחים את מקומות 4–6; או הדרך הישנה (לפני 2012): TOP 3 מתוך השורות שאינן ב-3 הראשונות (NOT IN).
+מפתח המיון השני (id) חשוב: להגשות 10 ו-11 יש אותו ציון (90). בלי מפתח שני הסדר ביניהן לא מוגדר, והדפדוף לא יציב.
+התוצאה: 10 (90), 11 (90), 3 (88).
+זהירות: בנתונים שלנו גם בלי WHERE grade IS NOT NULL יוצאת במקרה אותה תוצאה, כי במיון יורד NULL נמצא בסוף (גם ב-SQL Server וגם במונגו). לכן הבודק באתר לא יתפוס את הטעות הזו. במבחן חובה לסנן, כי השאלה מדברת על הגשות שנבדקו.`
+    },
+    mongo:{
+      solution:`db.submissions.find({ grade: { $ne: null } }, { grade: 1 })
+  .sort({ grade: -1, _id: 1 })
+  .skip(3)
+  .limit(3)`,
+      alt:[
+`db.submissions.aggregate([
+  { $match: { grade: { $ne: null } } },
+  { $sort: { grade: -1, _id: 1 } },
+  { $skip: 3 },
+  { $limit: 3 },
+  { $project: { grade: 1 } }
+])`],
+      explain:`בטבלת ההשוואה של המרצה: OFFSET ↔ $skip, ו-LIMIT (ב-SQL Server: TOP) ↔ $limit.
+1) find עם { grade: { $ne: null } } — רק הגשות שנבדקו. ה-projection { grade: 1 } מציג את הציון (ו-_id כברירת מחדל).
+2) sort({ grade: -1, _id: 1 }) — ציון בסדר יורד, ובשוויון מזהה בסדר עולה.
+3) skip(3) מדלג על 3 הראשונות, ו-limit(3) מחזיר את 3 הבאות.
+ב-find, מונגו תמיד מבצע sort, אחר כך skip ואחר כך limit, בלי קשר לסדר שבו כותבים אותם. ב-aggregate הסדר הוא סדר השלבים, ולכן חובה לכתוב $sort, ואז $skip, ואז $limit (ראו פתרון חלופי). $limit לפני $skip היה מחזיר תוצאה אחרת.
+עמוד מספר n בגודל k: skip((n - 1) * k).limit(k).`
     }
   },
 

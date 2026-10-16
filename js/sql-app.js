@@ -703,7 +703,9 @@ function selectDual(id){
   $('#dualPreview').innerHTML = tablePreview(tablesInQuery(d.sql.solution, d.sql.schema||'college2'), d.sql.schema||'college2') + collPreview(collectionsIn(d.mongo.solution), d.mongo.dataset);
   ['dualSql','dualMongo'].forEach(k => { $('#'+k).value = ''; $('#'+k+'Fb').className = 'feedback'; $('#'+k+'Res').innerHTML = ''; $('#'+k+'Lint').innerHTML = ''; });
   $('#dualSolution').classList.add('hidden');
-  $('#dualSolution').innerHTML = `<div class="dual-grid"><div><h4>💾 SQL</h4>${solutionBlock(d.sql.solution, d.sql.alt, d.sql.explain)}</div><div><h4>🍃 MongoDB</h4>${solutionBlock(d.mongo.solution, d.mongo.alt, d.mongo.explain)}</div></div>`;
+  const off = d.official || {};
+  $('#dualSolution').innerHTML = `<div class="dual-grid"><div><h4>💾 SQL</h4>${solutionBlock(d.sql.solution, d.sql.alt, d.sql.explain, off.sql)}</div><div><h4>🍃 MongoDB</h4>${solutionBlock(d.mongo.solution, d.mongo.alt, d.mongo.explain, off.mongo)}</div></div>` +
+    (off.notes && off.notes.length ? `<div class="official-notes"><div class="sol-label">⚠ מה לתקן בפתרון הרשמי של המרצה (כך כותבים נכון במבחן):</div><ul>${off.notes.map(n => `<li>${ebidi(n)}</li>`).join('')}</ul></div>` : '');
 }
 function setupDual(){
   const sqlQ = () => ({ check:'select', ...curD.sql });

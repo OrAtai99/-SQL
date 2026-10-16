@@ -220,7 +220,7 @@ db.students.findOne({ firstName: "Noa", lastName: "Cohen" })`,
 2. $match: { enrollments: { $size: 0 } } משאיר רק את מי שהמערך שלו ריק. זה ה-Anti-Join.
 התוצאה: Lior Shalom (_id 10).
 דרך נוספת: find עם $nin על הרשימה ש-distinct("studentId") מחזיר.
-זו גם שאלה 2 ב"עבודת ישור קו".
+זו גם שאלה 7 ב"עבודת ישור קו".
 ב-SQL: SELECT s.* FROM students s LEFT JOIN enrollments e ON s.id = e.studentId WHERE e.id IS NULL; (או NOT EXISTS / NOT IN).`,
     source:`עבודת הגשה MongoDB — תרגיל 10` },
 
@@ -1705,8 +1705,8 @@ db.courses.updateOne({ _id: 4 }, { $addToSet: { lessons: { title: "Branding", du
 2. $match: { submissions: { $size: 0 } } משאיר מטלות בלי הגשות.
 התוצאה: Stored Procedures (_id 7).
 ב-SQL: SELECT a.* FROM assignments a LEFT JOIN submissions s ON a.id = s.assignmentId WHERE s.id IS NULL;
-(זו שאלה 5 ב"עבודת ישור קו")`,
-    source:`עבודת ישור קו — שאלה 5 (גרסת MongoDB)` },
+(זו שאלה 10 ב"עבודת ישור קו")`,
+    source:`עבודת ישור קו — שאלה 10 (גרסת MongoDB)` },
 
   { id:'ma-anti-lect', set:'agg', topic:'lookup', dataset:'college2',
     prompt:`Anti-Join — מצאו את המרצים שלא מלמדים אף קורס. הציגו את מסמכי המרצים (אם בוחרים להציג רק חלק מהשדות, צריך להשאיר את _id).`,
@@ -1764,7 +1764,7 @@ db.courses.updateOne({ _id: 4 }, { $addToSet: { lessons: { title: "Branding", du
     source:`Aggregation — $match אחרי $group (HAVING)` },
 
   { id:'ma-docx1', set:'agg', topic:'lookup', dataset:'college2',
-    prompt:`עבודת ישור קו, שאלה 1 — הציגו את שמות הסטודנטים, שמות הקורסים שהם רשומים אליהם ותאריך ההרשמה, רק להרשמות פעילות.
+    prompt:`עבודת ישור קו, שאלה 6 — הציגו את שמות הסטודנטים, שמות הקורסים שהם רשומים אליהם ותאריך ההרשמה, רק להרשמות פעילות.
 התוצאה: firstName, lastName, courseName, enrollmentDate (בלי _id).`,
     check:'result',
     solution:`db.enrollments.aggregate([
@@ -1789,10 +1789,10 @@ db.courses.updateOne({ _id: 4 }, { $addToSet: { lessons: { title: "Branding", du
 4. $project: לוקח את השדות מתוך האובייקטים שצורפו.
 התוצאה: 13 הרשמות. חסרות Noa ב-Marketing ו-Eyal ב-Statistics, שתיהן Inactive.
 ב-SQL: SELECT s.firstName, s.lastName, c.courseName, e.enrollmentDate FROM enrollments e JOIN students s ON e.studentId = s.id JOIN courses c ON e.courseId = c.id WHERE e.status = 'Active';`,
-    source:`עבודת ישור קו — שאלה 1 (גרסת MongoDB)` },
+    source:`עבודת ישור קו — שאלה 6 (גרסת MongoDB)` },
 
   { id:'ma-docx3', set:'agg', topic:'lookup', dataset:'college2',
-    prompt:`עבודת ישור קו, שאלה 3 — מצאו את הסטודנטים שרשומים ליותר משני קורסים פעילים.
+    prompt:`עבודת ישור קו, שאלה 8 — מצאו את הסטודנטים שרשומים ליותר משני קורסים פעילים.
 התוצאה: firstName, lastName, activeCourses (בלי _id).`,
     check:'result',
     solution:`db.enrollments.aggregate([
@@ -1811,10 +1811,10 @@ db.courses.updateOne({ _id: 4 }, { $addToSet: { lessons: { title: "Branding", du
 4. $lookup + $unwind + $project: מביאים את שם הסטודנט.
 התוצאה: David Levi 3, Itai Friedman 3.
 ב-SQL: SELECT s.firstName, s.lastName, COUNT(*) FROM enrollments e JOIN students s ON e.studentId = s.id WHERE e.status = 'Active' GROUP BY s.id, s.firstName, s.lastName HAVING COUNT(*) > 2;`,
-    source:`עבודת ישור קו — שאלה 3 (גרסת MongoDB)` },
+    source:`עבודת ישור קו — שאלה 8 (גרסת MongoDB)` },
 
   { id:'ma-docx4', set:'agg', topic:'lookup', dataset:'college2',
-    prompt:`עבודת ישור קו, שאלה 4 — הציגו את כל ההגשות עם שם הסטודנט, שם הקורס ושם המרצה.
+    prompt:`עבודת ישור קו, שאלה 9 — הציגו את כל ההגשות עם שם הסטודנט, שם הקורס ושם המרצה.
 התוצאה: studentName, courseName, lecturerName (שמות מלאים, עם רווח בין השם הפרטי לשם המשפחה), grade (בלי _id, כל 16 ההגשות).`,
     check:'result',
     solution:`db.submissions.aggregate([
@@ -1840,10 +1840,10 @@ db.courses.updateOne({ _id: 4 }, { $addToSet: { lessons: { title: "Branding", du
 4. $project: שלושה שמות והציון.
 בשרשרת $lookup הסדר חשוב: אי אפשר להגיע למרצה לפני שצירפנו את הקורס.
 במסמך המקורי של עבודת ישור קו לטבלת submissions ב-SQL אין courseId, ולכן שם עוברים דרך assignments: ‏submissions → assignments → courses → lecturers. בנתוני האתר יש courseId בשתי הגרסאות.`,
-    source:`עבודת ישור קו — שאלה 4 (גרסת MongoDB)` },
+    source:`עבודת ישור קו — שאלה 9 (גרסת MongoDB)` },
 
   { id:'ma-docx6', set:'agg', topic:'lookup', dataset:'college2',
-    prompt:`עבודת ישור קו, שאלה 6 — הציגו את ממוצע הציונים בכל קורס, יחד עם שם הקורס ושם המרצה (רק קורסים שיש בהם ציונים).
+    prompt:`עבודת ישור קו, שאלה 11 — הציגו את ממוצע הציונים בכל קורס, יחד עם שם הקורס ושם המרצה (רק קורסים שיש בהם ציונים).
 התוצאה: courseName, lecturerName (שם מלא), averageGrade (בלי _id, בלי עיגול).`,
     check:'result',
     solution:`db.submissions.aggregate([
@@ -1876,7 +1876,7 @@ db.courses.updateOne({ _id: 4 }, { $addToSet: { lessons: { title: "Branding", du
 יעילות: מקבצים קודם (נשארים 5 מסמכים) ורק אחר כך מצרפים. ב-alt מצרפים לכל 16 ההגשות ורק אז מקבצים.
 התוצאה: MongoDB / Moshe Cohen 83, SQL Server / Moshe Cohen 75, Python / Rina Levi 91, Marketing / Avi Peretz 70, Statistics / Avi Peretz 85.5.
 ב-SQL: … GROUP BY c.courseName, l.firstName, l.lastName. כל עמודה ב-SELECT שאינה פונקציית צבירה חייבת להופיע ב-GROUP BY.`,
-    source:`עבודת ישור קו — שאלה 6 (גרסת MongoDB)` },
+    source:`עבודת ישור קו — שאלה 11 (גרסת MongoDB)` },
 
   { id:'ma-push', set:'agg', topic:'aggregate', dataset:'college2',
     prompt:`$push כ-Accumulator — לכל מרצה שמלמד לפחות קורס אחד, הציגו את רשימת שמות הקורסים שלו.

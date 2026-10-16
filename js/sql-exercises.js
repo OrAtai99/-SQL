@@ -652,7 +652,7 @@ INNER JOIN courses c ON c.id = e.courseId
 WHERE e.status = 'Active';`],
     hint:`enrollments היא טבלת הגשר בין students ל-courses. אל תשכחו את הסינון WHERE e.status = 'Active'.`,
     explain:`13 שורות — 15 ההרשמות פחות שתיים שאינן פעילות (Noa ב-Marketing ו-Eyal ב-Statistics). הטעות הנפוצה בשאלה הזו היא לשכוח את סינון הסטטוס. כאן ה-PK בכל טבלה הוא id, והמפתחות הזרים הם studentId / courseId — מחברים s.id = e.studentId ולא s.studentId.`,
-    source:`עבודת ישור קו — שאלה 1 (צד ה-SQL)` },
+    source:`עבודת ישור קו — שאלה 6 (צד ה-SQL)` },
 
   { id:'c4', set:'college2', topic:'join', schema:'college2', check:'select',
     prompt:`הציגו את כל ההרשמות (כולל הלא-פעילות) עם השם המלא של הסטודנט (שם פרטי, רווח, שם משפחה — בעמודה אחת), שם הקורס ותאריך ההרשמה. עמודות בסדר: studentName, courseName, enrollmentDate.`,
@@ -684,7 +684,7 @@ FROM students
 WHERE id NOT IN (SELECT studentId FROM enrollments);`],
     hint:`anti-join: LEFT JOIN מ-students ל-enrollments, ו-WHERE e.id IS NULL.`,
     explain:`התוצאה: Lior Shalom (id 10) בלבד. Eyal לא מופיע — יש לו הרשמה, גם אם היא Inactive. במונגו המקבילה היא $lookup ואז $match על מערך ריק ({ $size: 0 }). שלוש הדרכים ב-SQL שקולות כאן; NOT EXISTS הכי בטוחה כשיש NULL-ים בעמודה שבתת-השאילתה.`,
-    source:`עבודת ישור קו — שאלה 2 · עבודת MongoDB — תרגיל 10 (צד ה-SQL)` },
+    source:`עבודת ישור קו — שאלה 7 · עבודת MongoDB — תרגיל 10 (צד ה-SQL)` },
 
   { id:'c6', set:'college2', topic:'outer', schema:'college2', check:'select',
     prompt:`מצאו את הסטודנטים שאין להם אף הרשמה פעילה (status = 'Active') — כולל מי שאין לו הרשמות בכלל. עמודות בסדר: id, firstName, lastName.`,
@@ -727,7 +727,7 @@ GROUP BY s.id, s.firstName, s.lastName
 HAVING COUNT(*) > 2;`,
     hint:`WHERE מסנן הרשמות לפני הקיבוץ (רק Active), HAVING מסנן קבוצות אחרי הקיבוץ (> 2).`,
     explain:`התוצאה: David 3, Itai 3. סדר הביצוע הלוגי: FROM/JOIN → WHERE → GROUP BY → HAVING → SELECT → ORDER BY. תנאי על שורה בודדת (status) — ב-WHERE; תנאי על הקבוצה (COUNT) — ב-HAVING. "יותר משני" = > 2, לא >= 2 — עם >= 2 גם Maya (2 קורסים פעילים) הייתה נכנסת. שימו לב: בנתונים האלה גם שאילתה ששכחה את WHERE e.status = 'Active' מחזירה בדיוק אותה תוצאה (להרשמות הלא-פעילות של Noa ו-Eyal אין השפעה על הסף > 2), ולכן הבודק לא יתפוס את השכחה — אבל במבחן היא תעלה לכם בנקודות. התרגיל הבא (יותר מקורס פעיל אחד) כן חושף אותה. אפשר גם להכניס את תנאי הסטטוס ל-ON של ה-INNER JOIN — ב-INNER JOIN זה שקול.`,
-    source:`עבודת ישור קו — שאלה 3 (צד ה-SQL)` },
+    source:`עבודת ישור קו — שאלה 8 (צד ה-SQL)` },
 
   { id:'c8b', set:'college2', topic:'group', schema:'college2', check:'select',
     prompt:`מצאו את הסטודנטים הרשומים ליותר מקורס פעיל אחד (רק הרשמות עם status = 'Active'). עמודות בסדר: firstName, lastName, activeCourses.`,
@@ -840,7 +840,7 @@ JOIN lecturers l ON l.id = c.lecturerId
 GROUP BY c.id, c.courseName, l.firstName, l.lastName;`],
     hint:`ארבע טבלאות בשרשרת, GROUP BY לפי הקורס ושם המרצה, ו-AVG(sb.grade).`,
     explain:`MongoDB – Moshe Cohen 83 · SQL Server – Moshe Cohen 75 · Python – Rina Levi 91 · Marketing – Avi Peretz 70 · Statistics – Avi Peretz 85.5. ב-DOCX של המרצה לטבלת submissions אין עמודת courseId, ולכן המסלול "הרשמי" הוא דרך assignments; בנתונים שלנו יש גם sb.courseId ישירות (כמו ב-PDF), והחלופה משתמשת בו — התוצאה זהה. Cyber Security לא מופיע כי אין לו הגשות (INNER JOIN); אם רוצים אותו עם NULL — מתחילים מ-courses עם LEFT JOIN. במונגו זה רצף של $lookup + $unwind.`,
-    source:`עבודת ישור קו — שאלה 6 (צד ה-SQL)` },
+    source:`עבודת ישור קו — שאלה 11 (צד ה-SQL)` },
 
   { id:'c16', set:'college2', topic:'group', schema:'college2', check:'select',
     prompt:`חשבו את ממוצע הציונים של כל סטודנט שהגיש לפחות הגשה אחת, עם השם המלא שלו (שם פרטי + רווח + שם משפחה). הממוצע מעוגל ל-2 ספרות אחרי הנקודה (CAST ל-DECIMAL(5,2)). סטודנט שכל ההגשות שלו טרם נבדקו יופיע עם NULL. עמודות בסדר: studentName, averageGrade.`,
@@ -918,7 +918,7 @@ JOIN courses c ON c.id = sb.courseId
 JOIN lecturers l ON l.id = c.lecturerId;`],
     hint:`חמש טבלאות: submissions → students, ו-submissions → assignments → courses → lecturers.`,
     explain:`16 שורות — אחת לכל הגשה. יש שתי טבלאות עם עמודות firstName / lastName (students ו-lecturers), ולכן חובה כינויי טבלה (st., l.) — אחרת SQL Server יחזיר Ambiguous column name. המסלול דרך assignments מתאים לסכמה ב-DOCX (שם אין courseId בהגשות); החלופה דרך sb.courseId מתאימה לסכמה ב-PDF. במונגו: $lookup ל-students, ל-courses ואז ל-lecturers, עם $unwind אחרי כל אחד.`,
-    source:`עבודת ישור קו — שאלה 4 (צד ה-SQL)` },
+    source:`עבודת ישור קו — שאלה 9 (צד ה-SQL)` },
 
   { id:'c19', set:'college2', topic:'outer', schema:'college2', check:'select',
     prompt:`מצאו את כל המטלות שאין להן אף הגשה. עמודות בסדר: id, title.`,
@@ -932,7 +932,7 @@ WHERE NOT EXISTS (SELECT 1 FROM submissions sb WHERE sb.assignmentId = a.id);`,
 WHERE id NOT IN (SELECT assignmentId FROM submissions);`],
     hint:`anti-join: LEFT JOIN מ-assignments ל-submissions ו-IS NULL על המפתח של ההגשה.`,
     explain:`התוצאה: 7 – Stored Procedures. בודקים IS NULL על sb.id (המפתח הראשי) ולא על sb.grade: הגשה שקיימת אבל עדיין לא נבדקה גם היא בעלת grade = NULL, ובדיקה על grade הייתה מחזירה בטעות גם את מטלות 1 ו-5.`,
-    source:`עבודת ישור קו — שאלה 5 (צד ה-SQL)` },
+    source:`עבודת ישור קו — שאלה 10 (צד ה-SQL)` },
 
   { id:'c20', set:'college2', topic:'where', schema:'college2', check:'select',
     prompt:`הציגו את ההגשות שטרם נבדקו (grade ריק) — השם המלא של הסטודנט (שם פרטי + רווח + שם משפחה) וכותרת המטלה. עמודות בסדר: studentName, title.`,

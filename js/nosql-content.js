@@ -1818,7 +1818,7 @@ db.submissions.aggregate([
   {
     id:'nosql-vs-sql', track:'nosql', icon:'⚖️', title:'SQL מול MongoDB: עבודת ישור קו',
     html:`
-<p>ב"עבודת ישור קו" המרצה כתב: <b>"יש לכתוב עבור כל הצגה גם שאילתא ב-SQL וגם שאילתא ב-NoSQL"</b>. זה גם המבנה הצפוי בחלק המשולב של המבחן. בפרק הזה כל אחת משש השאלות של העבודה פתורה בשתי השפות על college2, עם הפלט האמיתי של כל פתרון. לפני כן מוצגת שיטת תרגום כללית, ובסוף הפרק יש רשימה של טעויות נפוצות.</p>
+<p>ב"עבודת ישור קו" המרצה כתב: <b>"יש לכתוב עבור כל הצגה גם שאילתא ב-SQL וגם שאילתא ב-NoSQL"</b>. זה גם המבנה הצפוי בחלק המשולב של המבחן. בפרק הזה שש מהשאלות של העבודה (שאלות 6–11, לפי המספור בפתרון הרשמי של המרצה) פתורות בשתי השפות על college2, עם הפלט האמיתי של כל פתרון. לפני כן מוצגת שיטת תרגום כללית, ובסוף הפרק יש את טבלת ההשוואה של המרצה ורשימה של טעויות נפוצות. את כל 11 השאלות, כולל הפתרון הרשמי של המרצה ומה צריך לתקן בו, אפשר לתרגל במעבדה "🔀 שאלות כפולות: SQL + MongoDB".</p>
 
 <h4>שיטת התרגום: מ-SQL ל-Pipeline</h4>
 <p>ב-SQL כותבים את חלקי השאילתה בסדר קבוע (SELECT קודם), אבל ה-DB מבצע אותם בסדר אחר. ב-aggregate כותבים את השלבים <b>בסדר הביצוע</b>:</p>
@@ -1843,10 +1843,10 @@ db.submissions.aggregate([
   <li><b>ממיינים ומגבילים</b> עם <code>$sort</code> ו-<code>$limit</code>.</li>
   <li><b>בדיקה עצמית:</b> האם סיננתי Active? האם טיפלתי ב-null? האם כתבתי &gt; ולא ≥? האם השמות בפלט נכונים?</li>
 </ol>
-<div class="callout">ב-DDL של עבודת ישור קו אין <code>courseId</code> בטבלת <code>submissions</code>. לכן כדי להגיע מהגשה לקורס עוברים דרך <code>assignments</code>: <b>submissions → assignments → courses → lecturers</b>. כך נפתרו כאן שאלות 4 ו-6. ב-college2 של האתר יש גם <code>courseId</code> בהגשה (כמו ב-PDF של MongoDB), ולכן קיצור הדרך עובד באתר, אבל הפתרון דרך assignments נכון בשתי הסכמות.</div>
+<div class="callout">ב-DDL של עבודת ישור קו אין <code>courseId</code> בטבלת <code>submissions</code>. לכן כדי להגיע מהגשה לקורס עוברים דרך <code>assignments</code>: <b>submissions → assignments → courses → lecturers</b>. כך נפתרו כאן שאלות 9 ו-11. ב-college2 של האתר יש גם <code>courseId</code> בהגשה (כמו ב-PDF של MongoDB), ולכן קיצור הדרך עובד באתר, אבל הפתרון דרך assignments נכון בשתי הסכמות.</div>
 <div class="callout">פלטי ה-SQL כאן הגיעו ממנוע האתר. ב-SQL Server עמודת <code>grade</code> (‏DECIMAL(5,2)) תוצג כ-<code>95.00</code>, והתוצאה של <code>CAST(AVG(…) AS DECIMAL(5,2))</code> כ-<code>85.50</code>. הערכים עצמם זהים.</div>
 
-<h4>שאלה 1: שמות הסטודנטים, שמות הקורסים ותאריך ההרשמה (הרשמות פעילות בלבד)</h4>
+<h4>שאלה 6: שמות הסטודנטים, שמות הקורסים ותאריך ההרשמה (הרשמות פעילות בלבד)</h4>
 <pre>SELECT s.firstName + ' ' + s.lastName AS studentName,
        c.courseName,
        e.enrollmentDate
@@ -1907,7 +1907,7 @@ Tamar Golan   | MongoDB    | 2025-10-10
   <li>מפתח המיון השלישי (<code>courseName</code>) קובע סדר קבוע כשלאותו סטודנט יש שתי הרשמות באותו יום (David ב-1/10, Itai ב-9/10).</li>
 </ul>
 
-<h4>שאלה 2: הסטודנטים שאין להם אפילו הרשמה אחת</h4>
+<h4>שאלה 7: הסטודנטים שאין להם אפילו הרשמה אחת</h4>
 <pre>SELECT s.id, s.firstName, s.lastName
 FROM students s
 LEFT JOIN enrollments e ON s.id = e.studentId
@@ -1942,7 +1942,7 @@ WHERE NOT EXISTS (SELECT 1 FROM enrollments e WHERE e.studentId = s.id);</pre>
   <li><b>מלכודת ב-NOT IN:</b> אם תת-השאילתה מחזירה ולו NULL אחד (למשל <code>studentId</code> ריק באחת ההרשמות), <code>NOT IN</code> מחזיר 0 שורות. <code>NOT EXISTS</code> ו-<code>LEFT JOIN … IS NULL</code> לא נפגעים מזה.</li>
 </ul>
 
-<h4>שאלה 3: הסטודנטים שרשומים ליותר משני קורסים פעילים</h4>
+<h4>שאלה 8: הסטודנטים שרשומים ליותר משני קורסים פעילים</h4>
 <pre>SELECT s.id, s.firstName, s.lastName, COUNT(*) AS activeCourses
 FROM students s
 JOIN enrollments e ON s.id = e.studentId
@@ -1972,7 +1972,7 @@ id | firstName | lastName | activeCourses
   <li>ב-SQL Server חובה לכלול ב-GROUP BY את כל עמודות ה-SELECT שאינן אגרגציה (firstName, lastName). ב-Mongo מביאים את השמות אחרי הקיבוץ, עם <code>$lookup</code>.</li>
 </ul>
 
-<h4>שאלה 4: כל ההגשות עם שם הסטודנט, שם הקורס והמרצה</h4>
+<h4>שאלה 9: כל ההגשות עם שם הסטודנט, שם הקורס והמרצה</h4>
 <pre>SELECT sub.id AS submissionId,
        s.firstName + ' ' + s.lastName AS studentName,
        c.courseName,
@@ -2035,7 +2035,7 @@ submissionId | studentName   | courseName | lecturerName | title               |
   <li>בגלל ש-college2 שומר גם <code>courseId</code> בהגשה, אפשר לקצר: <code>localField: "courseId"</code> ישירות ל-courses.</li>
 </ul>
 
-<h4>שאלה 5: המטלות שאין להן אף הגשה</h4>
+<h4>שאלה 10: המטלות שאין להן אף הגשה</h4>
 <pre>SELECT a.id, a.title, a.courseId
 FROM assignments a
 LEFT JOIN submissions s ON a.id = s.assignmentId
@@ -2052,9 +2052,9 @@ id | title             | courseId
 [
   { _id: 7, title: "Stored Procedures", courseId: 2 }
 ]</pre>
-<p>זה אותו דפוס Anti-join כמו בשאלה 2, הפעם מהצד של <code>assignments</code>. ב-SQL אפשר לכתוב גם <code>WHERE a.id NOT IN (SELECT assignmentId FROM submissions)</code>.</p>
+<p>זה אותו דפוס Anti-join כמו בשאלה 7, הפעם מהצד של <code>assignments</code>. ב-SQL אפשר לכתוב גם <code>WHERE a.id NOT IN (SELECT assignmentId FROM submissions)</code>.</p>
 
-<h4>שאלה 6: ממוצע ציונים לכל קורס, כולל שם הקורס ושם המרצה</h4>
+<h4>שאלה 11: ממוצע ציונים לכל קורס, כולל שם הקורס ושם המרצה</h4>
 <pre>SELECT c.courseName,
        l.firstName + ' ' + l.lastName AS lecturerName,
        CAST(AVG(s.grade) AS DECIMAL(5,2)) AS averageGrade
@@ -2119,6 +2119,35 @@ SQL Server     | Moshe Cohen  | 75
 Marketing      | Avi Peretz   | 70
 Cyber Security | Rina Levi    | NULL
 (6 rows)</pre>
+
+<h4>טבלת ההשוואה של המרצה (מתוך פתרון עבודת ישור קו)</h4>
+<p>בסוף הפתרון הרשמי המרצה צירף טבלה שמשווה בין הפונקציות המרכזיות. העמודה האחרונה מוסיפה מה חשוב לזכור כשכותבים ב-SQL Server ובמונגו במבחן.</p>
+<table class="mini">
+  <tr><th>פעולה</th><th>SQL</th><th>MongoDB</th><th>שימו לב</th></tr>
+  <tr><td>בחירת נתונים</td><td dir="ltr">SELECT</td><td dir="ltr">find() / $project</td><td>ב-find זה הארגומנט השני (projection). השדה <code>_id</code> מוצג תמיד, אלא אם כותבים <code>_id: 0</code>.</td></tr>
+  <tr><td>סינון נתונים</td><td dir="ltr">WHERE</td><td dir="ltr">$match</td><td>ב-find זה הארגומנט הראשון (filter).</td></tr>
+  <tr><td>חיבור טבלאות</td><td dir="ltr">JOIN</td><td dir="ltr">$lookup</td><td>ואחריו <code>$unwind</code>. המפתח הראשי במונגו הוא <code>"_id"</code>, לא <code>"id"</code>: הוא נכתב ב-<code>foreignField</code> כשמצרפים את הצד של ה-PK (מ-enrollments ל-students), וב-<code>localField</code> כשמתחילים מהצד של ה-PK (מ-students ל-enrollments).</td></tr>
+  <tr><td>חיבור ללא התאמה</td><td dir="ltr">LEFT JOIN</td><td dir="ltr">$lookup + מערך ריק</td><td>מסמך בלי התאמה מקבל מערך ריק. כדי שלא יימחק ב-<code>$unwind</code>: <code>preserveNullAndEmptyArrays: true</code>.</td></tr>
+  <tr><td>ביטול כפילויות</td><td dir="ltr">DISTINCT</td><td dir="ltr">$addToSet</td><td>או <code>distinct("field")</code>, או <code>$group: { _id: "$field" }</code>.</td></tr>
+  <tr><td>קיבוץ נתונים</td><td dir="ltr">GROUP BY</td><td dir="ltr">$group</td><td>עמודות הקיבוץ נכנסות ל-<code>_id</code>.</td></tr>
+  <tr><td>סינון קבוצות</td><td dir="ltr">HAVING</td><td dir="ltr">$match לאחר $group</td><td><code>$match</code> לפני ה-<code>$group</code> הוא WHERE.</td></tr>
+  <tr><td>ספירת רשומות</td><td dir="ltr">COUNT()</td><td dir="ltr">$sum: 1 / $count</td><td>וגם <code>countDocuments(filter)</code>.</td></tr>
+  <tr><td>ספירת ערכים ייחודיים</td><td dir="ltr">COUNT(DISTINCT)</td><td dir="ltr">$addToSet + $size</td><td><code>$push</code> שומר כפילויות, ו-<code>$addToSet</code> לא.</td></tr>
+  <tr><td>ממוצע</td><td dir="ltr">AVG()</td><td dir="ltr">$avg</td><td>שניהם מתעלמים מ-NULL. ב-SQL Server, AVG על עמודת INT נחתך למספר שלם.</td></tr>
+  <tr><td>מינימום</td><td dir="ltr">MIN()</td><td dir="ltr">$min</td><td>מתעלם מ-NULL.</td></tr>
+  <tr><td>מקסימום</td><td dir="ltr">MAX()</td><td dir="ltr">$max</td><td>מתעלם מ-NULL.</td></tr>
+  <tr><td>מיון</td><td dir="ltr">ORDER BY</td><td dir="ltr">$sort</td><td><code>1</code> = ASC, <code>-1</code> = DESC.</td></tr>
+  <tr><td>הגבלת תוצאות</td><td dir="ltr">LIMIT</td><td dir="ltr">$limit</td><td>ב-SQL Server כותבים <code>TOP n</code>. LIMIT הוא התחביר של MySQL.</td></tr>
+  <tr><td>דילוג על תוצאות</td><td dir="ltr">OFFSET</td><td dir="ltr">$skip</td><td>ב-SQL Server: <code>ORDER BY … OFFSET 3 ROWS FETCH NEXT 3 ROWS ONLY</code>. ב-aggregate הסדר: <code>$sort</code>, אחר כך <code>$skip</code>, אחר כך <code>$limit</code>.</td></tr>
+  <tr><td>חיתוך קבוצות</td><td dir="ltr">INTERSECT</td><td dir="ltr">$all לאחר קיבוץ מתאים</td><td>מקבצים לכל ישות מערך ערכים (<code>$addToSet</code>), ואז <code>{ arr: { $all: [a, b] } }</code>.</td></tr>
+  <tr><td>הפרש קבוצות</td><td dir="ltr">EXCEPT / NOT EXISTS</td><td dir="ltr">$not + $in</td><td><code>$nin</code> שקול ל-<code>$not: { $in: … }</code>.</td></tr>
+  <tr><td>בדיקת קיום</td><td dir="ltr">EXISTS</td><td dir="ltr">$lookup + בדיקת מערך</td><td>יש התאמה: <code>{ arr: { $ne: [] } }</code>. אין התאמה: <code>{ arr: { $size: 0 } }</code>.</td></tr>
+  <tr><td>תנאי על שדות</td><td dir="ltr">CASE WHEN</td><td dir="ltr">$cond</td><td>לכמה תנאים: <code>$switch</code>.</td></tr>
+  <tr><td>חיבור מחרוזות</td><td dir="ltr">CONCAT()</td><td dir="ltr">$concat</td><td>ב-T-SQL אפשר גם עם <code>+</code>.</td></tr>
+  <tr><td>הוספת שדה מחושב</td><td>ביטוי ב-SELECT</td><td dir="ltr">$addFields / $set</td><td>משאיר את כל שאר השדות, בניגוד ל-<code>$project</code>.</td></tr>
+  <tr><td>בחירת ראשון בקבוצה</td><td dir="ltr">ROW_NUMBER()</td><td dir="ltr">$sort + $group + $first</td><td>בלי <code>$sort</code> לפני ה-<code>$group</code>, הערך של <code>$first</code> שרירותי.</td></tr>
+</table>
+<p>השורות שלא תורגלו קודם, COUNT(DISTINCT), INTERSECT, EXCEPT, ROW_NUMBER, $addFields ו-OFFSET, מתורגלות בשאלות "טבלת ההשוואה" במעבדה "🔀 שאלות כפולות: SQL + MongoDB".</p>
 
 <h4>מילון מונחים: SQL ↔ MongoDB</h4>
 <table class="mini">
@@ -2298,8 +2327,10 @@ SQLC.sqlVsMongo = [
   ['SELECT * FROM submissions WHERE grade IS NULL;', 'db.submissions.find({ grade: null })', 'מוצא גם מסמכים שאין בהם את השדה. IS NOT NULL הוא { grade: { $ne: null } }'],
   ['SELECT * FROM submissions WHERE YEAR(submissionDate) = 2025 AND MONTH(submissionDate) = 11;', 'db.submissions.find({ submissionDate: { $gte: ISODate("2025-11-01"), $lt: ISODate("2025-12-01") } })', 'חודש = טווח: מתחילת החודש (כולל) עד תחילת החודש הבא (לא כולל). חלופה: $expr עם $year ו-$month'],
   ['SELECT TOP 3 * FROM students ORDER BY age DESC;', 'db.students.find().sort({ age: -1 }).limit(3)', '1 = ASC, ‎-1 = DESC. ב-aggregate: $sort ואחריו $limit'],
+  ['SELECT id, grade FROM submissions WHERE grade IS NOT NULL ORDER BY grade DESC, id OFFSET 3 ROWS FETCH NEXT 3 ROWS ONLY;', 'db.submissions.find({ grade: { $ne: null } }, { grade: 1 }).sort({ grade: -1, _id: 1 }).skip(3).limit(3)', 'OFFSET ↔ skip / $skip (דפדוף). ב-aggregate הסדר מחייב: $sort, $skip, $limit. מנוע ה-SQL של האתר לא מכיר OFFSET…FETCH, אבל זה התחביר של SQL Server'],
   ["SELECT COUNT(*) FROM enrollments WHERE status = 'Active';", 'db.enrollments.countDocuments({ status: "Active" })', 'ב-aggregate: { $count: "n" }, או $sum: 1 בתוך $group'],
-  ['SELECT DISTINCT city FROM students;', 'db.students.distinct("city")', 'התוצאה היא מערך של ערכים, לא מסמכים'],
+  ['SELECT DISTINCT city FROM students;', 'db.students.distinct("city")', 'התוצאה היא מערך של ערכים, לא מסמכים. ב-aggregate (כמו בטבלת המרצה, DISTINCT ↔ $addToSet): { $group: { _id: null, cities: { $addToSet: "$city" } } }, או { $group: { _id: "$city" } }'],
+  ['SELECT COUNT(DISTINCT studentId) AS studentsCount FROM submissions;', 'db.submissions.aggregate([ { $group: { _id: null, students: { $addToSet: "$studentId" } } }, { $project: { _id: 0, studentsCount: { $size: "$students" } } } ])', 'COUNT(DISTINCT) ↔ $addToSet + $size: $addToSet אוסף ערכים בלי כפילויות, ו-$size סופר אותם. חלופה: $group לפי השדה ואחריו { $count: "n" }'],
   ['SELECT courseId, COUNT(*) AS n FROM enrollments GROUP BY courseId;', 'db.enrollments.aggregate([ { $group: { _id: "$courseId", n: { $sum: 1 } } } ])', 'עמודות ה-GROUP BY נכנסות ל-_id (עם $), ו-COUNT(*) הוא $sum: 1'],
   ['SELECT courseId, AVG(grade) AS avgGrade, MAX(grade) AS maxGrade FROM submissions GROUP BY courseId;', 'db.submissions.aggregate([ { $group: { _id: "$courseId", avgGrade: { $avg: "$grade" }, maxGrade: { $max: "$grade" } } } ])', 'AVG/SUM/MIN/MAX הופכים ל-$avg/$sum/$min/$max, ושניהם מתעלמים מ-NULL'],
   ['SELECT courseId, AVG(ISNULL(grade, 0)) AS avgWithZeros FROM submissions GROUP BY courseId;', 'db.submissions.aggregate([ { $group: { _id: "$courseId", avgWithZeros: { $avg: { $ifNull: ["$grade", 0] } } } } ])', 'ISNULL / COALESCE הופכים ל-$ifNull: הגשה בלי ציון נספרת כ-0 בממוצע'],
@@ -2307,8 +2338,13 @@ SQLC.sqlVsMongo = [
   ['SELECT e.id, s.firstName FROM enrollments e JOIN students s ON e.studentId = s.id;', 'db.enrollments.aggregate([ { $lookup: { from: "students", localField: "studentId", foreignField: "_id", as: "s" } }, { $unwind: "$s" }, { $project: { firstName: "$s.firstName" } } ])', '$lookup מחזיר מערך, ו-$unwind פורק אותו. מסמכים בלי התאמה נזרקים, כמו ב-INNER JOIN'],
   ['SELECT c.courseName, e.studentId FROM courses c LEFT JOIN enrollments e ON e.courseId = c.id;', 'db.courses.aggregate([ { $lookup: { from: "enrollments", localField: "_id", foreignField: "courseId", as: "e" } }, { $unwind: { path: "$e", preserveNullAndEmptyArrays: true } }, { $project: { _id: 0, courseName: 1, studentId: "$e.studentId" } } ])', 'preserveNullAndEmptyArrays: true שומר גם מסמכים בלי התאמה, כמו LEFT JOIN'],
   ['SELECT s.* FROM students s LEFT JOIN enrollments e ON s.id = e.studentId WHERE e.id IS NULL;', 'db.students.aggregate([ { $lookup: { from: "enrollments", localField: "_id", foreignField: "studentId", as: "e" } }, { $match: { e: { $size: 0 } } } ])', 'Anti-join ("אין להם אף…"): מערך ריק אחרי $lookup, עם { $size: 0 } או { e: [] }'],
+  ['SELECT c.id, c.courseName FROM courses c WHERE EXISTS (SELECT * FROM assignments a WHERE a.courseId = c.id);', 'db.courses.aggregate([ { $lookup: { from: "assignments", localField: "_id", foreignField: "courseId", as: "a" } }, { $match: { a: { $ne: [] } } }, { $project: { courseName: 1 } } ])', 'EXISTS ↔ $lookup + בדיקת מערך: מערך לא ריק = יש התאמה. NOT EXISTS = { a: { $size: 0 } }. חלופה: { _id: { $in: db.assignments.distinct("courseId") } }'],
+  ['SELECT studentId FROM enrollments WHERE courseId = 1 INTERSECT SELECT studentId FROM enrollments WHERE courseId = 2;', 'db.enrollments.aggregate([ { $group: { _id: "$studentId", courses: { $addToSet: "$courseId" } } }, { $match: { courses: { $all: [1, 2] } } } ])', 'INTERSECT ↔ $all לאחר קיבוץ: לכל סטודנט מערך קורסים, ו-$all דורש שכל הערכים יופיעו בו. התוצאה: סטודנטים 1 ו-7'],
+  ['SELECT studentId FROM enrollments WHERE courseId = 1 EXCEPT SELECT studentId FROM enrollments WHERE courseId = 2;', 'db.enrollments.aggregate([ { $group: { _id: "$studentId", courses: { $addToSet: "$courseId" } } }, { $match: { courses: { $in: [1], $not: { $in: [2] } } } } ])', 'EXCEPT / NOT EXISTS ↔ $not + $in ($nin שקול). ב-find: { _id: { $nin: db.x.distinct("…") } }. התוצאה: סטודנטים 2, 4 ו-8'],
   ["SELECT id, CASE WHEN grade >= 90 THEN 'Excellent' ELSE 'Regular' END AS level FROM submissions;", 'db.submissions.aggregate([ { $project: { level: { $cond: [ { $gte: ["$grade", 90] }, "Excellent", "Regular" ] } } } ])', 'לכמה תנאים משתמשים ב-$switch, עם branches ו-default'],
   ["SELECT firstName + ' ' + lastName AS fullName FROM students;", 'db.students.aggregate([ { $project: { _id: 0, fullName: { $concat: ["$firstName", " ", "$lastName"] } } } ])', 'ב-T-SQL משרשרים עם +, ובמונגו עם $concat (מחרוזות בלבד). _id: 0 כי ב-SELECT לא ביקשנו את ה-id'],
+  ['SELECT *, grade + 5 AS bonusGrade FROM submissions;', 'db.submissions.aggregate([ { $addFields: { bonusGrade: { $add: ["$grade", 5] } } } ])', 'ביטוי ב-SELECT ↔ $addFields (או $set): מוסיף שדה מחושב ומשאיר את כל השאר. בשלבים הבאים אפשר לסנן ולמיין לפי השדה החדש'],
+  ['SELECT * FROM (SELECT *, ROW_NUMBER() OVER (PARTITION BY studentId ORDER BY submissionDate DESC) AS rn FROM submissions) t WHERE rn = 1;', 'db.submissions.aggregate([ { $sort: { submissionDate: -1 } }, { $group: { _id: "$studentId", lastSubmission: { $first: "$$ROOT" } } } ])', 'בחירת ראשון בקבוצה: ROW_NUMBER() ↔ $sort + $group + $first. בלי $sort, ה-$first שרירותי. מגרסה 5.0 יש גם $setWindowFields עם $documentNumber'],
   ['SELECT CAST(AVG(grade) AS DECIMAL(5,2)) AS avgGrade FROM submissions;', 'db.submissions.aggregate([ { $group: { _id: null, avg: { $avg: "$grade" } } }, { $project: { _id: 0, avgGrade: { $round: ["$avg", 2] } } } ])', 'עיגול ל-2 ספרות. _id: null פירושו קבוצה אחת לכל המסמכים'],
   ["INSERT INTO students (id, firstName, city) VALUES (11, 'Roni', 'Haifa');", 'db.students.insertOne({ _id: 11, firstName: "Roni", city: "Haifa" })', 'לכמה שורות משתמשים ב-insertMany([ … ]). אין צורך ב-CREATE TABLE'],
   ["UPDATE students SET phone = '0529999999' WHERE id = 2;", 'db.students.updateOne({ _id: 2 }, { $set: { phone: "0529999999" } })', 'לכמה מסמכים משתמשים ב-updateMany. בלי $set זו שגיאה'],

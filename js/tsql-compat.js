@@ -144,6 +144,10 @@
       if(m[3]) notes.add('WITH TIES לא נתמך בדפדפן — ייתכן שיחסרו שורות "תיקו" (ב-SQL Server הן יופיעו)');
     }
 
+    /* דפדוף של SQL Server: ORDER BY … OFFSET n ROWS [FETCH NEXT|FIRST m ROWS ONLY] → LIMIT m OFFSET n */
+    code = code.replace(/\bOFFSET\s+(\d+)\s+ROWS?\s+FETCH\s+(?:NEXT|FIRST)\s+(\d+)\s+ROWS?\s+ONLY\b/gi, (_, n, m) => { notes.add('OFFSET … FETCH NEXT → LIMIT … OFFSET'); return `LIMIT ${m} OFFSET ${n}`; })
+               .replace(/\bOFFSET\s+(\d+)\s+ROWS?\b/gi, (_, n) => { notes.add('OFFSET n ROWS → LIMIT -1 OFFSET n'); return `LIMIT -1 OFFSET ${n}`; });
+
     /* שרשור מחרוזות: ב-T-SQL עם + , ב-SQLite עם || (רק כשאחד הצדדים הוא טקסט מפורש) */
     const LIT = '\u0001\\d+\u0002';
     const before = code;

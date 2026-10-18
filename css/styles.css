@@ -700,3 +700,27 @@ html[data-theme="dark"] .p-cyber nav.tabs button.tab-star:not(.active){color:#f5
 .p-sql .official-notes{margin-top:12px;background:rgba(255,180,84,.10);border:1px solid var(--warn);border-radius:12px;padding:10px 14px}
 .p-sql .official-notes ul{margin:6px 0 0;padding-inline-start:22px}
 .p-sql .official-notes li{margin:3px 0;unicode-bidi:plaintext}
+
+/* ---------- 7186 — סיכום הקורס לחזרה ---------- */
+.p-cyber .emph-btn.emph-review{border-color:#7048e8;background:linear-gradient(135deg,rgba(112,72,232,.10),var(--card))}
+.p-cyber .rev-nav{margin:4px 0 14px}
+.p-cyber .rev-stage{margin-bottom:16px;scroll-margin-top:150px}
+.p-cyber .rev-stage h3{margin:0 0 10px}
+.p-cyber .rev-th{margin:14px 0 6px;font-size:15.5px;color:var(--ink2)}
+.p-cyber .rev-table-wrap{overflow-x:auto}
+.p-cyber table.rev-table{width:100%;border-collapse:collapse;margin:6px 0 10px;font-size:14px}
+.p-cyber table.rev-table th,.p-cyber table.rev-table td{border:1px solid var(--line);padding:7px 10px;text-align:right;vertical-align:top}
+.p-cyber table.rev-table th{background:var(--card2)}
+.p-cyber .rev-term{font-weight:600;white-space:normal;min-width:110px;unicode-bidi:plaintext}
+.p-cyber .rev-def{unicode-bidi:plaintext}
+.p-cyber .rev-src{width:1%;white-space:nowrap}
+.p-cyber .rev-lesson{background:none;border:1px solid var(--line);border-radius:999px;padding:2px 8px;font-size:12px;color:var(--accent);cursor:pointer;font-family:inherit}
+.p-cyber .rev-lesson:hover{border-color:var(--accent)}
+.p-cyber .rev-corr{margin-top:5px;font-size:12.5px;font-weight:600;color:var(--warn);background:rgba(255,180,84,.12);border-radius:6px;padding:3px 7px}
+.p-cyber .rev-corr.error{color:var(--bad);background:rgba(255,93,108,.10)}
+.p-cyber .rev-note{margin:8px 0}
+.p-cyber .rev-final{border:2px solid #d6336c}
+.p-cyber .rev-hide .rev-def{cursor:pointer}
+.p-cyber .rev-hide .rev-def:not(.reveal){filter:blur(6px);user-select:none}
+.p-cyber .rev-hide .rev-def:not(.reveal) .rev-corr{display:none}
+@media(max-width:640px){.p-cyber .rev-src{white-space:normal}}

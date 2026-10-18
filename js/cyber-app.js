@@ -125,11 +125,15 @@ const SAMPLE_QS = [
   ...(SX.similar || []).map((q,i) => ({ ...q, key:'S:s:' + i, kind: q.kind || 'concept', source:'similar' })),
   ...(SX.bank || []).map((q,i) => ({ ...q, key:'S:b:' + i, kind: q.kind || 'concept', source:'bank' })),
 ];
+/* סיכום הקורס לחזרה (js/cyber-summary.js): שאלות חזרה, ומושגים מהסיכום שלא הופיעו במילון */
+const CS = C.courseSummary || null;
+const SUM_QS = ((CS && CS.quiz) || []).map((q,i) => ({ ...q, key:'SUM:q:' + i, kind: q.kind || 'concept', source:'summary' }));
+CONCEPTS.push(...((CS && CS.missing) || []).map((c,i) => ({ term:c.term, en:c.en || '', def:c.def, example:c.example || '', slide:c.slide || '', key:'SUM:c:' + i, lesson:c.lesson || 'L1', fromSummary:true })));
 /* שאלה שנוצרה אוטומטית ושנוסחה זהה לשאלה קיימת (למשל "מהו RaaS?" משאלות הדוגמה) — מוותרים עליה */
 const normQ = s => String(s || '').replace(/\s+/g, ' ').trim();
-const TAKEN = new Set([...LESSON_QS, ...SAMPLE_QS, ...EXTRA_QS].map(q => normQ(q.q)));
+const TAKEN = new Set([...LESSON_QS, ...SAMPLE_QS, ...SUM_QS, ...EXTRA_QS].map(q => normQ(q.q)));
 const GEN_QS = [...genAcronymQs(), ...genStageQs()].filter(q => !TAKEN.has(normQ(q.q)));
-const QUESTIONS = [...LESSON_QS, ...SAMPLE_QS, ...EXTRA_QS, ...GEN_QS];
+const QUESTIONS = [...LESSON_QS, ...SAMPLE_QS, ...SUM_QS, ...EXTRA_QS, ...GEN_QS];
 const isEmph = q => q.kind === 'acronym' || q.kind === 'stage';
 C.allQuestions = QUESTIONS;   /* לבדיקות (verify) — קריאה בלבד */
 
@@ -143,13 +147,14 @@ function applyTheme(t){ document.documentElement.dataset.theme = t; try { localS
 /* ============================================================
    ניווט
    ============================================================ */
-const VIEWS = ['home','sample','lessons','glossary','acronyms','processes','cases','flashcards','quiz','exam'];
+const VIEWS = ['home','sample','review','lessons','glossary','acronyms','processes','cases','flashcards','quiz','exam'];
 function showView(id){
   if(!VIEWS.includes(id)) id = 'home';
   $$('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + id));
   $$('nav.tabs button').forEach(b => b.classList.toggle('active', b.dataset.view === id));
   if(id === 'home') renderHome();
   if(id === 'sample') renderSample();
+  if(id === 'review') renderReview();
   window.scrollTo(0, 0);
   try { history.replaceState(null, '', '#' + id); } catch(e){}
 }
@@ -246,7 +251,7 @@ function conceptCard(c){
     <div class="gc-term">${eb(c.term)}${c.en?` <span class="en" dir="ltr">${esc(c.en)}</span>`:''}</div>
     <div class="gc-def">${eb(c.def)}</div>
     ${c.example?`<div class="gc-ex">לדוגמה: ${eb(c.example)}</div>`:''}
-    <div class="gc-meta">${esc(lessonLabel(c.lesson))}${c.slide?` · שקף ${esc(c.slide)}`:''}</div></div>`;
+    <div class="gc-meta">${esc(lessonLabel(c.lesson))}${c.slide?` · שקף ${esc(c.slide)}`:''}${c.fromSummary?' · 📝 מסיכום הקורס':''}</div></div>`;
 }
 let glossLesson = 'all', glossHide = false;
 function renderGlossary(){
@@ -360,6 +365,61 @@ function renderSample(){
 }
 
 /* ============================================================
+   📝 סיכום הקורס לחזרה (js/cyber-summary.js)
+   ============================================================ */
+let revHide = false;
+function renderReview(){
+  const box = $('#reviewBody'); if(!box) return;
+  if(!CS){ box.innerHTML = '<div class="card">סיכום הקורס עוד לא נטען.</div>'; return; }
+  const corr = CS.corrections || [];
+  /* תיקון שייך לשורה לפי המונח — ואם צוינה טבלה, רק לשורה בטבלה הזו (למשל "הפקת לקחים" מופיע פעמיים) */
+  const corrFor = (term, table) => corr.filter(c => c.where !== 'finalReview' && c.term && term && c.term === term && (!c.table || c.table === table));
+  const corrFinal = t => corr.filter(c => c.where === 'finalReview' && c.term && String(t).includes(c.term.replace(/\s*\(.*\)\s*$/, '')));
+  const lessonBtn = (l, s) => l ? `<button class="rev-lesson" data-l="${esc(l)}" title="לשיעור">📚 ${esc(lessonLabel(l))}${s ? ` · ש' ${esc(s)}` : ''}</button>` : '';
+  const block = b => {
+    if(b.type === 'table'){
+      const n = (b.head && b.head.length) || ((b.rows[0] || {}).cells || []).length;
+      return `<div class="rev-table-wrap">${b.title ? `<h4 class="rev-th">${eb(b.title)}</h4>` : ''}<table class="mini rev-table"><thead><tr>${(b.head || []).map(h => `<th>${eb(h)}</th>`).join('')}<th class="rev-src"></th></tr></thead><tbody>
+        ${(b.rows || []).map(r => { const cs = corrFor(r.term, b.title || ''); return `<tr>${(r.cells || []).map((c,i) => `<td class="${i === r.cells.length - 1 && n > 1 ? 'rev-def' : 'rev-term'}">${eb(c)}${i === r.cells.length - 1 && cs.length ? cs.map(x => `<div class="rev-corr ${esc(x.severity)}">⚠ לפי השקפים: ${eb(x.slidesSay)}</div>`).join('') : ''}</td>`).join('')}<td class="rev-src">${lessonBtn(r.lesson, r.slide)}</td></tr>`; }).join('')}
+      </tbody></table></div>`;
+    }
+    if(b.type === 'note') return `<div class="callout rev-note">${b.label ? `<b>${eb(b.label)}:</b> ` : ''}${eb(b.text || '')}</div>`;
+    if(b.type === 'sequence') return `<div class="rev-seq">${b.title ? `<h4 class="rev-th">${eb(b.title)}</h4>` : ''}${procFlow({ steps: b.steps || [] })}</div>`;
+    if(b.type === 'bullets') return `<div class="rev-bul">${b.title ? `<h4 class="rev-th">${eb(b.title)}</h4>` : ''}<ul class="tips">${(b.items || []).map(t => `<li>${eb(t)}</li>`).join('')}</ul></div>`;
+    return '';
+  };
+  const stages = CS.stages || [], nav = [...stages.map(s => [`rev-s${s.n}`, `שלב ${s.n}`]), ...(CS.cases && CS.cases.length ? [['rev-cases','מקרי בוחן']] : []), ...(CS.finalReview && CS.finalReview.length ? [['rev-final','🔥 חזרה אחרונה']] : []), ['rev-practice','⚡ תרגול']];
+  box.innerHTML = `
+    <div class="card emph-box"><b>📝 ${eb(CS.title || 'סיכום הקורס')}</b> — כל המושגים לפי שלבי הקורס, בטבלאות קצרות. לכל מושג יש קישור לשיעור ולשקף.${corr.length ? ` ${corr.length} מקומות שבהם הניסוח בסיכום לא מדויק מסומנים ב-⚠, עם הנוסח מהשקפים.` : ''}
+      <div class="sql-actions"><button class="btn ghost small" id="revHide">${revHide ? '👁 הצג פירושים' : '🙈 מצב שינון (הסתר פירושים)'}</button>
+        <button class="btn small" id="revDrillBtn">⚡ בחן את עצמך — 10 שאלות</button>
+        <button class="btn ghost small" id="revQuizBtn">❓ כל ${SUM_QS.length} שאלות הסיכום בבוחן</button>
+        <button class="btn ghost small" id="revFcBtn">🎴 כרטיסיות מהסיכום</button></div></div>
+    <div class="chip-row small rev-nav">${nav.map(([id,t]) => `<button data-go="${id}">${esc(t)}</button>`).join('')}</div>
+    <div class="${revHide ? 'rev-hide' : ''}" id="revDoc">
+    ${stages.map(s => `<section class="card rev-stage" id="rev-s${s.n}"><h3>שלב ${s.n} — ${eb(s.title)}</h3>${(s.blocks || []).map(block).join('')}</section>`).join('')}
+    ${CS.cases && CS.cases.length ? `<section class="card rev-stage" id="rev-cases"><h3>📰 מקרי הבוחן — משפט אחד לכל אירוע</h3><table class="mini rev-table"><thead><tr><th>אירוע</th><th>מה לזכור</th><th class="rev-src"></th></tr></thead><tbody>
+      ${CS.cases.map(c => `<tr><td class="rev-term" dir="auto"><b>${eb(c.name)}</b></td><td class="rev-def">${eb(c.text)}</td><td class="rev-src">${lessonBtn(c.lesson)}</td></tr>`).join('')}</tbody></table></section>` : ''}
+    ${CS.finalReview && CS.finalReview.length ? `<section class="card rev-stage rev-final" id="rev-final"><h3>🔥 חזרה אחרונה לפני המבחן</h3><ul class="tips">${CS.finalReview.map(t => `<li>${eb(t)}${corrFinal(t).map(x => `<div class="rev-corr ${esc(x.severity)}">⚠ לפי השקפים: ${eb(x.slidesSay)}</div>`).join('')}</li>`).join('')}</ul></section>` : ''}
+    </div>
+    ${(CS.missing || []).length ? `<div class="card"><h3>📌 מושגים מהסיכום שנוספו למילון</h3><p class="muted-sm">המושגים האלה מופיעים בסיכום ולא היו במילון המושגים של האתר — עכשיו הם שם (מסומנים "מסיכום הקורס").</p><div class="gloss-grid">${CONCEPTS.filter(c => c.fromSummary).map(conceptCard).join('')}</div></div>` : ''}
+    <section id="rev-practice"><h3 class="sec-h">⚡ תרגול על הסיכום</h3><div id="revDrill" class="sample-list"><p class="muted-sm">לחצו "בחן את עצמך" לקבלת 10 שאלות (5 תשובות, כמו במבחן).</p></div></section>`;
+  $$('#reviewBody .rev-lesson').forEach(b => b.onclick = () => openLesson(b.dataset.l));
+  $$('#reviewBody .rev-nav [data-go]').forEach(b => b.onclick = () => { const t = $('#' + b.dataset.go); if(t){ const h = ($('header.top') || {}).offsetHeight || 80; window.scrollTo(0, t.getBoundingClientRect().top + window.scrollY - h - 10); } });
+  $$('#revDoc .rev-def').forEach(td => td.onclick = () => { if(revHide) td.classList.toggle('reveal'); });
+  $('#revHide').onclick = () => { revHide = !revHide; $('#revDoc').classList.toggle('rev-hide', revHide); $('#revHide').textContent = revHide ? '👁 הצג פירושים' : '🙈 מצב שינון (הסתר פירושים)'; $$('#revDoc .rev-def.reveal').forEach(td => td.classList.remove('reveal')); };
+  $('#revDrillBtn').onclick = () => {
+    const items = shuffle(SUM_QS).sort((x,y) => (P.seen[x.key]||0) - (P.seen[y.key]||0)).slice(0, 10);
+    items.forEach(q => { delete quizPerm[q.key]; delete sampleAns[q.key]; });
+    $('#revDrill').innerHTML = items.map((q,i) => sampleQHtml(q, i+1)).join('');
+    bindInline($('#revDrill'));
+    $('#rev-practice').scrollIntoView({ behavior:'smooth' });
+  };
+  $('#revQuizBtn').onclick = () => goQuizKind('__summary');
+  $('#revFcBtn').onclick = () => { fcSrc = 'sum'; setupFcSrc(); buildFc(); drawFc(); showView('flashcards'); };
+}
+
+/* ============================================================
    תהליכים + משחק "סדר את השלבים"
    ============================================================ */
 let game = null, procF = 'ordered';
@@ -429,9 +489,14 @@ let fcLesson = 'all', fcDir = 'term', fcOrder = [], fcIdx = 0, fcOnlyUnknown = f
 /* fcSrc: 'concepts' (מושג ↔ הגדרה) או 'acr' (ראשי תיבות ↔ פירוש). מפתחות: מושג = L1:3, ראשי תיבות = A:CIA */
 const fcKnown = k => k.startsWith('A:') ? P.acrKnown[k.slice(2)] : P.known[k];
 const fcSetKnown = (k, v) => { const o = k.startsWith('A:') ? P.acrKnown : P.known, kk = k.startsWith('A:') ? k.slice(2) : k; if(v) o[kk] = true; else delete o[kk]; };
+/* שורות הטבלאות בסיכום הקורס — מפתח R:<שלב>:<בלוק>:<שורה> */
+const SUM_ROWS = !CS ? [] : (CS.stages || []).flatMap((st,si) => (st.blocks || []).flatMap((b,bi) => b.type === 'table' ? (b.rows || []).map((r,ri) => ({ key:`R:${si}:${bi}:${ri}`, term:r.term, meaning:r.meaning, lesson:r.lesson, stage:st, table:b.title || '' })) : []))
+  .filter(r => r.term && r.meaning);
 function buildFc(){
   const keys = fcSrc === 'acr'
     ? ACRONYMS.filter(a => fcLesson === 'all' || (a.lessons||[]).includes(fcLesson)).map(a => 'A:' + a.abbr)
+    : fcSrc === 'sum'
+    ? SUM_ROWS.filter(r => fcLesson === 'all' || r.lesson === fcLesson).map(r => r.key)
     : CONCEPTS.filter(c => fcLesson === 'all' || c.lesson === fcLesson).map(c => c.key);
   fcOrder = shuffle(keys.filter(k => !fcOnlyUnknown || !fcKnown(k))); fcIdx = 0;
 }
@@ -445,6 +510,12 @@ function drawFc(){
     $('#fcBackTxt').textContent = bidi(fcDir === 'term' ? `${a.full} — ${a.he}` : full);
     $('#fcFrontTag').textContent = fcDir === 'term' ? 'ראשי תיבות — מה הפירוש?' : 'פירוש — מה הקיצור?';
     $('#fcCounter').textContent = `${fcIdx+1}/${fcOrder.length} · 🔤 ${(a.lessons||[]).map(lessonLabel).join(', ')}`;
+  } else if(k.startsWith('R:')){
+    const r = SUM_ROWS.find(x => x.key === k);
+    $('#fcFrontTxt').textContent = bidi(fcDir === 'term' ? r.term : r.meaning);
+    $('#fcBackTxt').textContent = bidi(fcDir === 'term' ? r.meaning : r.term);
+    $('#fcFrontTag').textContent = fcDir === 'term' ? 'מהסיכום — מה הפירוש?' : 'מהסיכום — מה המושג?';
+    $('#fcCounter').textContent = `${fcIdx+1}/${fcOrder.length} · 📝 שלב ${r.stage.n}${r.lesson ? ' · ' + lessonLabel(r.lesson) : ''}`;
   } else {
     const c = CONCEPTS.find(x => x.key === k);
     const term = c.term + (c.en ? ` (${c.en})` : '');
@@ -456,7 +527,7 @@ function drawFc(){
   $('#fcKnownBadge').style.display = fcKnown(k) ? 'inline-block' : 'none';
 }
 function setupFcSrc(){
-  $('#fcSrc').innerHTML = [['concepts',`📖 מושגים (${CONCEPTS.length})`],['acr',`🔤 ראשי תיבות (${ACRONYMS.length})`]].map(([k,t]) => `<button data-s="${k}" class="${fcSrc===k?'active':''}">${t}</button>`).join('');
+  $('#fcSrc').innerHTML = [['concepts',`📖 מושגים (${CONCEPTS.length})`],['acr',`🔤 ראשי תיבות (${ACRONYMS.length})`], ...(SUM_ROWS.length ? [['sum',`📝 מהסיכום (${SUM_ROWS.length})`]] : [])].map(([k,t]) => `<button data-s="${k}" class="${fcSrc===k?'active':''}">${t}</button>`).join('');
   $$('#fcSrc button').forEach(b => b.onclick = () => { fcSrc = b.dataset.s; setupFcSrc(); buildFc(); drawFc(); });
 }
 function setupFlashcards(){
@@ -479,10 +550,10 @@ function setupFlashcards(){
    ============================================================ */
 let quizLesson = 'all', quizKind = 'all', quizOrder = [], quizShown = 20, quizPerm = {}, quizAns = {};
 function quizSet(){ return QUESTIONS.filter(q => (quizLesson === 'all' || q.lesson === quizLesson) &&
-  (quizKind === 'all' || (quizKind === '__sample' ? !!q.source && ['official','similar','bank'].includes(q.source) : q.kind === quizKind))); }
+  (quizKind === 'all' || (quizKind === '__sample' ? !!q.source && ['official','similar','bank'].includes(q.source) : quizKind === '__summary' ? q.source === 'summary' : q.kind === quizKind))); }
 function renderQuizFilters(){
   const lessons = [['all','כל השיעורים'], ...LESSONS.map(l => [l.id, `שיעור ${l.num}`])];
-  const kinds = [['all','כל הסוגים'], ...(SAMPLE_QS.length ? [['__sample','⭐ בסגנון שאלות הדוגמה']] : []), ...Object.keys(KIND).filter(k => QUESTIONS.some(q => q.kind === k)).map(k => [k, KIND[k]])];
+  const kinds = [['all','כל הסוגים'], ...(SAMPLE_QS.length ? [['__sample','⭐ בסגנון שאלות הדוגמה']] : []), ...(SUM_QS.length ? [['__summary','📝 מסיכום הקורס']] : []), ...Object.keys(KIND).filter(k => QUESTIONS.some(q => q.kind === k)).map(k => [k, KIND[k]])];
   $('#quizFilters').innerHTML = `<div class="chip-row">${lessons.map(([k,t]) => `<button data-ql="${esc(k)}" class="${quizLesson===k?'active':''}">${esc(t)}</button>`).join('')}</div>
     <div class="chip-row small">${kinds.map(([k,t]) => `<button data-qk="${esc(k)}" class="${quizKind===k?'active':''}">${esc(t)}</button>`).join('')}</div>`;
   $$('#quizFilters [data-ql]').forEach(b => b.onclick = () => { quizLesson = b.dataset.ql; renderQuizFilters(); renderQuiz(true); });
@@ -550,7 +621,8 @@ function pickExam(n, mode){
     /* במתכונת המבחן: 5 תשובות לכל שאלה — שאלות דומות לשאלות הדוגמה, בנק בסגנון המרצה, ראשי תיבות, שלבים ושאלות שיעור */
     const five = q => q.options.length === 5, out = [];
     out.push(...fresh(SAMPLE_QS.filter(q => q.source === 'similar')).slice(0, Math.round(n * 0.2)));
-    out.push(...roundRobin(fresh(SAMPLE_QS.filter(q => q.source === 'bank')), Math.round(n * 0.3)));
+    out.push(...roundRobin(fresh(SAMPLE_QS.filter(q => q.source === 'bank')), Math.round(n * (SUM_QS.length ? 0.2 : 0.3))));
+    if(SUM_QS.length) out.push(...roundRobin(fresh(SUM_QS), Math.round(n * 0.1)));
     out.push(...emphPick('acronym', Math.round(n / 6), true), ...emphPick('stage', Math.round(n / 6), true));
     const used = new Set(out.map(q => q.key));
     out.push(...roundRobin(fresh(LESSON_QS.filter(q => five(q) && !used.has(q.key))), n - out.length));

@@ -12,7 +12,7 @@ const bidi = s => window.bidiLtr ? window.bidiLtr(String(s ?? '')) : String(s ??
 const eb = s => esc(bidi(s));
 const LET = ['א','ב','ג','ד','ה'];
 const PKEY = 'cyberportal_v1', TKEY = 'bdportal_theme';
-const KIND = { concept:'מושגים', process:'תהליכים', scenario:'תרחישים', case:'מקרי בוחן', tool:'כלים ותפקידים', fact:'עובדות', acronym:'🔤 ראשי תיבות', stage:'🔢 שלבים וסדר' };
+const KIND = { knowledge:'ידע ומושגים', concept:'מושגים', process:'תהליכים', scenario:'תרחישים', case:'מקרי בוחן', tool:'כלים ותפקידים', fact:'עובדות', acronym:'🔤 ראשי תיבות', stage:'🔢 שלבים וסדר' };
 function shuffle(a){ a = a.slice(); for(let i=a.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; }
 /* ערבוב דטרמיניסטי — שאלות שנוצרות אוטומטית נשארות זהות בין טעינות (ההתקדמות נשמרת לפי מפתח) */
 function seeded(str){ let h = 2166136261; for(let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 100000) / 100000; }; }
@@ -133,7 +133,24 @@ CONCEPTS.push(...((CS && CS.missing) || []).map((c,i) => ({ term:c.term, en:c.en
 const normQ = s => String(s || '').replace(/\s+/g, ' ').trim();
 const TAKEN = new Set([...LESSON_QS, ...SAMPLE_QS, ...SUM_QS, ...EXTRA_QS].map(q => normQ(q.q)));
 const GEN_QS = [...genAcronymQs(), ...genStageQs()].filter(q => !TAKEN.has(normQ(q.q)));
-const QUESTIONS = [...LESSON_QS, ...SAMPLE_QS, ...SUM_QS, ...EXTRA_QS, ...GEN_QS];
+/* מבחני 2026 — 15 שאלות הדוגמה של המרצה + בנק שנכתב באותו סגנון.
+   options תמיד 5; במצב "4 תשובות" (כמו במבחן לדוגמה) האחרונה נזרקת,
+   ולכן correct אף פעם אינו 4. e26SetMode מחליף את המצב בלי לבנות מחדש. */
+const E26 = C.exam2026 || null;
+const E26_QS = ((E26 && E26.questions) || []).map(q => ({
+  ...q, key: 'E26:' + q.id, allOptions: q.options.slice(),
+  options: q.options.slice(0, 4), lesson: q.lesson || '', e26: true,
+  src: q.source,          /* 'official' = מהמרצה · 'bank' = נכתב לפי הסגנון */
+  source: 'e26',          /* לסינון בבוחן הכללי */
+}));
+let e26Mode = 4;                 /* 4 תשובות כמו במבחן לדוגמה, או 5 */
+function e26SetMode(n){
+  e26Mode = n === 5 ? 5 : 4;
+  E26_QS.forEach(q => { q.options = q.allOptions.slice(0, e26Mode); delete quizPerm[q.key]; });
+}
+const E26_BY_ID = new Map(E26_QS.map(q => [q.id, q]));
+const E26_TOPIC = new Map(((E26 && E26.topics) || []).map(t => [t.key, t.name]));
+const QUESTIONS = [...LESSON_QS, ...SAMPLE_QS, ...SUM_QS, ...EXTRA_QS, ...GEN_QS, ...E26_QS];
 const isEmph = q => q.kind === 'acronym' || q.kind === 'stage';
 C.allQuestions = QUESTIONS;   /* לבדיקות (verify) — קריאה בלבד */
 
@@ -147,7 +164,7 @@ function applyTheme(t){ document.documentElement.dataset.theme = t; try { localS
 /* ============================================================
    ניווט
    ============================================================ */
-const VIEWS = ['home','sample','review','lessons','glossary','acronyms','processes','cases','flashcards','quiz','exam'];
+const VIEWS = ['home','exam2026','sample','review','lessons','glossary','acronyms','processes','cases','flashcards','quiz','exam'];
 function showView(id){
   if(!VIEWS.includes(id)) id = 'home';
   $$('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + id));
@@ -155,6 +172,7 @@ function showView(id){
   if(id === 'home') renderHome();
   if(id === 'sample') renderSample();
   if(id === 'review') renderReview();
+  if(id === 'exam2026') renderE26();
   window.scrollTo(0, 0);
   try { history.replaceState(null, '', '#' + id); } catch(e){}
 }
@@ -549,11 +567,11 @@ function setupFlashcards(){
    בוחן
    ============================================================ */
 let quizLesson = 'all', quizKind = 'all', quizOrder = [], quizShown = 20, quizPerm = {}, quizAns = {};
-function quizSet(){ return QUESTIONS.filter(q => (quizLesson === 'all' || q.lesson === quizLesson) &&
+function quizSet(){ return QUESTIONS.filter(q => (quizKind === '__e26' ? q.e26 : !q.e26) && (quizLesson === 'all' || q.lesson === quizLesson) &&
   (quizKind === 'all' || (quizKind === '__sample' ? !!q.source && ['official','similar','bank'].includes(q.source) : quizKind === '__summary' ? q.source === 'summary' : q.kind === quizKind))); }
 function renderQuizFilters(){
   const lessons = [['all','כל השיעורים'], ...LESSONS.map(l => [l.id, `שיעור ${l.num}`])];
-  const kinds = [['all','כל הסוגים'], ...(SAMPLE_QS.length ? [['__sample','⭐ בסגנון שאלות הדוגמה']] : []), ...(SUM_QS.length ? [['__summary','📝 מסיכום הקורס']] : []), ...Object.keys(KIND).filter(k => QUESTIONS.some(q => q.kind === k)).map(k => [k, KIND[k]])];
+  const kinds = [['all','כל הסוגים'], ...(SAMPLE_QS.length ? [['__sample','⭐ בסגנון שאלות הדוגמה']] : []), ...(SUM_QS.length ? [['__summary','📝 מסיכום הקורס']] : []), ...(E26_QS.length ? [['__e26','🎯 בסגנון מבחני 2026']] : []), ...Object.keys(KIND).filter(k => QUESTIONS.some(q => q.kind === k)).map(k => [k, KIND[k]])];
   $('#quizFilters').innerHTML = `<div class="chip-row">${lessons.map(([k,t]) => `<button data-ql="${esc(k)}" class="${quizLesson===k?'active':''}">${esc(t)}</button>`).join('')}</div>
     <div class="chip-row small">${kinds.map(([k,t]) => `<button data-qk="${esc(k)}" class="${quizKind===k?'active':''}">${esc(t)}</button>`).join('')}</div>`;
   $$('#quizFilters [data-ql]').forEach(b => b.onclick = () => { quizLesson = b.dataset.ql; renderQuizFilters(); renderQuiz(true); });
@@ -726,6 +744,154 @@ function init(){
   setupExam();
   showView((location.hash || '#home').slice(1));
 }
+
+
+/* ================= מבחני 2026 — במתכונת שאלות הדוגמה החדשות ================= */
+let e26Tab = 'exams', e26Topic = 'all', e26ExamId = null, e26Ans = {}, e26Submitted = false;
+
+function e26Prog(){ P.e26 = P.e26 || {}; return P.e26; }
+function e26TopicName(k){ return E26_TOPIC.get(k) || k; }
+
+/* כמו qHtml, אבל מציג את הנושא במקום את השיעור — לשאלות האלה אין תמיד מיפוי לשיעור */
+function e26QHtml(q, num, cls, extraAttr){
+  const perm = quizPerm[q.key] = quizPerm[q.key] || shuffle([...q.options.keys()]);
+  const tag = `${esc(e26TopicName(q.topic))}${q.kind === 'scenario' ? ' · תרחיש' : ''}${q.src === 'official' ? ' · ⭐ מהמרצה' : ''}`;
+  return `<div class="quiz-q" data-key="${esc(q.key)}" ${extraAttr || ''}>
+    <div class="qnum">שאלה ${num} <span class="qtopic">${tag}</span></div>
+    <div class="qtext">${eb(q.q)}</div>
+    ${perm.map((orig, d) => `<button class="opt ${cls}" data-key="${esc(q.key)}" data-j="${orig}"><span class="mark">${LET[d]}</span> ${eb(q.options[orig])}</button>`).join('')}
+    <div class="explain"></div></div>`;
+}
+
+function e26Head(){
+  const total = E26_QS.length, off = E26_QS.filter(q => q.src === 'official').length;
+  const answered = E26_QS.filter(q => P.quiz[q.key] !== undefined).length;
+  const right = E26_QS.filter(q => P.quiz[q.key] === true).length;
+  return `<div class="card emph-box">
+    <b>🎯 המתכונת:</b> שאלות אמריקאיות עם תשובה נכונה אחת. <b>המסיחים הם מושגים אמיתיים מאותו תחום</b> — לא ניסוחים מוגזמים — ולכן צריך לדעת את ההבדל בין מושגים קרובים.
+    <div class="e26-row">
+      <span class="muted-sm">מספר תשובות:</span>
+      <div class="chip-row small inline" id="e26Mode">
+        <button data-n="4" class="${e26Mode === 4 ? 'active' : ''}">4 (א–ד) — כמו שאלות הדוגמה</button>
+        <button data-n="5" class="${e26Mode === 5 ? 'active' : ''}">5 (א–ה)</button>
+      </div>
+    </div>
+    <div class="muted-sm">${total} שאלות · ${off} מהמרצה · ${E26.exams.length} מבחני תרגול · ענית על ${answered}, נכון ב-${right}</div>
+  </div>
+  <div class="chip-row" id="e26Tabs">
+    <button data-t="exams" class="${e26Tab === 'exams' ? 'active' : ''}">📝 מבחני תרגול (${E26.exams.length})</button>
+    <button data-t="official" class="${e26Tab === 'official' ? 'active' : ''}">⭐ שאלות המרצה (${off})</button>
+    <button data-t="bank" class="${e26Tab === 'bank' ? 'active' : ''}">📚 בנק לפי נושא (${total - off})</button>
+  </div>`;
+}
+
+function renderE26(){
+  const box = $('#e26Body'); if(!box) return;
+  if(!E26 || !E26_QS.length){ box.innerHTML = '<div class="card">שאלות 2026 עוד לא נטענו.</div>'; return; }
+  box.innerHTML = e26Head() + `<div id="e26Main"></div>`;
+  $$('#e26Mode button').forEach(b => b.onclick = () => { e26SetMode(+b.dataset.n); e26Ans = {}; e26Submitted = false; renderE26(); });
+  $$('#e26Tabs button').forEach(b => b.onclick = () => { e26Tab = b.dataset.t; e26ExamId = null; renderE26Main(); });
+  renderE26Main();
+}
+
+function renderE26Main(){
+  const main = $('#e26Main'); if(!main) return;
+  $$('#e26Tabs button').forEach(b => b.classList.toggle('active', b.dataset.t === e26Tab));
+  if(e26Tab === 'exams')    return e26ExamId ? renderE26Exam() : renderE26ExamList();
+  if(e26Tab === 'official') return e26List(E26_QS.filter(q => q.src === 'official'), '⭐ 15 שאלות הדוגמה של המרצה', 'אלה השאלות המקוריות, מילה במילה. ענו וקראו את ההסבר.');
+  return renderE26Bank();
+}
+
+function e26List(items, title, sub){
+  const main = $('#e26Main');
+  main.innerHTML = `<h3 class="sec-h">${esc(title)}</h3>${sub ? `<p class="muted-sm">${esc(sub)}</p>` : ''}
+    <div class="sample-list">${items.map((q, i) => e26QHtml(q, i + 1, 'i-opt')).join('')}</div>`;
+  bindInline(main);
+}
+
+function renderE26Bank(){
+  const bank = E26_QS.filter(q => q.src !== 'official');
+  const topics = [['all', `כל הנושאים (${bank.length})`],
+    ...E26.topics.filter(t => bank.some(q => q.topic === t.key))
+      .map(t => [t.key, `${t.name} (${bank.filter(q => q.topic === t.key).length})`])];
+  const items = bank.filter(q => e26Topic === 'all' || q.topic === e26Topic);
+  const main = $('#e26Main');
+  main.innerHTML = `<div class="chip-row small" id="e26Topics">${topics.map(([k, t]) =>
+      `<button data-k="${esc(k)}" class="${e26Topic === k ? 'active' : ''}">${esc(t)}</button>`).join('')}</div>
+    <div class="sample-list">${items.map((q, i) => e26QHtml(q, i + 1, 'i-opt')).join('')}</div>`;
+  bindInline(main);
+  $$('#e26Topics button').forEach(b => b.onclick = () => { e26Topic = b.dataset.k; renderE26Bank(); $('#e26Topics').scrollIntoView({ block: 'nearest' }); });
+}
+
+function renderE26ExamList(){
+  const pr = e26Prog();
+  $('#e26Main').innerHTML = `<h3 class="sec-h">📝 ${E26.exams.length} מבחני תרגול · ${E26.examSize} שאלות כל אחד</h3>
+    <p class="muted-sm">כל מבחן מכסה את כל הנושאים באותה התפלגות כמו שאלות הדוגמה. עונים על הכול, ואז מקבלים ציון והסברים.</p>
+    <div class="exam-grid">${E26.exams.map(x => {
+      const r = pr[x.id];
+      return `<button class="card exam-card" data-x="${esc(x.id)}">
+        <b>${esc(x.title)}</b>
+        <div class="muted-sm">${E26.examSize} שאלות</div>
+        <div class="${r ? 'exam-score' : 'muted-sm'}">${r ? `הציון שלך: ${r.score}/${r.total} (${Math.round(r.score / r.total * 100)})` : 'טרם נבחנת'}</div>
+      </button>`; }).join('')}</div>`;
+  $$('.exam-card').forEach(b => b.onclick = () => { e26ExamId = b.dataset.x; e26Ans = {}; e26Submitted = false; renderE26Main(); window.scrollTo(0, 0); });
+}
+
+function renderE26Exam(){
+  const x = E26.exams.find(e => e.id === e26ExamId); if(!x) { e26ExamId = null; return renderE26Main(); }
+  const qs = x.questionIds.map(id => E26_BY_ID.get(id)).filter(Boolean);
+  const main = $('#e26Main');
+  main.innerHTML = `<div class="card e26-bar">
+      <button class="btn ghost small" id="e26Back">← לרשימת המבחנים</button>
+      <b>${esc(x.title)}</b>
+      <span id="e26Count" class="muted-sm"></span>
+      <button class="btn" id="e26Submit">סיים והצג ציון</button>
+    </div>
+    <div id="e26Res"></div>
+    <div class="sample-list" id="e26Qs">${qs.map((q, i) => e26QHtml(q, i + 1, 'e26-opt')).join('')}</div>`;
+
+  const count = () => { const n = Object.keys(e26Ans).length; $('#e26Count').textContent = `ענית על ${n} מתוך ${qs.length}`; };
+  count();
+  $('#e26Back').onclick = () => { e26ExamId = null; renderE26Main(); };
+  $$('#e26Qs .e26-opt').forEach(b => b.onclick = () => {
+    if(e26Submitted) return;
+    const k = b.dataset.key, j = +b.dataset.j;
+    e26Ans[k] = j;
+    $$(`.quiz-q[data-key="${CSS.escape(k)}"] .e26-opt`, main).forEach(o => o.classList.toggle('picked', +o.dataset.j === j));
+    count();
+  });
+
+  $('#e26Submit').onclick = () => {
+    if(e26Submitted){ e26ExamId = null; renderE26Main(); return; }
+    const miss = qs.length - Object.keys(e26Ans).length;
+    if(miss && !confirm(`נשארו ${miss} שאלות בלי תשובה. לסיים בכל זאת?`)) return;
+    e26Submitted = true;
+    let score = 0;
+    qs.forEach(q => {
+      const j = e26Ans[q.key];
+      if(j === q.correct) score++;
+      P.quiz[q.key] = (j === q.correct); P.seen[q.key] = (P.seen[q.key] || 0) + 1;
+      paintQ(main, q.key, j);
+    });
+    const pr = e26Prog(); const prev = pr[x.id];
+    if(!prev || score > prev.score) pr[x.id] = { score, total: qs.length };
+    save();
+    const pct = Math.round(score / qs.length * 100);
+    const wrong = qs.filter(q => e26Ans[q.key] !== q.correct);
+    const byTopic = wrong.reduce((m, q) => (m[q.topic] = (m[q.topic] || 0) + 1, m), {});
+    $('#e26Res').innerHTML = `<div class="card ${pct >= 60 ? 'ok-box' : 'emph-box'}">
+      <h3>הציון שלך: ${score}/${qs.length} · ${pct}</h3>
+      ${wrong.length ? `<div class="muted-sm">הנושאים שבהם טעית: ${Object.entries(byTopic).sort((a, b) => b[1] - a[1]).map(([t, n]) => `${esc(e26TopicName(t))} (${n})`).join(' · ')}</div>` : '<div class="muted-sm">כל התשובות נכונות.</div>'}
+      <div class="sql-actions"><button class="btn ghost small" id="e26Again">↺ לענות שוב על המבחן הזה</button>
+        <button class="btn ghost small" id="e26Next">המבחן הבא ←</button></div></div>`;
+    $('#e26Submit').textContent = '← לרשימת המבחנים';
+    $('#e26Again').onclick = () => { e26Ans = {}; e26Submitted = false; qs.forEach(q => delete quizPerm[q.key]); renderE26Main(); window.scrollTo(0, 0); };
+    $('#e26Next').onclick = () => { const i = E26.exams.findIndex(e => e.id === x.id); e26ExamId = E26.exams[(i + 1) % E26.exams.length].id; e26Ans = {}; e26Submitted = false; renderE26Main(); window.scrollTo(0, 0); };
+    $('#e26Res').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    renderHome();
+  };
+}
+
 document.addEventListener('DOMContentLoaded', init);
 window.addEventListener('hashchange', () => showView(location.hash.slice(1)));
 })();

@@ -767,3 +767,15 @@ html[data-theme="dark"] .p-cyber nav.tabs button.tab-star:not(.active){color:#f5
 
 /* תג "לא נכון" בשאלות מבחן 2026 — משלים את .badge-pill.good */
 .p-sql .badge-pill.miss{background:rgba(255,92,108,.18);color:var(--bad)}
+
+/* ---- מבחני 2026 (סייבר) ---- */
+.e26-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0 4px}
+.chip-row.inline{margin:0}
+.exam-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.exam-card{text-align:start;cursor:pointer;border:1px solid var(--line);display:flex;flex-direction:column;gap:3px}
+.exam-card:hover{border-color:var(--acc)}
+.exam-score{font-size:12.5px;font-weight:700;color:var(--good)}
+.e26-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:sticky;top:0;z-index:5}
+.e26-bar b{flex:1 1 auto}
+.opt.e26-opt.picked{border-color:var(--acc);background:var(--card2)}
+@media(max-width:560px){.exam-grid{grid-template-columns:1fr 1fr}.e26-bar{position:static}}

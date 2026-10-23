@@ -22,7 +22,7 @@ S.chapters = S.chapters || []; S.flashcards = S.flashcards || []; S.quiz = S.qui
 S.exercises = S.exercises || []; S.nosql = S.nosql || {}; S.nosql.exercises = S.nosql.exercises || []; S.dual = S.dual || [];
 
 /* ---------------- התקדמות ---------------- */
-const DEF = () => ({ read:{}, quiz:{}, sql:{}, mongo:{}, dual:{}, sample:{}, fcKnown:{}, examBest:0, exams:[] });
+const DEF = () => ({ read:{}, quiz:{}, sql:{}, mongo:{}, dual:{}, sample:{}, exam2:{}, fcKnown:{}, examBest:0, exams:[] });
 let P = (() => { try { return Object.assign(DEF(), JSON.parse(localStorage.getItem(PKEY) || '{}')); } catch(e){ return DEF(); } })();
 function save(){ try { localStorage.setItem(PKEY, JSON.stringify(P)); } catch(e){} }
 
@@ -72,14 +72,15 @@ const dataset = key => S.nosql.datasets[key || 'college2'];
 /* ============================================================
    ניווט
    ============================================================ */
-const VIEWS = ['home','sample','chapters','syntax','flashcards','quiz','lab','exam'];
+const VIEWS = ['home','exam2','sample','chapters','syntax','flashcards','quiz','lab','exam'];
 function showView(id){
   if(!VIEWS.includes(id)) id = 'home';
   $$('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + id));
   $$('nav.tabs button').forEach(b => b.classList.toggle('active', b.dataset.view === id));
   if(id === 'home') renderHome();
-  if(id === 'lab' || id === 'exam' || id === 'sample') ensureEngines();
+  if(id === 'lab' || id === 'exam' || id === 'sample' || id === 'exam2') ensureEngines();
   if(id === 'sample' && window.SampleView) SampleView.show();
+  if(id === 'exam2' && window.EXAM2VIEW) EXAM2VIEW.render();
   window.scrollTo(0, 0);
   try { history.replaceState(null, '', '#' + id); } catch(e){}
 }

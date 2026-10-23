@@ -724,3 +724,46 @@ html[data-theme="dark"] .p-cyber nav.tabs button.tab-star:not(.active){color:#f5
 .p-cyber .rev-hide .rev-def:not(.reveal){filter:blur(6px);user-select:none}
 .p-cyber .rev-hide .rev-def:not(.reveal) .rev-corr{display:none}
 @media(max-width:640px){.p-cyber .rev-src{white-space:normal}}
+
+/* ---------- 3964 — ⭐ מבחן 2026 (הפורמט החדש, לשונית exam2) ---------- */
+.p-sql .e2-wrap{max-width:100%;overflow-wrap:anywhere}
+.p-sql .e2-wrap code{background:var(--code-bg);color:#7fd1ff;padding:2px 7px;border-radius:6px;
+  font-family:Consolas,monospace;font-size:13.5px;direction:ltr;display:inline-block;unicode-bidi:isolate;max-width:100%;overflow-wrap:anywhere}
+.p-sql .e2-wrap pre{background:var(--code-bg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;
+  overflow-x:auto;direction:ltr;text-align:left;font-family:Consolas,monospace;font-size:13.5px;color:#cfe3ff;line-height:1.6;margin:8px 0}
+.p-sql .e2-wrap details{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:10px 0}
+.p-sql .e2-wrap details>summary{cursor:pointer;font-weight:700;color:var(--ink)}
+.p-sql .e2-wrap details[open]>summary{margin-bottom:8px}
+.p-sql .e2-facts{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 0}
+.p-sql .e2-fact{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:13.5px}
+.p-sql .e2-fact b{color:var(--accent)}
+.p-sql .e2-warn{border:2px solid var(--warn);background:linear-gradient(135deg,rgba(255,180,84,.12),var(--card))}
+.p-sql .e2-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:18px 0 8px}
+.p-sql .e2-q{margin-bottom:16px}
+.p-sql .e2-q h3{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.p-sql .e2-prompt{margin:4px 0 10px;font-size:15px;color:var(--ink2);unicode-bidi:plaintext}
+.p-sql .e2-sec{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+.p-sql .e2-sec-q{font-weight:700;margin:0 0 8px;unicode-bidi:plaintext}
+.p-sql .e2-ans{margin-top:10px;background:var(--card2);border-radius:10px;padding:10px 14px;unicode-bidi:plaintext}
+.p-sql .e2-ans p{margin:7px 0}
+.p-sql .e2-ans ul{margin:7px 0;padding-inline-start:22px}
+.p-sql .e2-ans blockquote{margin:9px 0;padding:8px 12px;border-inline-start:4px solid var(--good);
+  background:rgba(13,158,111,.10);border-radius:8px;unicode-bidi:plaintext}
+.p-sql .e2-src{display:inline-block;font-size:11.5px;font-weight:700;border-radius:999px;padding:2px 9px;margin-inline-start:6px;white-space:nowrap}
+.p-sql .e2-src.lect{background:rgba(13,158,111,.18);color:var(--good)}
+.p-sql .e2-src.ext{background:rgba(59,118,232,.16);color:var(--accent)}
+.p-sql .e2-tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+.p-sql .e2-tbl-wrap table.mini{font-size:13.5px}
+.p-sql .e2-tbl-wrap table.mini td,.p-sql .e2-tbl-wrap table.mini th{vertical-align:top;unicode-bidi:plaintext}
+.p-sql .e2-note{font-size:13px;color:var(--muted)}
+.p-sql .e2-hint{margin-top:6px;font-size:13.5px;font-weight:600;color:var(--ink2);unicode-bidi:plaintext}
+.p-sql .e2-q .feedback{margin-top:10px}
+.p-sql .e2-q h4{margin:12px 0 6px;font-size:14.5px}
+@media(max-width:640px){
+  .p-sql .e2-wrap pre{font-size:12.5px;padding:10px}
+  .p-sql .e2-fact{width:100%}
+  .p-sql .e2-tbl-wrap table.mini{min-width:520px}
+}
+
+/* תג "לא נכון" בשאלות מבחן 2026 — משלים את .badge-pill.good */
+.p-sql .badge-pill.miss{background:rgba(255,92,108,.18);color:var(--bad)}

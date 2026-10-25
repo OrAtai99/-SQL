@@ -779,3 +779,23 @@ html[data-theme="dark"] .p-cyber nav.tabs button.tab-star:not(.active){color:#f5
 .e26-bar b{flex:1 1 auto}
 .opt.e26-opt.picked{border-color:var(--acc);background:var(--card2)}
 @media(max-width:560px){.exam-grid{grid-template-columns:1fr 1fr}.e26-bar{position:static}}
+
+/* ---------- חלק א׳ האמריקאי בפורטל SQL (מבחן 2026) ---------- */
+.p-sql #view-exam2 .quiz-q .qtext{white-space:pre-wrap;unicode-bidi:plaintext;text-align:start}
+.p-sql #view-exam2 .opt{white-space:pre-wrap;unicode-bidi:plaintext;text-align:start}
+.p-sql #view-exam2 .explain{white-space:pre-line;unicode-bidi:plaintext;text-align:start}
+.p-sql #view-exam2 .opt.picked{border-color:var(--accent);background:var(--card2)}
+.p-sql #view-exam2 .opt:disabled{cursor:default}
+.p-sql .e2-srcline{margin:0 0 10px}
+.p-sql .e2-mcq-list{margin-bottom:22px}
+.p-sql .e2-mcq{padding:18px}
+.p-sql .e2-study>summary{color:var(--good)}
+.p-sql .e2-pane.e2-locked>summary{opacity:.45;pointer-events:none}
+.p-sql #view-exam2 .ok-box{border-inline-start:4px solid var(--good)}
+.p-sql #view-exam2 .emph-box{border-inline-start:4px solid var(--warn)}
+.p-sql #view-exam2 .exam-card:hover{border-color:var(--accent)}
+.p-sql #view-exam2 .e26-bar{background:var(--glass);backdrop-filter:blur(6px)}
+@media(max-width:560px){
+  .p-sql .e2-mcq{padding:14px}
+  .p-sql #view-exam2 .exam-grid{grid-template-columns:1fr}
+}

@@ -551,26 +551,28 @@ function tbl(head, rows){
 
 function headHtml(){
   return `
-  <h2 class="view-title">⭐ מבחן 2026 — הפורמט החדש</h2>
-  <p class="subtitle">לפי המבחן לדוגמה 21/10/2026 ולפי ההנחיות של המרצה בשיעור 13/10 ובתגבור 21/10. חלק א׳ — ארכיטקטורה במילים. חלק ב׳ — SQL ו-MongoDB לאותה שאלה, עם הרצה ובדיקה אמיתית בדפדפן.</p>
+  <h2 class="view-title">⭐ מבחן 2026 — הפורמט המעודכן</h2>
+  <p class="subtitle">לפי העדכון האחרון של המרצה: <b>חלק א׳ הוא שאלות אמריקאיות</b> (6 נק' לשאלה, 8 מתוך 10), וחלק ב׳ שאלות פתוחות שבכל אחת כותבים <b>שני פתרונות — SQL ו-NoSQL</b> (8 נק' לשאלה, 7 מתוך 10). כאן יש בנק של 90 שאלות אמריקאיות, שמונה מבחני תרגול לחלק א׳, ועשר שאילתות חלק ב׳ עם הרצה ובדיקה אמיתית בדפדפן.</p>
 
   <div class="card e2-warn">
-    <h3>📋 מבנה המבחן</h3>
+    <h3>📋 מבנה המבחן — הפורמט המעודכן</h3>
     <div class="e2-facts">
       <div class="e2-fact">⏱ <b>שעתיים וחצי</b> (150 דקות)</div>
-      <div class="e2-fact">📑 <b>שני חלקים</b></div>
-      <div class="e2-fact">🔢 <b>10 שאלות בכל חלק</b></div>
-      <div class="e2-fact">✅ עונים על <b>8 מתוך 10</b> בכל חלק</div>
-      <div class="e2-fact">חלק א׳ — <b>4 נקודות</b> לשאלה</div>
-      <div class="e2-fact">חלק ב׳ — <b>6 נקודות</b> לשאלה</div>
-      <div class="e2-fact">📚 <b>חומר פתוח ללא הגבלה</b></div>
-      <div class="e2-fact">~9 דקות לשאלה</div>
+      <div class="e2-fact">📑 <b>שני חלקים</b> · 10 שאלות בכל חלק</div>
+      <div class="e2-fact">🔤 חלק א׳ — <b>שאלות אמריקאיות</b></div>
+      <div class="e2-fact">חלק א׳ — <b>6 נק'</b> × <b>8 מתוך 10</b> = <b>48</b></div>
+      <div class="e2-fact">✍ חלק ב׳ — <b>שאלות פתוחות</b>, SQL + NoSQL</div>
+      <div class="e2-fact">חלק ב׳ — <b>8 נק'</b> × <b>7 מתוך 10</b> = <b>56</b></div>
+      <div class="e2-fact">🎯 סה"כ <b>104 נק'</b> · תקרה <b>100</b></div>
+      <div class="e2-fact">📚 חומר פתוח, <b>ללא עזרים דיגיטליים</b></div>
     </div>
     <ul class="tips" style="margin-top:14px">
-      <li><b>תחביר, נקודה-פסיק וסוגריים מסולסלות אינם מורידים ניקוד.</b> "עד שלוש סוגריים מסולסלות חסרות לא יגררו הורדת ניקוד. המיקוד הוא בלוגיקה ובסמנטיקה." גם שגיאות כתיב והזחה — לא מעניינות.</li>
-      <li><b>בחלק א׳ עונים במילים בלבד:</b> בלי ERD, בלי <code>CREATE TABLE</code>, בלי קווי קשר וקרדינליות, ובלי שאילתות. מותר ורצוי לתאר טבלאות ושדות ברשימה — "זה לא לבנות טבלה, אלא לצייר טבלה".</li>
-      <li><b>בחלק ב׳ חובה לכתוב גם SQL וגם MongoDB לאותה שאלה, ולהשוות ביניהן.</b> זה החלק המשמעותי יותר בניקוד.</li>
-      <li><b>עונים על 8 מתוך 10</b> — בוחרים את השמונה שמכירים ומדלגים על השתיים הקשות. אל תיתקעו.</li>
+      <li><b>חלק א׳ — שאלות אמריקאיות.</b> 10 שאלות, <b>6 נקודות לשאלה</b>, ויש לבחור <b>8 מתוך 10</b> — 48 נקודות. זה השינוי המהותי בפורמט: אין יותר תשובות פתוחות בחלק א׳.</li>
+      <li><b>חלק ב׳ — שאלות פתוחות.</b> לכל שאלה יש לרשום <b>שני פתרונות, ב-SQL וב-NoSQL</b>, <b>8 נקודות לשאלה</b>, ויש לבחור <b>7 מתוך 10</b> — 56 נקודות.</li>
+      <li><b>סה"כ בבחינה 104 נקודות, לא ניתן להשיג יותר מ-100.</b> כלומר יש כרית של 4 נקודות — ואפשר לטעות מעט בלי לאבד ציון מלא.</li>
+      <li><b>חומר פתוח אך ללא עזרים דיגיטליים ואלקטרוניים — כלומר מודפס בלבד.</b> הפורטל הזה הוא לתרגול <u>לפני</u> המבחן ולא בזמנו; מה שצריך להיכנס לכיתה צריך להיות על דף.</li>
+      <li><b>תחביר, נקודה-פסיק וסוגריים מסולסלות אינם מורידים ניקוד</b> בחלק ב׳. "עד שלוש סוגריים מסולסלות חסרות לא יגררו הורדת ניקוד. המיקוד הוא בלוגיקה ובסמנטיקה." גם שגיאות כתיב והזחה — לא מעניינות.</li>
+      <li><b>בוחרים את השאלות שמכירים</b> — 8 מתוך 10 בחלק א׳ ו-7 מתוך 10 בחלק ב׳. אל תיתקעו על שאלה.</li>
     </ul>
   </div>
 
@@ -583,23 +585,34 @@ function headHtml(){
   <div class="feedback" id="e2ExamNote"></div>`;
 }
 
-function partAHtml(){
-  const P = prog();
-  const q = x => `
-    <div class="card e2-q" id="e2a-${x.n}">
-      <h3>שאלה ${x.n} · ${esc(x.title)} <span class="badge-pill">4 נק'</span></h3>
+/* "📖 חומר הנושא" — התשובות המלאות של עשרת הנושאים, שנשארות כמצב לימוד ליד השאלות */
+function studyHtml(x){
+  return `
+    <details class="e2-pane e2-study" data-study="${x.n}">
+      <summary>📖 חומר הנושא — ${esc(x.title)}</summary>
       <p class="muted-sm">${esc(x.scenario)}</p>
       ${x.note ? `<div class="callout warn">${esc(x.note)}</div>` : ''}
-      ${x.secs.map((s, i) => `
+      ${x.secs.map(s => `
         <div class="e2-sec">
           <p class="e2-sec-q">סעיף ${s.l} · ${esc(s.q)} ${srcTag(s.src)}</p>
-          <button class="btn ghost small" data-a-rev="${x.n}:${i}">${P['a:' + x.n + ':' + i] ? '🙈 הסתר תשובה' : '👁 הצג תשובה'}</button>
-          <div class="e2-ans ${P['a:' + x.n + ':' + i] ? '' : 'hidden'}" data-a-box="${x.n}:${i}">${s.a}</div>
+          <div class="e2-ans">${s.a}</div>
         </div>`).join('')}
-    </div>`;
+    </details>`;
+}
+const STUDY_BY_TOPIC = {
+  college:1, price:2, social:3, hospital:4, shipping:5,
+  orders:6, concurrency:7, flexschema:8, indexes:9, hybrid:10,
+};
+function studyFor(topicKey){
+  const n = STUDY_BY_TOPIC[topicKey];
+  const x = PART_A.find(p => p.n === n);
+  return x ? studyHtml(x) : '';
+}
+
+function partAHtml(){
   return `
-    <h3 class="sec-h" style="font-size:22px;margin:28px 0 6px">חלק א׳ — ארכיטקטורה (10 שאלות · 4 נק' לשאלה)</h3>
-    <p class="subtitle">עונים <b>בעברית, במילים בלבד</b>. 3–6 משפטים לסעיף — לא חיבור. התשובות שמסומנות 🟢 הן ניסוח של המרצה עצמו; 🔵 הן הרחבה שבנויה על דפוסי החשיבה שהוא הראה.</p>
+    <h3 class="sec-h" style="font-size:22px;margin:28px 0 6px">חלק א׳ — ארכיטקטורה · שאלות אמריקאיות (10 שאלות · 6 נק' · עונים על 8 = 48 נק')</h3>
+    <p class="subtitle">הפורמט החדש: <b>שאלה אמריקאית עם תשובה נכונה אחת</b>. המסיחים כאן הם <b>טענות ארכיטקטוניות סבירות שהן פשוט לא נכונות</b> — היפוך בין SQL למונגו, ניסוח מוחלט ("תמיד", "בהכרח"), או טענה נכונה שאינה עונה על השאלה. שאלה שמסומנת 🟢 נבנתה סביב ניסוח של המרצה עצמו. התשובות המלאות של עשרת הנושאים נשמרו — הן בתוך המגירה <b>📖 חומר הנושא</b> שליד השאלות.</p>
 
     <details class="e2-pane">
       <summary>🧩 תבנית התשובה בת 5 השלבים — הציר שחוזר בכל תשובה שלו</summary>
@@ -635,7 +648,203 @@ function partAHtml(){
       ])}
     </details>
 
-    ${PART_A.map(q).join('')}`;
+    <div class="chip-row" id="e2aTabs"></div>
+    <div id="e2aMain"></div>`;
+}
+
+/* ============================================================
+   חלק א׳ — מנוע השאלות האמריקאיות
+   ============================================================ */
+const MCQ      = () => window.EXAM2MCQ || null;
+const LET      = ['א','ב','ג','ד'];
+const mcqPerm  = {};                      /* סדר האפשרויות לכל שאלה — יציב בתוך הסשן */
+let mcqTab = 'exams', mcqTopic = 'all', mcqExamId = null, mcqAns = {}, mcqSubmitted = false;
+
+function shuffle(a){ a = a.slice(); for(let i = a.length - 1; i > 0; i--){ const j = (Math.random() * (i + 1)) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function mcqProg(){ const P = prog(); P.mcq = P.mcq || { ans:{}, exams:{} }; P.mcq.ans = P.mcq.ans || {}; P.mcq.exams = P.mcq.exams || {}; return P.mcq; }
+function mcqQs(){ return (MCQ() && MCQ().questions) || []; }
+function mcqById(id){ return mcqQs().find(q => q.id === id); }
+function mcqTopicName(k){ const t = ((MCQ() && MCQ().topics) || []).find(t => t.key === k); return t ? t.name : k; }
+
+/* כרטיס שאלה. cls = 'i-opt' לבדיקה מיידית, 'x-opt' לתוך מבחן */
+function mcqQHtml(q, num, cls){
+  const perm = mcqPerm[q.id] = mcqPerm[q.id] || shuffle([...q.options.keys()]);
+  const tag = `${esc(mcqTopicName(q.topic))}${q.kind === 'scenario' ? ' · תרחיש' : ''} · קושי ${q.difficulty}`;
+  return `<div class="quiz-q e2-mcq" data-qid="${esc(q.id)}">
+    <div class="qnum">שאלה ${num} <span class="qtopic">${tag}</span></div>
+    <div class="qtext">${esc(q.q)}</div>
+    ${q.source === 'lecturer' ? '<div class="e2-srcline"><span class="e2-src lect">🟢 מבוססת על ניסוח של המרצה</span></div>' : ''}
+    ${perm.map((orig, d) => `<button class="opt ${cls}" data-qid="${esc(q.id)}" data-j="${orig}"><span class="mark">${LET[d]}</span> ${esc(q.options[orig])}</button>`).join('')}
+    <div class="explain"></div></div>`;
+}
+
+/* צביעת שאלה אחרי בחירה */
+function paintMcqQ(root, id, chosen){
+  const q = mcqById(id); if(!q) return;
+  const card = $(`.e2-mcq[data-qid="${CSS.escape(id)}"]`, root); if(!card) return;
+  $$('.opt', card).forEach(b => {
+    const j = +b.dataset.j;
+    b.classList.remove('picked');
+    if(j === q.correct) b.classList.add('correct');
+    else if(j === chosen) b.classList.add('wrong');
+    b.disabled = true;
+  });
+  const ok = chosen === q.correct;
+  const ex = $('.explain', card);
+  ex.className = 'explain show' + (ok ? ' ok-exp' : '');
+  ex.innerHTML = `<b>${ok ? '✓ נכון' : '✗ לא נכון'}</b> — התשובה הנכונה היא <b>${LET[(mcqPerm[id] || []).indexOf(q.correct)]}</b>. ${esc(q.explain)}`;
+}
+
+/* חיווט לרשימות עם בדיקה מיידית */
+function bindMcqInline(root){
+  $$('.i-opt', root).forEach(b => b.onclick = () => {
+    const id = b.dataset.qid, j = +b.dataset.j, q = mcqById(id); if(!q) return;
+    const pr = mcqProg();
+    pr.ans[id] = { j, ok: j === q.correct };
+    saveProg();
+    paintMcqQ(root, id, j);
+    paintScore(); paintMcqHead();
+  });
+  /* שחזור תשובות קודמות */
+  const pr = mcqProg();
+  $$('.e2-mcq', root).forEach(card => {
+    const id = card.dataset.qid, a = pr.ans[id];
+    if(a && typeof a.j === 'number') paintMcqQ(root, id, a.j);
+  });
+}
+
+function paintMcqHead(){
+  const el = $('#e2aStats'); if(!el) return;
+  const pr = mcqProg(), all = mcqQs();
+  const answered = all.filter(q => pr.ans[q.id]).length;
+  const right = all.filter(q => pr.ans[q.id] && pr.ans[q.id].ok).length;
+  el.innerHTML = `${all.length} שאלות · ${all.filter(q => q.source === 'lecturer').length} מבוססות-מרצה · ${(MCQ().exams || []).length} מבחני תרגול · ענית על <b>${answered}</b>, נכון ב-<b>${right}</b>`;
+}
+
+function renderMcqTabs(){
+  const box = $('#e2aTabs'); if(!box) return;
+  const all = mcqQs(), lect = all.filter(q => q.source === 'lecturer').length;
+  box.innerHTML = `
+    <button data-t="exams">📝 מבחני תרגול (${(MCQ().exams || []).length})</button>
+    <button data-t="lect">🟢 שאלות על ניסוחי המרצה (${lect})</button>
+    <button data-t="bank">📚 בנק לפי נושא (${all.length})</button>
+    <span class="muted-sm" id="e2aStats" style="margin-inline-start:auto"></span>`;
+  $$('#e2aTabs button').forEach(b => b.onclick = () => { mcqTab = b.dataset.t; mcqExamId = null; renderMcqMain(); });
+  paintMcqHead();
+}
+
+function renderMcqMain(){
+  const main = $('#e2aMain'); if(!main || !MCQ()) return;
+  $$('#e2aTabs button').forEach(b => b.classList.toggle('active', b.dataset.t === mcqTab));
+  if(mcqTab === 'exams') return mcqExamId ? renderMcqExam() : renderMcqExamList();
+  if(mcqTab === 'lect')  return renderMcqList(mcqQs().filter(q => q.source === 'lecturer'),
+    '🟢 השאלות שבנויות על ניסוח של המרצה',
+    'בכל אחת מאלה התשובה הנכונה היא הניסוח שלו עצמו. אלה השאלות שחייבים לדעת.');
+  return renderMcqBank();
+}
+
+function renderMcqList(items, title, sub){
+  const main = $('#e2aMain');
+  main.innerHTML = `<h3 class="sec-h">${title}</h3>${sub ? `<p class="muted-sm">${esc(sub)}</p>` : ''}
+    <div class="e2-mcq-list">${items.map((q, i) => mcqQHtml(q, i + 1, 'i-opt')).join('')}</div>`;
+  bindMcqInline(main);
+}
+
+function renderMcqBank(){
+  const all = mcqQs(), pr = mcqProg();
+  const tops = [['all', `כל הנושאים (${all.length})`],
+    ...((MCQ().topics || []).map(t => [t.key, `${t.name} (${all.filter(q => q.topic === t.key).length})`]))];
+  const items = all.filter(q => mcqTopic === 'all' || q.topic === mcqTopic);
+  const study = examOn ? '<div class="feedback info show">🔒 מגירת "חומר הנושא" נעולה במצב מבחן.</div>'
+    : mcqTopic === 'all'
+    ? `<details class="e2-pane"><summary>📖 חומר הנושא — כל עשרת הנושאים</summary>${PART_A.map(studyHtml).join('')}</details>`
+    : studyFor(mcqTopic);
+  const main = $('#e2aMain');
+  main.innerHTML = `<div class="chip-row small" id="e2aTopics">${tops.map(([k, t]) =>
+      `<button data-k="${esc(k)}" class="${mcqTopic === k ? 'active' : ''}">${esc(t)}</button>`).join('')}</div>
+    ${study}
+    <div class="e2-mcq-list">${items.map((q, i) => mcqQHtml(q, i + 1, 'i-opt')).join('')}</div>`;
+  bindMcqInline(main);
+  $$('#e2aTopics button').forEach(b => b.onclick = () => { mcqTopic = b.dataset.k; renderMcqBank(); $('#e2aTopics').scrollIntoView({ block:'nearest' }); });
+  void pr;
+}
+
+function renderMcqExamList(){
+  const pr = mcqProg(), X = MCQ().exams || [];
+  $('#e2aMain').innerHTML = `<h3 class="sec-h">📝 ${X.length} מבחני תרגול לחלק א׳ · 10 שאלות כל אחד</h3>
+    <p class="muted-sm">כל מבחן מכיל שאלה אחת מכל אחד מעשרת נושאי חלק א׳, בלי חזרות. עונים על הכול, ואז מקבלים ציון ופירוט הנושאים שבהם טעיתם. במבחן האמיתי עונים על 8 מתוך 10 ומקבלים 6 נקודות לשאלה — כאן עונים על כל העשר כדי לכסות את כל הנושאים.</p>
+    <div class="exam-grid">${X.map(x => {
+      const r = pr.exams[x.id];
+      return `<button class="card exam-card" data-x="${esc(x.id)}">
+        <b>${esc(x.title)}</b>
+        <div class="muted-sm">10 שאלות · 60 נק' אפשריים</div>
+        <div class="${r ? 'exam-score' : 'muted-sm'}">${r ? `הציון שלך: ${r.score}/${r.total} (${Math.round(r.score / r.total * 100)})` : 'טרם נבחנת'}</div>
+      </button>`; }).join('')}</div>`;
+  $$('#e2aMain .exam-card').forEach(b => b.onclick = () => {
+    mcqExamId = b.dataset.x; mcqAns = {}; mcqSubmitted = false; renderMcqMain();
+    const h = $('#e2aTabs'); if(h) h.scrollIntoView({ block:'start' });
+  });
+}
+
+function renderMcqExam(){
+  const X = MCQ().exams || [];
+  const x = X.find(e => e.id === mcqExamId);
+  if(!x){ mcqExamId = null; return renderMcqMain(); }
+  const qs = x.questionIds.map(mcqById).filter(Boolean);
+  const main = $('#e2aMain');
+  main.innerHTML = `<div class="card e26-bar">
+      <button class="btn ghost small" id="e2aBack">← לרשימת המבחנים</button>
+      <b>${esc(x.title)}</b>
+      <span id="e2aCount" class="muted-sm"></span>
+      <button class="btn" id="e2aSubmit">סיים והצג ציון</button>
+    </div>
+    <div id="e2aRes"></div>
+    <div class="e2-mcq-list" id="e2aQs">${qs.map((q, i) => mcqQHtml(q, i + 1, 'x-opt')).join('')}</div>`;
+
+  const count = () => { const n = Object.keys(mcqAns).length; $('#e2aCount').textContent = `ענית על ${n} מתוך ${qs.length}`; };
+  count();
+  $('#e2aBack').onclick = () => { mcqExamId = null; renderMcqMain(); };
+  $$('#e2aQs .x-opt').forEach(b => b.onclick = () => {
+    if(mcqSubmitted) return;
+    const id = b.dataset.qid, j = +b.dataset.j;
+    mcqAns[id] = j;
+    $$(`.e2-mcq[data-qid="${CSS.escape(id)}"] .x-opt`, main).forEach(o => o.classList.toggle('picked', +o.dataset.j === j));
+    count();
+  });
+
+  $('#e2aSubmit').onclick = () => {
+    if(mcqSubmitted){ mcqExamId = null; return renderMcqMain(); }
+    const miss = qs.length - Object.keys(mcqAns).length;
+    if(miss && !confirm(`נשארו ${miss} שאלות בלי תשובה. לסיים בכל זאת?`)) return;
+    mcqSubmitted = true;
+    const pr = mcqProg();
+    let score = 0;
+    qs.forEach(q => {
+      const j = mcqAns[q.id];
+      const ok = j === q.correct;
+      if(ok) score++;
+      pr.ans[q.id] = { j: (typeof j === 'number' ? j : -1), ok };
+      paintMcqQ(main, q.id, typeof j === 'number' ? j : -1);
+    });
+    const prev = pr.exams[x.id];
+    if(!prev || score > prev.score) pr.exams[x.id] = { score, total: qs.length };
+    saveProg();
+    const pct = Math.round(score / qs.length * 100);
+    const wrong = qs.filter(q => mcqAns[q.id] !== q.correct);
+    const byTopic = wrong.reduce((m, q) => (m[q.topic] = (m[q.topic] || 0) + 1, m), {});
+    $('#e2aRes').innerHTML = `<div class="card ${pct >= 60 ? 'ok-box' : 'emph-box'}">
+      <h3>הציון שלך: ${score}/${qs.length} · ${pct}</h3>
+      <div class="muted-sm">בניקוד המבחן: ${score} × 6 = <b>${score * 6}</b> נקודות (חלק א׳ המלא הוא 48 נקודות על 8 שאלות).</div>
+      ${wrong.length ? `<div class="muted-sm">הנושאים שבהם טעית: ${Object.entries(byTopic).sort((a, b) => b[1] - a[1]).map(([t, n]) => `${esc(mcqTopicName(t))} (${n})`).join(' · ')}</div>`
+                     : '<div class="muted-sm">כל התשובות נכונות.</div>'}
+      <div class="sql-actions"><button class="btn ghost small" id="e2aAgain">↺ לענות שוב על המבחן הזה</button>
+        <button class="btn ghost small" id="e2aNext">המבחן הבא ←</button></div></div>`;
+    $('#e2aSubmit').textContent = '← לרשימת המבחנים';
+    $('#e2aAgain').onclick = () => { mcqAns = {}; mcqSubmitted = false; qs.forEach(q => delete mcqPerm[q.id]); renderMcqMain(); };
+    $('#e2aNext').onclick = () => { const i = X.findIndex(e => e.id === x.id); mcqExamId = X[(i + 1) % X.length].id; mcqAns = {}; mcqSubmitted = false; renderMcqMain(); };
+    $('#e2aRes').scrollIntoView({ behavior:'smooth', block:'center' });
+    paintScore(); paintMcqHead();
+  };
 }
 
 function partBHtml(){
@@ -645,7 +854,7 @@ function partBHtml(){
     const done = P['b:' + x.n] || {};
     return `
     <div class="card e2-q" id="e2b-${x.n}" data-n="${x.n}">
-      <h3>שאלה ${x.n} · ${esc(x.topic)} <span class="badge-pill">6 נק'</span>
+      <h3>שאלה ${x.n} · ${esc(x.topic)} <span class="badge-pill">8 נק'</span>
         <span class="badge-pill ${done.sql ? 'good' : ''}" data-mark="sql">SQL ${done.sql ? '✓' : ''}</span>
         <span class="badge-pill ${done.mongo ? 'good' : ''}" data-mark="mongo">Mongo ${done.mongo ? '✓' : ''}</span></h3>
       <p class="e2-prompt">${esc(x.prompt)}</p>
@@ -684,8 +893,8 @@ function partBHtml(){
     </div>`;
   };
   return `
-    <h3 class="sec-h" style="font-size:22px;margin:32px 0 6px">חלק ב׳ — שאילתות (10 שאלות · 6 נק' לשאלה)</h3>
-    <p class="subtitle">לכל שאלה כותבים <b>גם SQL וגם MongoDB</b>. ה-SQL רץ על מנוע SQLite אמיתי בדפדפן (אחרי המרה מתחביר SQL Server), והמונגו רץ על סימולטור mingo — שניהם על נתוני הדמה למטה. הבדיקה משווה את התוצאה שלך לתוצאת <b>הפתרון הרשמי</b>, שורה מול שורה.</p>
+    <h3 class="sec-h" style="font-size:22px;margin:32px 0 6px">חלק ב׳ — שאלות פתוחות (10 שאלות · 8 נק' · עונים על 7 = 56 נק')</h3>
+    <p class="subtitle">הפורמט: <b>לכל שאלה יש לרשום שני פתרונות, ב-SQL וב-NoSQL</b> — זאת דרישה מפורשת של המרצה, ולא בחירה. ה-SQL רץ על מנוע SQLite אמיתי בדפדפן (אחרי המרה מתחביר SQL Server), והמונגו רץ על סימולטור mingo — שניהם על נתוני הדמה למטה. הבדיקה משווה את התוצאה שלך לתוצאת <b>הפתרון הרשמי</b>, שורה מול שורה.</p>
 
     <details class="e2-pane">
       <summary>🗂 הסכמה ונתוני הדמה — ${E.tables.reduce((a, t) => a + t.rows, 0)} שורות בשמונה טבלאות</summary>
@@ -707,10 +916,10 @@ function partBHtml(){
 function paintScore(){
   const P = prog();
   const bOk = PART_B.filter(x => (P['b:' + x.n] || {}).sql && (P['b:' + x.n] || {}).mongo).length;
-  const aOk = PART_A.reduce((a, x) => a + x.secs.filter((_, i) => P['a:' + x.n + ':' + i]).length, 0);
-  const aAll = PART_A.reduce((a, x) => a + x.secs.length, 0);
+  const all = mcqQs(), pr = mcqProg();
+  const aRight = all.filter(q => pr.ans[q.id] && pr.ans[q.id].ok).length;
   const el = $('#e2Score');
-  if(el) el.innerHTML = `חלק ב׳: <b>${bOk}/10</b> שאלות שנפתרו בשתי השפות · חלק א׳: <b>${aOk}/${aAll}</b> תשובות שנחשפו`;
+  if(el) el.innerHTML = `חלק א׳ (אמריקאי): <b>${aRight}/${all.length}</b> שאלות נכונות · חלק ב׳ (פתוח): <b>${bOk}/10</b> שאלות שנפתרו בשתי השפות`;
 }
 
 /* ---------- מצב מבחן ---------- */
@@ -719,11 +928,9 @@ function setExamMode(on){
   $$('#view-exam2 [data-act="sol"]').forEach(b => { b.disabled = on; b.title = on ? 'הפתרונות מוסתרים במצב מבחן' : ''; });
   if(on){
     $$('#view-exam2 [data-sol]').forEach(d => d.classList.add('hidden'));
-    $$('#view-exam2 [data-a-box]').forEach(d => d.classList.add('hidden'));
-    $$('#view-exam2 [data-a-rev]').forEach(b => { b.disabled = true; b.textContent = '🔒 במצב מבחן'; });
-    $$('#view-exam2 .e2-pane').forEach(d => d.open = false);
+    $$('#view-exam2 .e2-pane').forEach(d => { d.open = false; d.classList.add('e2-locked'); });
   } else {
-    $$('#view-exam2 [data-a-rev]').forEach(b => { b.disabled = false; b.textContent = '👁 הצג תשובה'; });
+    $$('#view-exam2 .e2-pane').forEach(d => d.classList.remove('e2-locked'));
   }
   $('#e2ExamBtn').classList.toggle('hidden', on);
   $('#e2Timer').classList.toggle('hidden', !on);
@@ -742,25 +949,24 @@ function startExam(){
   setExamMode(true);
   tickTimer();
   clearInterval(examTick); examTick = setInterval(tickTimer, 1000);
-  A().fb($('#e2ExamNote'), 'info', `⏱ מצב מבחן התחיל — ${EXAM_MINUTES} דקות. הפתרונות והתשובות מוסתרים עד שתלחצו "סיים". זכרו: עונים על 8 מתוך 10 בכל חלק.`);
+  A().fb($('#e2ExamNote'), 'info', `⏱ מצב מבחן התחיל — ${EXAM_MINUTES} דקות. הפתרונות של חלק ב׳ ומגירות חומר הלימוד מוסתרים עד שתלחצו "סיים". זכרו: חלק א׳ — 8 מתוך 10 (6 נק' לשאלה, 48), חלק ב׳ — 7 מתוך 10 (8 נק' לשאלה, 56), סה"כ 104 ותקרה 100.`);
 }
 function finishExam(timeUp){
   clearInterval(examTick); examTick = null;
   setExamMode(false);
-  A().fb($('#e2ExamNote'), timeUp ? 'err' : 'ok', (timeUp ? '⏰ הזמן נגמר. ' : '✓ מצב מבחן הסתיים. ') + 'הפתרונות והתשובות פתוחים שוב.');
+  A().fb($('#e2ExamNote'), timeUp ? 'err' : 'ok', (timeUp ? '⏰ הזמן נגמר. ' : '✓ מצב מבחן הסתיים. ') + 'הפתרונות ומגירות חומר הלימוד פתוחים שוב.');
+  if($('#e2aMain') && MCQ()) renderMcqMain();   /* כדי שמגירת "חומר הנושא" תחזור */
   paintScore();
 }
 
 /* ---------- חיווט ---------- */
 function wire(){
-  /* חלק א׳ — חשיפת תשובות */
-  $$('#view-exam2 [data-a-rev]').forEach(b => b.onclick = () => {
-    const k = b.dataset.aRev, box = $(`#view-exam2 [data-a-box="${k}"]`), P = prog();
-    const open = !box.classList.toggle('hidden');   /* toggle מחזיר true אם hidden נוסף */
-    if(open) P['a:' + k] = true; else delete P['a:' + k];
-    b.textContent = open ? '🙈 הסתר תשובה' : '👁 הצג תשובה';
-    saveProg(); paintScore();
-  });
+  /* חלק א׳ — שאלות אמריקאיות */
+  if(MCQ() && mcqQs().length){ renderMcqTabs(); renderMcqMain(); }
+  else {
+    const m = $('#e2aMain');
+    if(m) m.innerHTML = '<div class="card">שגיאה: בנק השאלות של חלק א׳ (exam2-mcq.js) לא נטען.</div>';
+  }
 
   /* חלק ב׳ */
   PART_B.forEach(x => {

@@ -397,9 +397,28 @@ const PART_B = [
 /* ============================================================
    בדיקה — הרצה אמיתית והשוואת שורות (כמו ב-grader.js)
    ============================================================ */
-const STATE_SQL   = `SELECT enrollmentId, studentId, offeringId, grade, enrolledAt FROM Enrollments ORDER BY enrollmentId`;
-const STATE_MONGO = `db.enrollments.find({}, { _id:0, enrollmentId:1, studentId:1, offeringId:1, grade:1, enrolledAt:1 }).sort({ enrollmentId: 1 })`;
-const STATE_COLS  = ['enrollmentId','studentId','offeringId','grade','enrolledAt'];
+/* טבלאות שפקודת שינוי יכולה לגעת בהן. ברירת המחדל — Enrollments (שאלות 18–20). */
+const STATE_TABLES = {
+  Enrollments:     { coll:'enrollments',     pk:'enrollmentId', cols:['enrollmentId','studentId','offeringId','grade','enrolledAt'] },
+  Students:        { coll:'students',        pk:'studentId',    cols:['studentId','name','email','departmentId'] },
+  CourseOfferings: { coll:'courseOfferings', pk:'offeringId',   cols:['offeringId','courseId','lecturerId','semester','capacity'] },
+  ExamResults:     { coll:'examResults',     pk:'resultId',     cols:['resultId','examId','studentId','score'] },
+  Courses:         { coll:'courses',         pk:'courseId',     cols:['courseId','courseName','credits','departmentId'] },
+  Exams:           { coll:'exams',           pk:'examId',       cols:['examId','offeringId','examDate','examType'] },
+  Lecturers:       { coll:'lecturers',       pk:'lecturerId',   cols:['lecturerId','name','departmentId'] },
+  Departments:     { coll:'departments',     pk:'departmentId', cols:['departmentId','departmentName'] },
+};
+const stTable = q => (q && STATE_TABLES[q.stateTable]) ? q.stateTable : 'Enrollments';
+const stCols  = q => STATE_TABLES[stTable(q)].cols;
+const stSql   = q => { const t = stTable(q), C = STATE_TABLES[t];
+  return `SELECT ${C.cols.join(', ')} FROM ${t} ORDER BY ${C.pk}`; };
+const stMongo = q => { const C = STATE_TABLES[stTable(q)];
+  return `db.${C.coll}.find({}, { _id:0, ${C.cols.map(c => c + ':1').join(', ')} }).sort({ ${C.pk}: 1 })`; };
+
+/* תאימות לאחור — עשר שאלות המבחן עובדות על Enrollments */
+const STATE_SQL   = stSql(null);
+const STATE_MONGO = stMongo(null);
+const STATE_COLS  = STATE_TABLES.Enrollments.cols;
 
 const stripSemi = s => String(s || '').trim().replace(/;+\s*$/, '');
 const joinSql = (...parts) => parts.filter(p => stripSemi(p)).map(stripSemi).join(';\n') + ';';
@@ -439,14 +458,14 @@ function checkSqlQ(q, code){
              msg: ok ? `✓ נכון! ${u.r.rows.length} שורות — זהה לפתרון הרשמי.`
                      : selectWhy(u.r, s.r, ordered, q) };
   }
-  /* פקודות שינוי — משווים את מצב טבלת ההרשמות */
-  const u = runSql(joinSql(q.setupSql, code, STATE_SQL));
+  /* פקודות שינוי — משווים את מצב הטבלה שהפקודה נוגעת בה */
+  const u = runSql(joinSql(q.setupSql, code, stSql(q)));
   if(u.error) return { ok:false, kind:'err', msg:'שגיאה בפקודה: ' + esc(u.error) };
-  const s = runSql(joinSql(q.setupSql, q.sql, STATE_SQL));
+  const s = runSql(joinSql(q.setupSql, q.sql, stSql(q)));
   if(s.error) return { ok:false, kind:'err', msg:'שגיאה בפתרון המובנה: ' + esc(s.error) };
   const ok = sameRows(u.r.rows, s.r.rows, true);
   return { ok, kind: ok ? 'ok' : 'err', notes: u.r.notes, result: u.r, expected: s.r, state:true,
-           msg: ok ? `✓ נכון! מצב טבלת Enrollments אחרי הפקודה (${u.r.rows.length} שורות) זהה לפתרון הרשמי.`
+           msg: ok ? `✓ נכון! מצב טבלת ${stTable(q)} אחרי הפקודה (${u.r.rows.length} שורות) זהה לפתרון הרשמי.`
                    : stateWhy(u.r.rows, s.r.rows, q) };
 }
 
@@ -478,15 +497,15 @@ function checkMongoQ(q, code){
   const stateOf = (sim, userCode) => {
     if(q.setupMongo){ const r0 = sim.run(q.setupMongo); if(!r0.ok) throw new Error('הכנה: ' + r0.error); }
     const r = sim.run(userCode); if(!r.ok) throw new Error(r.error);
-    const st = sim.run(STATE_MONGO); if(!st.ok) throw new Error('קריאת המצב: ' + st.error);
-    return docsToRows(st.value, STATE_COLS);
+    const st = sim.run(stMongo(q)); if(!st.ok) throw new Error('קריאת המצב: ' + st.error);
+    return docsToRows(st.value, stCols(q));
   };
   let ur, sr;
   try { ur = stateOf(simU, code); } catch(e){ return { ok:false, kind:'err', msg:'שגיאה בפקודה: ' + esc(e.message) }; }
   try { sr = stateOf(simS, q.mongo); } catch(e){ return { ok:false, kind:'err', msg:'שגיאה בפתרון המובנה: ' + esc(e.message) }; }
   const ok = sameRows(ur, sr, true);
-  return { ok, kind: ok ? 'ok' : 'err', stateRows: ur, expectedRows: sr, state:true,
-           msg: ok ? `✓ נכון! מצב ה-collection enrollments אחרי הפקודה (${ur.length} מסמכים) זהה לפתרון הרשמי.`
+  return { ok, kind: ok ? 'ok' : 'err', stateRows: ur, expectedRows: sr, stateCols: stCols(q), state:true,
+           msg: ok ? `✓ נכון! מצב ה-collection ${STATE_TABLES[stTable(q)].coll} אחרי הפקודה (${ur.length} מסמכים) זהה לפתרון הרשמי.`
                    : stateWhy(ur, sr, q) };
 }
 
@@ -504,7 +523,33 @@ function hintFor(q, more){
     19: 'בדוק שהתנאי "רק אם הציון NULL" נמצא בתוך ה-WHERE של ה-UPDATE (או ב-filter של updateOne) ולא בבדיקה נפרדת.',
     20: more ? 'נשארו יותר שורות מהצפוי — בדוק את התנאי grade < 50 ואת תת-השאילתה שמביאה את מזהי המחזורים של 2026A.' : 'נמחקו יותר שורות מהצפוי — כנראה חסר סינון הסמסטר. E1022 (ציון 25) שייך למחזור O509 שהוא 2025B ואסור למחוק אותו.',
   };
-  return H[q.n] || '';
+  if(H[q.n]) return H[q.n];
+  /* שאלות בנק התרגול — רמז לפי הדפוס */
+  const P = {
+    'filter-sort':      'בדוק את תנאי ה-WHERE (גדול מ- מול גדול או שווה) ואת שני מפתחות המיון.',
+    'join-2':           'בדוק את כיוון הצירוף ואת תנאי ה-ON. במונגו — אל תשכח $unwind אחרי ה-$lookup.',
+    'join-3plus':       'בדוק שעברת דרך CourseOfferings — הסמסטר והמרצה יושבים על המחזור ולא על הקורס.',
+    'distinct':         'בדוק אם חסר DISTINCT (ב-SQL) או $group (במונגו) — הצירוף מייצר כפילויות.',
+    'group-count':      'בדוק לפי מה קיבצת, ושהספירה היא COUNT/$sum: 1 על הקבוצה.',
+    'group-avg':        'בדוק לפי מה קיבצת, ושהממוצע הוא AVG/$avg ולא SUM חלקי COUNT.',
+    'having':           'תנאי על תוצאת חישוב שייך ל-HAVING (ב-SQL) ול-$match שאחרי ה-$group (במונגו).',
+    'left-join-zero':   'סינון על הטבלה הימנית חייב לשבת בתוך ה-ON ולא ב-WHERE, אחרת האפסים נזרקים.',
+    'anti-join':        'בדוק IS NULL על עמודה שלא יכולה להיות NULL בשורה אמיתית (מפתח), ובמונגו $size: 0.',
+    'top-n':            'TOP/limit חותך רק אחרי מיון מלא — בדוק שיש מפתח מיון שני ששובר תיקו.',
+    'subquery-where':   'את הממוצע חייבים לחשב לפני ההשוואה — תת-שאילתה ב-SQL, משתנה נפרד במונגו.',
+    'subquery-in':      'בדוק שהרשימה שבתוך ה-IN היא רשימת ערכים (במונגו — אחרי map) ולא מסמכים.',
+    'like':             'בדוק את מקום ה-% (התחלה מול סוף) ואת העוגנים ^ ו-$ בביטוי הרגולרי.',
+    'between-date':     'במונגו השוו ל-ISODate ולא למחרוזת, ובדוק אם הגבול כולל (<= מול <).',
+    'count-distinct':   'צריך COUNT(DISTINCT …) ב-SQL ו-$addToSet + $size במונגו — לא COUNT(*) ולא $push.',
+    'multi-group':      'קיבוץ על שני שדות: GROUP BY עם שני שדות, ובמונגו _id שהוא אובייקט עם שני מפתחות.',
+    'self-join':        'תנאי אי-שוויון על המזהה (>) מונע גם קורס מול עצמו וגם כל זוג פעמיים.',
+    'insert':           'בדוק את כל השדות — NULL הוא לא 0 ולא שדה חסר, והתאריך חייב להיות ISODate במונגו.',
+    'update-conditional':'בדוק שהתנאי נמצא בתוך ה-WHERE / ה-filter, ושבמונגו השתמשת ב-updateMany ולא ב-updateOne.',
+    'update-from-other':'התנאי יושב בטבלה אחרת — נדרשת תת-שאילתה ב-SQL ושאילתת עזר במונגו.',
+    'delete-conditional':'בדוק את שני התנאים ואת סימן ההשוואה. במונגו — deleteMany ולא deleteOne.',
+    'nested-aggregate': 'אגרגציה על אגרגציה: תת-שאילתה ב-FROM ב-SQL, ושני שלבי $group במונגו.',
+  };
+  return P[q.pattern] || 'השוו מול הפתרון הרשמי כדי לראות מה שונה.';
 }
 function selectWhy(u, s, ordered, q){
   if(u.columns.length !== s.columns.length)
@@ -525,10 +570,10 @@ function mongoWhy(un, sn, ordered, q){
 function stateWhy(ur, sr, q){
   const uk = ur.map(r => cell(r[0])), sk = sr.map(r => cell(r[0]));
   const extra = uk.filter(k => !sk.includes(k)), missing = sk.filter(k => !uk.includes(k));
-  let why = `✗ מצב ההרשמות אחרי הפקודה שונה: אצלך <b>${ur.length}</b> שורות, בפתרון <b>${sr.length}</b>.`;
+  let why = `✗ מצב הטבלה ${stTable(q)} אחרי הפקודה שונה: אצלך <b>${ur.length}</b> שורות, בפתרון <b>${sr.length}</b>.`;
   if(extra.length)   why += `<br>שורות שקיימות אצלך ולא בפתרון: <code dir="ltr">${esc(extra.slice(0,6).join(', '))}</code>`;
   if(missing.length) why += `<br>שורות שחסרות אצלך: <code dir="ltr">${esc(missing.slice(0,6).join(', '))}</code>`;
-  if(!extra.length && !missing.length) why += `<br>אותן שורות — אבל ערך בשדה כלשהו שונה (בדוק את <code dir="ltr">grade</code> ואת <code dir="ltr">enrolledAt</code>).`;
+  if(!extra.length && !missing.length) why += `<br>אותן שורות — אבל ערך בשדה כלשהו שונה (בדוק את <code dir="ltr">${esc(stCols(q).slice(3).join(', ') || stCols(q).join(', '))}</code>).`;
   return why + `<div class="e2-hint">💡 ${esc(hintFor(q, ur.length > sr.length))}</div>`;
 }
 
@@ -909,7 +954,192 @@ function partBHtml(){
         esc(r[0]), `<code dir="ltr">${esc(r[1])}</code>`, `<code dir="ltr">${esc(r[2])}</code>`]))}
     </details>
 
-    ${PART_B.map(q).join('')}`;
+    ${PART_B.map(q).join('')}
+    ${bankHtml()}`;
+}
+
+/* ============================================================
+   בנק תרגול — 45 שאלות נוספות (js/exam2-bank.js)
+   אותו מנגנון בדיקה בדיוק של עשר שאלות המבחן: checkSqlQ / checkMongoQ
+   ============================================================ */
+const BANK = () => (window.EXAM2BANK && window.EXAM2BANK.questions) || [];
+function bankProg(){ const P = prog(); P.bank = P.bank || {}; return P.bank; }
+
+const PATTERN_HE = {
+  'filter-sort':'סינון ומיון', 'join-2':'צירוף שתי טבלאות', 'join-3plus':'צירוף 3+ טבלאות',
+  'distinct':'DISTINCT', 'group-count':'קיבוץ וספירה', 'group-avg':'קיבוץ וממוצע', 'having':'HAVING',
+  'left-join-zero':'LEFT JOIN עם אפסים', 'anti-join':'אנטי-צירוף', 'top-n':'TOP / דפדוף',
+  'subquery-where':'תת-שאילתה ב-WHERE', 'subquery-in':'תת-שאילתה עם IN', 'like':'LIKE',
+  'between-date':'טווח תאריכים', 'count-distinct':'COUNT DISTINCT', 'multi-group':'קיבוץ על שני שדות',
+  'self-join':'צירוף עצמי', 'insert':'INSERT', 'update-conditional':'UPDATE מותנה',
+  'update-from-other':'UPDATE לפי טבלה אחרת', 'delete-conditional':'DELETE מותנה',
+  'nested-aggregate':'אגרגציה מקוננת',
+};
+const patName = p => PATTERN_HE[p] || p;
+const bankPatterns = () => [...new Set(BANK().map(x => x.pattern))];
+
+function bankHtml(){
+  const B = BANK();
+  if(!B.length) return `
+    <h3 class="sec-h" style="font-size:20px;margin:32px 0 6px">📚 בנק תרגול — שאלות נוספות</h3>
+    <div class="card">שגיאה: בנק התרגול (exam2-bank.js) לא נטען.</div>`;
+  const P = bankProg();
+  const card = x => {
+    const done = P[x.id] || {};
+    const ph = x.kind === 'state'
+      ? { s:"INSERT INTO … / UPDATE … / DELETE FROM …", m:"db.enrollments.updateMany({ … }, { $set: { … } })" }
+      : { s:"SELECT …", m:"db.students.find({ … })" };
+    return `
+    <div class="card e2-q e2-bq" id="e2bank-${x.id}" data-bid="${x.id}" data-pat="${esc(x.pattern)}">
+      <h3>${esc(x.id)} · ${esc(patName(x.pattern))}
+        <span class="badge-pill">רמה ${x.difficulty}</span>
+        ${x.kind === 'state' ? `<span class="badge-pill">פקודת שינוי · ${esc(stTable(x))}</span>` : ''}
+        <span class="badge-pill ${done.sql ? 'good' : ''}" data-mark="sql">SQL ${done.sql ? '✓' : ''}</span>
+        <span class="badge-pill ${done.mongo ? 'good' : ''}" data-mark="mongo">Mongo ${done.mongo ? '✓' : ''}</span></h3>
+      <p class="e2-prompt">${esc(x.q)}</p>
+      <details><summary>🔑 מילות המפתח</summary><p>${esc(x.keywords)}</p></details>
+      <details><summary>⚠ המלכודת</summary><p>${esc(x.trap)}</p></details>
+      <div class="dual-grid">
+        <div class="dual-col">
+          <div class="col-title">💾 SQL (T-SQL)</div>
+          <textarea class="code-input" data-in="sql" spellcheck="false" placeholder="${esc(ph.s)}"></textarea>
+        </div>
+        <div class="dual-col">
+          <div class="col-title">🍃 MongoDB</div>
+          <textarea class="code-input" data-in="mongo" spellcheck="false" placeholder="${esc(ph.m)}"></textarea>
+        </div>
+      </div>
+      <div class="sql-actions" style="margin-top:10px">
+        <button class="btn ok-btn" data-act="check">✓ בדוק</button>
+        <button class="btn ghost small" data-act="run">▶ הרץ בלי לבדוק</button>
+        <button class="btn ghost small" data-act="sol">👁 הצג פתרון</button>
+        <button class="btn ghost small" data-act="clear">🗑 נקה</button>
+      </div>
+      <div class="feedback" data-fb="sql"></div>
+      <div data-notes="sql"></div>
+      <div class="result-wrap slim" data-res="sql"></div>
+      <div class="feedback" data-fb="mongo"></div>
+      <div class="result-wrap slim" data-res="mongo"></div>
+      <div class="sol-wrap hidden" data-sol>
+        ${x.helper ? `<div class="sol-label">🧰 שאילתת העזר:</div><pre>${esc(x.helper)}</pre>` : ''}
+        <div class="sol-label">✅ פתרון SQL:</div><pre>${esc(x.sql)}</pre>
+        <div class="sol-label">✅ פתרון MongoDB:</div><pre>${esc(x.mongo)}</pre>
+        <p><b>הלוגיקה:</b> ${esc(x.logic)}</p>
+        <p><b>ההשוואה בין הגישות:</b> ${esc(x.compare)}</p>
+      </div>
+    </div>`;
+  };
+  const chips = ['<button class="active" data-bchip="all">הכול (' + B.length + ')</button>']
+    .concat(bankPatterns().map(p =>
+      `<button data-bchip="${esc(p)}">${esc(patName(p))} (${B.filter(x => x.pattern === p).length})</button>`));
+  return `
+    <h3 class="sec-h" style="font-size:22px;margin:34px 0 6px">📚 בנק תרגול — ${B.length} שאלות נוספות</h3>
+    <p class="subtitle">אותה סכמה, אותם נתונים ואותו מנגנון בדיקה של עשר שאלות המבחן — אבל כאן יש <b>${B.length} שאלות</b> שמכסות את כל הדפוסים שהמרצה שואל. כל פתרון רשמי כאן <b>הורץ ואומת</b>: ה-SQL על SQLite וה-MongoDB על mingo, והתוצאות הושוו שורה-מול-שורה. סננו לפי דפוס, כתבו שני פתרונות, ולחצו "בדוק".</p>
+    <div class="card e2-bankbar">
+      <div class="chip-row small" id="e2BankChips">${chips.join('')}</div>
+      <div class="muted-sm" id="e2BankCount"></div>
+    </div>
+    <div id="e2BankList">${B.map(card).join('')}</div>`;
+}
+
+function wireBank(){
+  const B = BANK();
+  if(!B.length) return;
+
+  B.forEach(x => {
+    const card = $(`#e2bank-${x.id}`); if(!card) return;
+    const taS = $('[data-in="sql"]', card),  taM = $('[data-in="mongo"]', card);
+    const fbS = $('[data-fb="sql"]', card),  fbM = $('[data-fb="mongo"]', card);
+    const resS = $('[data-res="sql"]', card), resM = $('[data-res="mongo"]', card);
+    const notesS = $('[data-notes="sql"]', card);
+
+    const mark = () => {
+      const d = bankProg()[x.id] || {};
+      ['sql','mongo'].forEach(k => {
+        const el = $(`[data-mark="${k}"]`, card);
+        el.classList.toggle('good', d[k] === true);
+        el.classList.toggle('miss', d[k] === false);
+        el.textContent = (k === 'sql' ? 'SQL ' : 'Mongo ') + (d[k] === true ? '✓' : d[k] === false ? '✗' : '');
+      });
+    };
+
+    const doCheck = () => {
+      A().ensureEngines().then(() => {
+        const P = bankProg(); P[x.id] = P[x.id] || {};
+
+        const gs = checkSqlQ(x, taS.value);
+        A().fb(fbS, gs.kind, '<b>SQL:</b> ' + gs.msg);
+        notesS.innerHTML = A().notesHtml(gs.notes);
+        resS.innerHTML = gs.result
+          ? `<h4>${x.kind === 'state' ? 'מצב טבלת ' + stTable(x) + ' אצלך (SQL)' : 'התוצאה שלך (SQL)'}:</h4>` + A().resultTable(gs.result, 12)
+          : '';
+        taS.classList.toggle('ok-border', !!gs.ok); taS.classList.toggle('bad-border', gs.kind === 'err');
+        P[x.id].sql = !!gs.ok;
+
+        const gm = checkMongoQ(x, taM.value);
+        A().fb(fbM, gm.kind, '<b>MongoDB:</b> ' + gm.msg);
+        resM.innerHTML = gm.mres ? '<h4>התוצאה שלך (MongoDB):</h4>' + mongoOut(gm.mres)
+          : (gm.stateRows ? '<h4>מצב ה-collection אצלך:</h4>' + rowsTable(gm.stateRows, gm.stateCols || stCols(x)) : '');
+        taM.classList.toggle('ok-border', !!gm.ok); taM.classList.toggle('bad-border', gm.kind === 'err');
+        P[x.id].mongo = !!gm.ok;
+
+        saveProg(); mark(); paintScore();
+      });
+    };
+
+    $('[data-act="check"]', card).onclick = doCheck;
+    $('[data-act="run"]', card).onclick = () => A().ensureEngines().then(() => {
+      if(taS.value.trim()){
+        const u = runSql(x.kind === 'state' ? joinSql(x.setupSql, taS.value, stSql(x)) : taS.value);
+        if(u.error) A().fb(fbS, 'err', '<b>SQL:</b> ' + esc(u.error));
+        else { A().fb(fbS, 'info', `<b>SQL:</b> רצה בהצלחה — ${u.r.rows.length} שורות.`);
+               notesS.innerHTML = A().notesHtml(u.r.notes);
+               resS.innerHTML = '<h4>התוצאה (SQL):</h4>' + A().resultTable(u.r, 12); }
+      }
+      if(taM.value.trim()){
+        const sim = mongoSim();
+        if(!sim) return A().fb(fbM, 'info', '<b>MongoDB:</b> המנוע עוד נטען — נסו שוב בעוד רגע.');
+        if(x.kind === 'state' && x.setupMongo) sim.run(x.setupMongo);
+        const r = sim.run(taM.value);
+        if(!r.ok) A().fb(fbM, 'err', '<b>MongoDB:</b> ' + esc(r.error));
+        else {
+          A().fb(fbM, 'info', '<b>MongoDB:</b> רצה בהצלחה.');
+          resM.innerHTML = '<h4>התוצאה (MongoDB):</h4>' + mongoOut(r) +
+            (x.kind === 'state' ? '<h4>מצב ה-collection אחרי הפקודה:</h4>' +
+              rowsTable(docsToRows(sim.run(stMongo(x)).value, stCols(x)), stCols(x)) : '');
+        }
+      }
+    });
+    $('[data-act="sol"]', card).onclick = () => {
+      if(examOn) return;
+      const box = $('[data-sol]', card);
+      box.classList.toggle('hidden');
+      $('[data-act="sol"]', card).textContent = box.classList.contains('hidden') ? '👁 הצג פתרון' : '🙈 הסתר פתרון';
+    };
+    $('[data-act="clear"]', card).onclick = () => {
+      taS.value = ''; taM.value = '';
+      taS.className = 'code-input'; taM.className = 'code-input';
+      fbS.className = 'feedback'; fbM.className = 'feedback';
+      resS.innerHTML = ''; resM.innerHTML = ''; notesS.innerHTML = '';
+    };
+    A().editorKeys(taS, doCheck); A().editorKeys(taM, doCheck);
+    mark();
+  });
+
+  /* צ'יפים לסינון לפי דפוס */
+  const filter = pat => {
+    $$('#e2BankChips button').forEach(c => c.classList.toggle('active', c.dataset.bchip === pat));
+    let n = 0;
+    $$('#e2BankList .e2-bq').forEach(c => {
+      const show = pat === 'all' || c.dataset.pat === pat;
+      c.classList.toggle('hidden', !show);
+      if(show) n++;
+    });
+    const el = $('#e2BankCount');
+    if(el) el.textContent = pat === 'all' ? `מוצגות כל ${n} השאלות` : `מוצגות ${n} שאלות בדפוס "${patName(pat)}"`;
+  };
+  $$('#e2BankChips button').forEach(c => { c.onclick = () => filter(c.dataset.bchip); });
+  filter('all');
 }
 
 /* ---------- ציון / התקדמות ---------- */
@@ -918,8 +1148,11 @@ function paintScore(){
   const bOk = PART_B.filter(x => (P['b:' + x.n] || {}).sql && (P['b:' + x.n] || {}).mongo).length;
   const all = mcqQs(), pr = mcqProg();
   const aRight = all.filter(q => pr.ans[q.id] && pr.ans[q.id].ok).length;
+  const bank = BANK(), bp = (P.bank || {});
+  const bankOk = bank.filter(x => (bp[x.id] || {}).sql && (bp[x.id] || {}).mongo).length;
   const el = $('#e2Score');
-  if(el) el.innerHTML = `חלק א׳ (אמריקאי): <b>${aRight}/${all.length}</b> שאלות נכונות · חלק ב׳ (פתוח): <b>${bOk}/10</b> שאלות שנפתרו בשתי השפות`;
+  if(el) el.innerHTML = `חלק א׳ (אמריקאי): <b>${aRight}/${all.length}</b> שאלות נכונות · חלק ב׳ (פתוח): <b>${bOk}/10</b> שאלות שנפתרו בשתי השפות` +
+    (bank.length ? ` · בנק תרגול: <b>${bankOk}/${bank.length}</b>` : '');
 }
 
 /* ---------- מצב מבחן ---------- */
@@ -1043,6 +1276,9 @@ function wire(){
     A().editorKeys(taS, doCheck); A().editorKeys(taM, doCheck);
     mark();
   });
+
+  /* בנק התרגול */
+  wireBank();
 
   $('#e2ExamBtn').onclick = startExam;
   $('#e2FinishBtn').onclick = () => finishExam(false);

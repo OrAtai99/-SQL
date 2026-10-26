@@ -768,6 +768,11 @@ html[data-theme="dark"] .p-cyber nav.tabs button.tab-star:not(.active){color:#f5
 /* תג "לא נכון" בשאלות מבחן 2026 — משלים את .badge-pill.good */
 .p-sql .badge-pill.miss{background:rgba(255,92,108,.18);color:var(--bad)}
 
+/* ---- בנק התרגול של חלק ב׳ (45 שאלות) ---- */
+.p-sql .e2-bankbar{position:sticky;top:0;z-index:5;display:flex;flex-direction:column;gap:6px}
+.p-sql .e2-bankbar .chip-row{margin-bottom:0}
+.p-sql .e2-bq h3{font-size:16px}
+
 /* ---- מבחני 2026 (סייבר) ---- */
 .e26-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0 4px}
 .chip-row.inline{margin:0}

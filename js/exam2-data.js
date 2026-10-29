@@ -43,7 +43,7 @@ EXAM2.data = {
     cols: ['studentId','name','email','departmentId'],
     types:['VARCHAR(10) PRIMARY KEY','VARCHAR(100)','VARCHAR(100)','VARCHAR(10) REFERENCES departments(departmentId)'],
     rows: [
-      ['S100','Or Atai','or.atai@ono.ac.il','D10'],
+      ['S100','Roi Avni','roi.avni@ono.ac.il','D10'],
       ['S101','Noa Cohen','noa.cohen@ono.ac.il','D10'],
       ['S102','Yossi Mizrahi','yossi.m@ono.ac.il','D10'],
       ['S103','Maya Peretz','maya.p@ono.ac.il','D20'],

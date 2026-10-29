@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>פורטל מבחן · שפת SQL + NoSQL</title>
-  <link rel="stylesheet" href="css/styles.css?v=29">
+  <link rel="stylesheet" href="css/styles.css?v=30">
 </head>
 <body class="p-sql">
 
@@ -19,7 +19,8 @@
     </div>
     <nav class="tabs">
       <button data-view="home" class="active">🏠 בית</button>
-      <button data-view="exam2" class="tab-star">⭐ מבחן 2026</button>
+      <button data-view="ship" class="tab-star">⭐ המבחן האחרון</button>
+      <button data-view="exam2">🎓 תרגול 2026</button>
       <button data-view="sample">📄 מבחן לדוגמה (ישן)</button>
       <button data-view="chapters">📚 סיכומים</button>
       <button data-view="syntax">📐 תחביר</button>
@@ -57,10 +58,17 @@
     </div>
 
     <div class="card sample-banner">
+      <div class="sb-ic">🚚</div>
+      <div><h3>המבחן לדוגמה האחרון — מערכת המשלוחים. <u>הבחינה תהיה דומה מאוד אליו</u></h3>
+        <p>כך אמר המרצה. 11 שאלות אמריקאיות עם מפתח והסבר, 9 שאלות פתוחות עם בדיקה אמיתית ב-SQL וב-MongoDB מול הפתרון הרשמי, 15 שאלות תרגול על אותה סכמה, ומצב מבחן של 150 דקות עם ציון. <b>מכאן מתחילים.</b></p></div>
+      <button class="btn" data-view-go="ship">למבחן האחרון ←</button>
+    </div>
+
+    <div class="card sample-banner">
       <div class="sb-ic">⭐</div>
       <div><h3>הפורמט המעודכן של המבחן — חלק א׳ הפך לשאלות אמריקאיות</h3>
         <p>שעתיים וחצי · שני חלקים · 10 שאלות בכל חלק. חלק א׳ — <b>שאלות אמריקאיות</b>, 6 נק' לשאלה, <b>8 מתוך 10</b> (48 נק'). חלק ב׳ — <b>שאלות פתוחות</b> שבכל אחת כותבים שני פתרונות, ב-SQL וב-NoSQL, 8 נק' לשאלה, <b>7 מתוך 10</b> (56 נק'). סה"כ 104 נק' — לא ניתן להשיג יותר מ-100. חומר פתוח <b>אך ללא עזרים דיגיטליים ואלקטרוניים</b> — כלומר מודפס בלבד.</p></div>
-      <button class="btn" data-view-go="exam2">ללשונית מבחן 2026 ←</button>
+      <button class="btn" data-view-go="exam2">לתרגול 2026 (סכמת המכללה) ←</button>
     </div>
 
     <div class="card sample-banner" style="border-color:var(--line);background:var(--card)">
@@ -99,7 +107,10 @@
     </div>
   </section>
 
-  <!-- ============ ⭐ מבחן 2026 — הפורמט החדש ============ -->
+  <!-- ============ ⭐ המבחן לדוגמה האחרון — סכמת המשלוחים ============ -->
+  <section id="view-ship" class="view"></section>
+
+  <!-- ============ 🎓 תרגול 2026 — סכמת המכללה ============ -->
   <section id="view-exam2" class="view"></section>
 
   <!-- ============ מבחן לדוגמה (ישן) ============ -->
@@ -108,7 +119,7 @@
       <h3>⚠ המבחן שבעמוד הזה אינו מייצג את המבחן שיהיה</h3>
       <p>המרצה אמר זאת <b>מפורשות</b> בשיעור 13/10: המבחן לדוגמה הישן (14.2.25 — ERD, מילון נתונים ו-10 שאילתות SQL) <b>אינו מייצג</b> את מבנה המבחן הקרוב. במבחן החדש אין ERD ואין <code>CREATE TABLE</code>, ובמקומם חלק ארכיטקטורה שעונים עליו <b>במילים בלבד</b>, וחלק שאילתות שבו כותבים <b>גם SQL וגם MongoDB</b> לאותה שאלה.</p>
       <p>הפורמט המעודכן, לפי המבחן לדוגמה החדש (21/10/2026), נמצא בלשונית <b>"⭐ מבחן 2026"</b>. העמוד הזה נשאר כאן כתרגול SQL מצוין — ERD, מילון נתונים ועשרות שאילתות עם בדיקה אוטומטית — אבל <b>לא</b> כמתכונת המבחן.</p>
-      <button class="btn" data-view-go="exam2">⭐ ללשונית מבחן 2026 ←</button>
+      <button class="btn" data-view-go="exam2">⭐ לתרגול 2026 (סכמת המכללה) ←</button>
     </div>
     <div id="sampleBody"></div>
   </section>
@@ -317,28 +328,31 @@
 
 <footer>נבנה ככלי עזר ללמידה · שפת SQL (3964) · התוכן מבוסס על מצגות הקורס, חוברת ה-JOIN, שיעור ה-NoSQL ועבודות ההגשה</footer>
 
-<script src="js/tsql-compat.js?v=29"></script>
-<script src="js/mongo-sim.js?v=29"></script>
-<script src="js/grader.js?v=29"></script>
-<script src="js/college2-data.js?v=29"></script>
-<script src="js/sql-data.js?v=29"></script>
-<script src="js/nosql-data.js?v=29"></script>
-<script src="js/sql-content.js?v=29"></script>
-<script src="js/nosql-content.js?v=29"></script>
-<script src="js/sql-questions.js?v=29"></script>
-<script src="js/nosql-questions.js?v=29"></script>
-<script src="js/arch-content.js?v=29"></script>
-<script src="js/sql-exercises.js?v=29"></script>
-<script src="js/sample-variants.js?v=29"></script>
-<script src="js/sample-exam.js?v=29"></script>
-<script src="js/sample-stories.js?v=29"></script>
-<script src="js/nosql-exercises.js?v=29"></script>
-<script src="js/dual-questions.js?v=29"></script>
-<script src="js/exam2-data.js?v=29"></script>
-<script src="js/exam2-bank.js?v=29"></script>
-<script src="js/sql-app.js?v=29"></script>
-<script src="js/sample-view.js?v=29"></script>
-<script src="js/exam2-mcq.js?v=29"></script>
-<script src="js/exam2-view.js?v=29"></script>
+<script src="js/tsql-compat.js?v=30"></script>
+<script src="js/mongo-sim.js?v=30"></script>
+<script src="js/grader.js?v=30"></script>
+<script src="js/college2-data.js?v=30"></script>
+<script src="js/sql-data.js?v=30"></script>
+<script src="js/nosql-data.js?v=30"></script>
+<script src="js/sql-content.js?v=30"></script>
+<script src="js/nosql-content.js?v=30"></script>
+<script src="js/sql-questions.js?v=30"></script>
+<script src="js/nosql-questions.js?v=30"></script>
+<script src="js/arch-content.js?v=30"></script>
+<script src="js/sql-exercises.js?v=30"></script>
+<script src="js/sample-variants.js?v=30"></script>
+<script src="js/sample-exam.js?v=30"></script>
+<script src="js/sample-stories.js?v=30"></script>
+<script src="js/nosql-exercises.js?v=30"></script>
+<script src="js/dual-questions.js?v=30"></script>
+<script src="js/exam2-data.js?v=30"></script>
+<script src="js/exam2-bank.js?v=30"></script>
+<script src="js/sql-app.js?v=30"></script>
+<script src="js/sample-view.js?v=30"></script>
+<script src="js/exam2-mcq.js?v=30"></script>
+<script src="js/exam2-view.js?v=30"></script>
+<script src="js/ship-data.js?v=30"></script>
+<script src="js/ship-exam.js?v=30"></script>
+<script src="js/ship-view.js?v=30"></script>
 </body>
 </html>

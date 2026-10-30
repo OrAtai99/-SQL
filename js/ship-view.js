@@ -108,7 +108,8 @@ function checkMongo(q, code){
   if(!ru.ok) return { ok:false, kind:'err', msg:'שגיאה בפקודה: ' + esc(ru.error) };
   const rs = ss.run(q.mongo);
   if(!rs.ok) return { ok:false, kind:'err', msg:'שגיאה בפתרון המובנה: ' + esc(rs.error) };
-  const ordered = window.Grader.mongoOrdered(q.mongo);
+  /* הסדר נבדק רק כשהשאלה ביקשה מיון (ORDER BY בפתרון ה-SQL). $sort שמשמש רק לבחירת "האחרון" אינו קובע סדר פלט */
+  const ordered = window.Grader.sqlOrdered(q.sql) && window.Grader.mongoOrdered(q.mongo);
   const ok = mongoEq(ru.value, rs.value, ordered, q.cols);
   const un = Array.isArray(ru.value) ? ru.value.length : null, sn = Array.isArray(rs.value) ? rs.value.length : null;
   let msg;
@@ -194,6 +195,7 @@ function aboutHtml(){
       <li><b>🅱 חלק ב׳</b> — לכתוב לבד, <u>בלי להציץ</u>, SQL ואחר כך MongoDB, וללחוץ "בדוק". רק אחרי ניסיון — "הצג פתרון": הפתרון הרשמי, הנקודות החשובות, המלכודת ומקרי הקצה.</li>
       <li><b>🔁 תרגול נוסף</b> — 15 שאלות על אותה סכמה. הן הווריאציות: מה קורה כשהשאלה בבחינה שונה מעט מהמבחן לדוגמה.</li>
       <li><b>⏱ מצב מבחן</b> — בסוף: 150 דקות, בלי פתרונות ובלי בדיקה, וציון בסוף לפי כללי הבחינה האמיתית.</li>
+      <li><b>🔀 תרגול ברמת המבחן</b> (לשונית נפרדת) — לכל שאלה כאן יש שם קבוצה של שאלות דומות, מעורבבות משתי הסכמות, ו-6 מבחנים מעורבבים במבנה הבחינה.</li>
     </ol>
   </div>
 

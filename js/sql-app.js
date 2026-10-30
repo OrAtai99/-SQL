@@ -72,16 +72,17 @@ const dataset = key => S.nosql.datasets[key || 'college2'];
 /* ============================================================
    ניווט
    ============================================================ */
-const VIEWS = ['home','ship','exam2','sample','chapters','syntax','flashcards','quiz','lab','exam'];
+const VIEWS = ['home','ship','mix','exam2','sample','chapters','syntax','flashcards','quiz','lab','exam'];
 function showView(id){
   if(!VIEWS.includes(id)) id = 'home';
   $$('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + id));
   $$('nav.tabs button').forEach(b => b.classList.toggle('active', b.dataset.view === id));
   if(id === 'home') renderHome();
-  if(id === 'lab' || id === 'exam' || id === 'sample' || id === 'exam2' || id === 'ship') ensureEngines();
+  if(id === 'lab' || id === 'exam' || id === 'sample' || id === 'exam2' || id === 'ship' || id === 'mix') ensureEngines();
   if(id === 'sample' && window.SampleView) SampleView.show();
   if(id === 'exam2' && window.EXAM2VIEW) EXAM2VIEW.render();
   if(id === 'ship' && window.SHIPVIEW) SHIPVIEW.render();
+  if(id === 'mix' && window.MIXVIEW) MIXVIEW.render();
   window.scrollTo(0, 0);
   try { history.replaceState(null, '', '#' + id); } catch(e){}
 }

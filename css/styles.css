@@ -810,3 +810,17 @@ html[data-theme="dark"] .p-cyber nav.tabs button.tab-star:not(.active){color:#f5
 .p-sql #view-ship .opt.sx-picked{border-color:var(--accent);background:var(--card2)}
 .p-sql #view-ship.sx-exam .sx-study{display:none}
 .p-sql #view-ship .explain div{unicode-bidi:plaintext}
+/* 🔀 תרגול ברמת המבחן */
+.p-sql #view-mix .sx-tabs{margin-top:14px}
+.p-sql #view-mix .opt.mx-picked{border-color:var(--accent);background:var(--card2)}
+.p-sql #view-mix.mx-exam .mx-study{display:none}
+.p-sql #view-mix .explain div{unicode-bidi:plaintext}
+.p-sql #view-mix #mxSlots,.p-sql #view-mix #mxFams{margin:12px 0}
+.p-sql #view-mix .mx-slot-head{margin-bottom:16px}
+.p-sql #view-mix .mx-anchor{border-color:#d4a72c;box-shadow:inset 4px 0 0 #d4a72c}
+.p-sql #view-mix .mx-sch-ship{background:rgba(64,140,255,.14);color:var(--accent)}
+.p-sql #view-mix .mx-sch-exam2{background:rgba(35,201,139,.16);color:var(--good)}
+.p-sql #view-mix .mx-schema{margin:6px 0 10px}
+.p-sql #view-mix .mx-exam-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-bottom:16px}
+.p-sql #view-mix .mx-exam-card h3{margin:0 0 4px}
+.p-sql #view-mix .mx-part{margin:18px 0 10px}

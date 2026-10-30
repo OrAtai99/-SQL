@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>פורטל מבחן · שפת SQL + NoSQL</title>
-  <link rel="stylesheet" href="css/styles.css?v=30">
+  <link rel="stylesheet" href="css/styles.css?v=31">
 </head>
 <body class="p-sql">
 
@@ -20,6 +20,7 @@
     <nav class="tabs">
       <button data-view="home" class="active">🏠 בית</button>
       <button data-view="ship" class="tab-star">⭐ המבחן האחרון</button>
+      <button data-view="mix">🔀 תרגול ברמת המבחן</button>
       <button data-view="exam2">🎓 תרגול 2026</button>
       <button data-view="sample">📄 מבחן לדוגמה (ישן)</button>
       <button data-view="chapters">📚 סיכומים</button>
@@ -62,6 +63,13 @@
       <div><h3>המבחן לדוגמה האחרון — מערכת המשלוחים. <u>הבחינה תהיה דומה מאוד אליו</u></h3>
         <p>כך אמר המרצה. 11 שאלות אמריקאיות עם מפתח והסבר, 9 שאלות פתוחות עם בדיקה אמיתית ב-SQL וב-MongoDB מול הפתרון הרשמי, 15 שאלות תרגול על אותה סכמה, ומצב מבחן של 150 דקות עם ציון. <b>מכאן מתחילים.</b></p></div>
       <button class="btn" data-view-go="ship">למבחן האחרון ←</button>
+    </div>
+
+    <div class="card sample-banner">
+      <div class="sb-ic">🔀</div>
+      <div><h3>תרגול ברמת המבחן — כל השאלות, מסודרות לפי המבחן האחרון</h3>
+        <p>לכל אחת משאלות המבחן האחרון יש כאן קבוצת שאלות דומות באותו דפוס, <b>מעורבבות משתי הסכמות</b> (משלוחים ומכללה), כדי לתרגל זיהוי דפוס ולא זכירת תשובה. חלק א׳ מסודר לפי עשרת הנושאים של המבחן, כולל נושאים חדשים: מפתח חלוקה, שכפול ועקביות, NULL מול שדה חסר. ובסוף — <b>6 מבחנים מעורבבים</b> במבנה הבחינה, עם טיימר וציון.</p></div>
+      <button class="btn" data-view-go="mix">לתרגול המעורבב ←</button>
     </div>
 
     <div class="card sample-banner">
@@ -109,6 +117,9 @@
 
   <!-- ============ ⭐ המבחן לדוגמה האחרון — סכמת המשלוחים ============ -->
   <section id="view-ship" class="view"></section>
+
+  <!-- ============ 🔀 תרגול ברמת המבחן — כל המאגרים לפי המבחן האחרון ============ -->
+  <section id="view-mix" class="view"></section>
 
   <!-- ============ 🎓 תרגול 2026 — סכמת המכללה ============ -->
   <section id="view-exam2" class="view"></section>
@@ -328,31 +339,32 @@
 
 <footer>נבנה ככלי עזר ללמידה · שפת SQL (3964) · התוכן מבוסס על מצגות הקורס, חוברת ה-JOIN, שיעור ה-NoSQL ועבודות ההגשה</footer>
 
-<script src="js/tsql-compat.js?v=30"></script>
-<script src="js/mongo-sim.js?v=30"></script>
-<script src="js/grader.js?v=30"></script>
-<script src="js/college2-data.js?v=30"></script>
-<script src="js/sql-data.js?v=30"></script>
-<script src="js/nosql-data.js?v=30"></script>
-<script src="js/sql-content.js?v=30"></script>
-<script src="js/nosql-content.js?v=30"></script>
-<script src="js/sql-questions.js?v=30"></script>
-<script src="js/nosql-questions.js?v=30"></script>
-<script src="js/arch-content.js?v=30"></script>
-<script src="js/sql-exercises.js?v=30"></script>
-<script src="js/sample-variants.js?v=30"></script>
-<script src="js/sample-exam.js?v=30"></script>
-<script src="js/sample-stories.js?v=30"></script>
-<script src="js/nosql-exercises.js?v=30"></script>
-<script src="js/dual-questions.js?v=30"></script>
-<script src="js/exam2-data.js?v=30"></script>
-<script src="js/exam2-bank.js?v=30"></script>
-<script src="js/sql-app.js?v=30"></script>
-<script src="js/sample-view.js?v=30"></script>
-<script src="js/exam2-mcq.js?v=30"></script>
-<script src="js/exam2-view.js?v=30"></script>
-<script src="js/ship-data.js?v=30"></script>
-<script src="js/ship-exam.js?v=30"></script>
-<script src="js/ship-view.js?v=30"></script>
+<script src="js/tsql-compat.js?v=31"></script>
+<script src="js/mongo-sim.js?v=31"></script>
+<script src="js/grader.js?v=31"></script>
+<script src="js/college2-data.js?v=31"></script>
+<script src="js/sql-data.js?v=31"></script>
+<script src="js/nosql-data.js?v=31"></script>
+<script src="js/sql-content.js?v=31"></script>
+<script src="js/nosql-content.js?v=31"></script>
+<script src="js/sql-questions.js?v=31"></script>
+<script src="js/nosql-questions.js?v=31"></script>
+<script src="js/arch-content.js?v=31"></script>
+<script src="js/sql-exercises.js?v=31"></script>
+<script src="js/sample-variants.js?v=31"></script>
+<script src="js/sample-exam.js?v=31"></script>
+<script src="js/sample-stories.js?v=31"></script>
+<script src="js/nosql-exercises.js?v=31"></script>
+<script src="js/dual-questions.js?v=31"></script>
+<script src="js/exam2-data.js?v=31"></script>
+<script src="js/exam2-bank.js?v=31"></script>
+<script src="js/sql-app.js?v=31"></script>
+<script src="js/sample-view.js?v=31"></script>
+<script src="js/exam2-mcq.js?v=31"></script>
+<script src="js/exam2-view.js?v=31"></script>
+<script src="js/ship-data.js?v=31"></script>
+<script src="js/ship-exam.js?v=31"></script>
+<script src="js/ship-view.js?v=31"></script>
+<script src="js/mix-view.js?v=31"></script>
 </body>
 </html>

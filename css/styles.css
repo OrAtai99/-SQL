@@ -824,3 +824,6 @@ html[data-theme="dark"] .p-cyber nav.tabs button.tab-star:not(.active){color:#f5
 .p-sql #view-mix .mx-exam-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-bottom:16px}
 .p-sql #view-mix .mx-exam-card h3{margin:0 0 4px}
 .p-sql #view-mix .mx-part{margin:18px 0 10px}
+.p-sql #view-mix .mx-book{font-size:13.5px;margin:4px 0 10px;padding:6px 10px;border-radius:8px;unicode-bidi:plaintext}
+.p-sql #view-mix .mx-book.in{background:rgba(64,140,255,.10)}
+.p-sql #view-mix .mx-book.out{background:rgba(35,201,139,.12)}

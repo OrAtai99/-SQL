@@ -166,6 +166,13 @@ function schemaBox(schema){
     ${tbl(['טבלה ב-SQL','אוסף במונגו','שדות'], D.order.map(k => [`<code dir="ltr">${esc(D.sqlNames[k])}</code>`, `<code dir="ltr">${esc(k)}</code>`, `<span dir="ltr">${esc(D.data[k].cols.join(', '))}</span>`]))}</details>`;
 }
 const badge = q => `<span class="badge-pill mx-sch-${q.schema}">${SCHEMA_NAME[q.schema]}</span><span class="badge-pill">${SRC_NAME[q.src]}</span>`;
+/* איפה השאלה בחוברת המודפסת — או באיזה כרטיס נעזרים כשהיא אינה שם. מוסתר בזמן מבחן */
+function bookLine(q){
+  if(q.book) return `<div class="mx-study mx-book in">📖 <b>בחוברת, עמ' ${q.book.page}</b> — ${esc(q.book.where)}. שווה לנסות לבד לפני שמציצים.</div>`;
+  if(q.card) return `<div class="mx-study mx-book out">✍ <b>לא מודפסת בחוברת.</b> פותרים בעזרת כרטיס <b>${esc(q.card.code)}</b> — ${esc(q.card.title)}, עמ' ${q.card.page}.</div>`;
+  if(q.hint) return `<div class="mx-study mx-book out">✍ <b>לא מודפסת בחוברת.</b> נעזרים בשאלת המקור באותו נושא — ${q.hint.anchors.map(a => `שאלה ${a.n} (עמ' ${a.page})`).join(', ')} — ובכללי הפסילה בעמ' ${q.hint.rules}.</div>`;
+  return '';
+}
 
 /* כרטיס שאלה פתוחה. prefix מבדיל בין התרגול לבין המבחן — אותה שאלה יכולה להופיע בשניהם */
 function qCard(q, prefix, label){
@@ -176,6 +183,7 @@ function qCard(q, prefix, label){
   <div class="card e2-q ${official ? 'mx-anchor' : ''}" id="${prefix}-${esc(q.id)}" data-qid="${esc(q.id)}">
     <h3>${label ? esc(label) + ' · ' : ''}${esc(q.title)} ${badge(q)} ${mk('sql', 'SQL')} ${mk('mongo', 'Mongo')}</h3>
     <p class="e2-prompt">${esc(q.q)}</p>
+    ${bookLine(q)}
     ${schemaBox(q.schema)}
     ${q.keywords ? `<details class="mx-study"><summary>🔑 מילות המפתח — איך מזהים את הדפוס</summary><p>${esc(q.keywords)}</p></details>` : ''}
     <details class="mx-study"><summary>⚠ המלכודת</summary><p>${esc(q.trap)}</p></details>
@@ -208,6 +216,7 @@ function mcqCard(q, prefix, label){
   return `<div class="quiz-q e2-mcq ${q.src === 'official' ? 'mx-anchor' : ''}" id="${prefix}-${esc(q.id)}" data-qid="${esc(q.id)}">
     <div class="qnum">${esc(label)} <span class="qtopic">${q.src === 'official' ? '⭐ מהמבחן האחרון, שאלה ' + q.n : SRC_NAME[q.src]}</span></div>
     <div class="qtext">${esc(q.q)}</div>
+    ${bookLine(q)}
     ${q.options.map((o, j) => `<button class="opt mx-opt" data-j="${j}"><span class="mark">${LET[j]}</span> ${esc(o)}</button>`).join('')}
     <div class="explain"></div></div>`;
 }
@@ -266,9 +275,10 @@ function aboutHtml(){
     <ol class="tips">
       <li><b>כל שאלת SELECT</b> מכל המאגרים — תרגול המשלוחים, בנק המכללה (45), מבחן המכללה, הדפוסים הנוספים — שובצה ל<b>אחת</b> מתשע השאלות הפתוחות של המבחן האחרון, לפי הדפוס שלה. שאלות שינוי (INSERT/UPDATE/DELETE) לא נכנסו: במבחן האחרון לא היו כאלה.</li>
       <li>בתוך כל משבצת השאלות <b>מסודרות לפי הקרבה לרמת המבחן</b>, ו<b>מתחלפות בין שתי הסכמות</b>: שאלה על משלוחים, אחריה שאלה על מכללה. הדפוס זהה, השמות שונים — בדיוק מה שיקרה בבחינה.</li>
-      <li>איפה שהמאגרים היו דלים (אנטי-צירוף, "האחרון לכל קבוצה", שני תנאי קבוצה, צבירה בתוך HAVING) — <b>נכתבו 9 שאלות חדשות</b> (🆕), כולן הורצו בשני המנועים והמלכודת בכל אחת נבדקה.</li>
-      <li>בחלק א׳ — 90 האמריקאיות של הבנק סודרו לפי <b>10 הנושאים של המבחן האחרון</b>. שלושה נושאים שהיו במבחן לא הופיעו בבנק בכלל — <b>מפתח חלוקה, שכפול ועקביות, NULL מול שדה חסר</b> — ונכתבו עבורם 17 שאלות חדשות.</li>
-      <li><b>6 מבחנים מעורבבים</b> במבנה הבחינה: 10 אמריקאיות (נושא אחד מכל משפחה) ו-10 פתוחות (שאלה אחת מכל משבצת), בלי אף שאלה שחוזרת בין המבחנים, ובלי שאלות המבחן האחרון עצמו.</li>
+      <li>איפה שהמאגרים היו דלים (אנטי-צירוף, "האחרון לכל קבוצה", שני תנאי קבוצה, צבירה בתוך HAVING ועוד) — <b>נכתבו 17 שאלות חדשות</b> (🆕), כולן הורצו בשני המנועים והמלכודת בכל אחת נבדקה.</li>
+      <li>בחלק א׳ — 90 האמריקאיות של הבנק סודרו לפי <b>10 הנושאים של המבחן האחרון</b>. שלושה נושאים שהיו במבחן לא הופיעו בבנק בכלל — <b>מפתח חלוקה, שכפול ועקביות, NULL מול שדה חסר</b> — ונכתבו עבורם שאלות חדשות. בסך הכול נוספו 53 אמריקאיות חדשות, ואף אחת מהן אינה מודפסת בחוברת.</li>
+      <li><b>6 מבחנים מעורבבים</b> במבנה הבחינה: 10 אמריקאיות (נושא אחד מכל משפחה) ו-10 פתוחות (שאלה אחת מכל משבצת), בלי אף שאלה שחוזרת בין המבחנים. <b>מבחנים ב׳–ו׳ בנויים רק משאלות שאינן מודפסות בחוברת</b> — חלקן נכתבו במיוחד לשם כך. כך מתרגלים את מה שיקרה בבחינה: לפתור בעזרת החוברת, ולא למצוא בה את התשובה.</li>
+      <li>על כל שאלה כתוב <b>📖 באיזה עמוד בחוברת היא מודפסת</b>, או <b>✍ באיזה כרטיס נעזרים</b> כשהיא אינה שם. בזמן מבחן הסימון מוסתר.</li>
     </ol>
     <p class="e2-note">סדר עבודה מומלץ: קודם לפתור את המבחן האחרון בלשונית "⭐ המבחן האחרון". אחר כך כאן — משבצת אחר משבצת, 2–3 שאלות בכל אחת. ובסוף — המבחנים המעורבבים, עם טיימר.</p>
   </div>
@@ -321,6 +331,7 @@ function examsHtml(){
     return `<div class="card mx-exam-card">
       <h3>📝 ${esc(e.title)}</h3>
       <div class="muted-sm">10 אמריקאיות · 10 פתוחות (${sh} משלוחים, ${10 - sh} מכללה)</div>
+      <div class="muted-sm">${e.clean ? '✍ <b>אף שאלה אינה מודפסת בחוברת</b> — פותרים בעזרתה' : '📖 חלק מהשאלות מודפסות בחוברת'}</div>
       <div class="muted-sm">${h.length ? `נעשה ${h.length} פעמים · ציון אחרון <b>${h[h.length - 1].score}</b> · הטוב ביותר <b>${best}</b>` : 'עוד לא נעשה'}</div>
       <button class="btn" data-start="${e.id}" style="margin-top:8px">⏱ התחל (150 דקות)</button></div>`; }).join('')}</div>
   <div id="mxExamBox"></div>`;
@@ -330,7 +341,8 @@ function examBodyHtml(e){
   const M = X();
   return `
   <div class="card e2-warn"><h3>📝 ${esc(e.title)}</h3>
-    <p>חלק א׳ ואחריו חלק ב׳. בזמן המבחן אין בדיקה, אין הרצה ואין פתרונות — כמו על דף. התשובות נבדקות בסוף. בכל שאלה פתוחה רשומה הסכמה שלה, ואפשר לפתוח את רשימת הטבלאות.</p></div>
+    <p>חלק א׳ ואחריו חלק ב׳. בזמן המבחן אין בדיקה, אין הרצה ואין פתרונות — כמו על דף. התשובות נבדקות בסוף. בכל שאלה פתוחה רשומה הסכמה שלה, ואפשר לפתוח את רשימת הטבלאות.</p>
+    ${e.clean ? '<p><b>אף שאלה במבחן הזה אינה מודפסת בחוברת.</b> החוברת פתוחה לידך כמו בבחינה: שאלה אמריקאית — עמ׳ 7, נושא, ושאלת המקור. שאלה פתוחה — מזהים את הדפוס, עמ׳ 3, כרטיס, ומתאימים את השלד. אחרי ההגשה יופיע על כל שאלה איזה עמוד היה עוזר.</p>' : ''}</div>
   <h3 class="mx-part">🅰 חלק א׳ — 10 שאלות אמריקאיות</h3>
   <div class="e2-mcq-list">${e.a.map((id, i) => mcqCard(M.mcq[id], 'mxe', `שאלה ${i + 1}`)).join('')}</div>
   <h3 class="mx-part">🅱 חלק ב׳ — 10 שאלות פתוחות</h3>

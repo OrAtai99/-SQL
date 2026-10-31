@@ -145,7 +145,7 @@ function mongoOut(r){
    מצב והתקדמות
    ============================================================ */
 let built = false, tab = 'about', slotSel = 'S12', famSel = 'T1';
-let exam = null;            /* { id, end, tick, mcq:{} } בזמן מבחן */
+let exam = null;            /* { id, start, end, free, tick, mcq:{} } בזמן מבחן; free = בלי טיימר */
 function prog(){
   const P = A().prog(); P.mix = P.mix || {};
   const M = P.mix; M.a = M.a || {}; M.b = M.b || {}; M.ex = M.ex || {};
@@ -332,8 +332,10 @@ function examsHtml(){
       <h3>📝 ${esc(e.title)}</h3>
       <div class="muted-sm">10 אמריקאיות · 10 פתוחות (${sh} משלוחים, ${10 - sh} מכללה)</div>
       <div class="muted-sm">${e.clean ? '✍ <b>אף שאלה אינה מודפסת בחוברת</b> — פותרים בעזרתה' : '📖 חלק מהשאלות מודפסות בחוברת'}</div>
-      <div class="muted-sm">${h.length ? `נעשה ${h.length} פעמים · ציון אחרון <b>${h[h.length - 1].score}</b> · הטוב ביותר <b>${best}</b>` : 'עוד לא נעשה'}</div>
-      <button class="btn" data-start="${e.id}" style="margin-top:8px">⏱ התחל (150 דקות)</button></div>`; }).join('')}</div>
+      <div class="muted-sm">${h.length ? `נעשה ${h.length} פעמים · ציון אחרון <b>${h[h.length - 1].score}</b>${h[h.length - 1].free ? ' (בלי טיימר)' : ''} · הטוב ביותר <b>${best}</b>` : 'עוד לא נעשה'}</div>
+      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn" data-start="${e.id}">⏱ התחל (150 דקות)</button>
+        <button class="btn ghost" data-start="${e.id}" data-free="1">🧘 בלי טיימר</button></div></div>`; }).join('')}</div>
   <div id="mxExamBox"></div>`;
 }
 
@@ -365,24 +367,29 @@ function setTab(t){
   $$('#mxTabs button').forEach(b => b.classList.toggle('active', b.dataset.t === t));
   $$('#view-mix .mx-pane').forEach(p => p.classList.toggle('hidden', p.dataset.pane !== t));
 }
+const hms = ms => { const s = Math.floor(ms / 1000); return [Math.floor(s / 3600), Math.floor(s / 60) % 60, s % 60].map(x => String(x).padStart(2, '0')).join(':'); };
 function tick(){
-  const left = Math.max(0, exam.end - Date.now()), s = Math.floor(left / 1000);
   const el = $('#mxTimer');
-  el.textContent = [Math.floor(s / 3600), Math.floor(s / 60) % 60, s % 60].map(x => String(x).padStart(2, '0')).join(':');
+  /* בלי טיימר: שעון שסופר קדימה, בלי אזהרה ובלי הגשה אוטומטית */
+  if(exam.free){ el.textContent = '🧘 ' + hms(Date.now() - exam.start); return; }
+  const left = Math.max(0, exam.end - Date.now());
+  el.textContent = hms(left);
   el.classList.toggle('warn', left < 15 * 60000);
   if(!left) finishExam(true);
 }
-function startExam(id){
+function startExam(id, free){
   if(exam) return;
   const e = X().exams.find(x => x.id === id);
-  if(!confirm(`${e.title}: 150 דקות, בלי פתרונות, בלי בדיקה ובלי הרצה — כמו על דף. בסוף מקבלים ציון לפי כללי הבחינה. להתחיל?`)) return;
-  exam = { id, mcq:{}, end: Date.now() + EXAM_MINUTES * 60000 };
+  const when = free ? 'בלי הגבלת זמן (השעון רק מראה כמה זמן עבר)' : '150 דקות';
+  if(!confirm(`${e.title}: ${when}, בלי פתרונות, בלי בדיקה ובלי הרצה — כמו על דף. בסוף מקבלים ציון לפי כללי הבחינה. להתחיל?`)) return;
+  const start = Date.now();
+  exam = { id, mcq:{}, free: !!free, start, end: start + EXAM_MINUTES * 60000 };
   const box = $('#mxExamBox');
   box.innerHTML = examBodyHtml(e);
   $('#view-mix').classList.add('mx-exam');
   $$('#view-mix [data-start]').forEach(b => b.disabled = true);
   $$('#mxTabs button').forEach(b => b.disabled = true);
-  $('#mxFinishBtn').classList.remove('hidden'); $('#mxTimer').classList.remove('hidden');
+  $('#mxFinishBtn').classList.remove('hidden'); $('#mxTimer').classList.remove('hidden', 'warn');
   wireCards(box, true);
   tick(); exam.tick = setInterval(tick, 1000);
   paintScore();
@@ -410,7 +417,8 @@ function finishExam(timeUp){
     });
     const bPts = per.map(x => x.pts).sort((a, b) => b - a).slice(0, 7).reduce((a, b) => a + b, 0);
     const score = Math.min(100, aPts + bPts);
-    (P.ex[e.id] = P.ex[e.id] || []).push({ at: Date.now(), score, a: aRight, b: per.filter(x => x.s && x.m).length });
+    const took = Date.now() - cur.start;
+    (P.ex[e.id] = P.ex[e.id] || []).push({ at: Date.now(), score, a: aRight, b: per.filter(x => x.s && x.m).length, free: cur.free, mins: Math.round(took / 60000) });
     save();
     const weakB = per.filter(x => !(x.s && x.m)), weakA = e.a.map((id, i) => ({ id, f: M.families[i] })).filter(x => cur.mcq[x.id] !== M.mcq[x.id].correct);
     $('#view-mix').classList.remove('mx-exam');
@@ -418,6 +426,7 @@ function finishExam(timeUp){
     $('#mxFinishBtn').classList.add('hidden'); $('#mxTimer').classList.add('hidden');
     box.insertAdjacentHTML('afterbegin', `<div class="card ${score >= 70 ? 'ok-box' : 'emph-box'}" id="mxResult">
       <h3>${timeUp ? '⏰ הזמן נגמר. ' : ''}${esc(e.title)} — הציון שלך: ${score}</h3>
+      <div class="muted-sm">⏱ לקח לך ${hms(took)}${cur.free ? ` — בלי טיימר. ${took > EXAM_MINUTES * 60000 ? '<b>בבחינה האמיתית זה מעל 150 הדקות</b> — בפעם הבאה נסה עם טיימר.' : 'זה בתוך 150 הדקות של הבחינה.'}` : ''}</div>
       <div class="muted-sm">חלק א׳: ${aRight} נכונות מתוך 10 → ${Math.min(aRight, 8)} × 6 = <b>${aPts}</b> (נספרות עד 8)</div>
       <div class="muted-sm">חלק ב׳: ${per.map(x => `${x.i + 11}${x.s && x.m ? '✓' : x.s || x.m ? '½' : '✗'}`).join(' · ')} → 7 הטובות = <b>${bPts}</b></div>
       ${weakB.length ? `<p style="margin-top:8px"><b>לחזור לתרגול — חלק ב׳:</b> ${[...new Set(weakB.map(x => x.slot.key))].map(k => {
@@ -547,7 +556,7 @@ function wire(){
   $$('#mxTabs button').forEach(b => b.onclick = () => { setTab(b.dataset.t); go($('#mxTabs')); });
   $('#mxFinishBtn').onclick = () => finishExam(false);
   const pEx = $('#view-mix [data-pane="ex"]');
-  $$('[data-start]', pEx).forEach(b => b.onclick = () => startExam(b.dataset.start));
+  $$('[data-start]', pEx).forEach(b => b.onclick = () => startExam(b.dataset.start, !!b.dataset.free));
   wireJumps($('#view-mix [data-pane="about"]'));
 }
 
